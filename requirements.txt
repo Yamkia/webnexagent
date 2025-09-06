@@ -1,0 +1,9 @@
+langchain
+langchain-core
+langchain-google-genai
+langchain-openai
+langchain-anthropic
+python-dotenv
+beautifulsoup4
+deepgram-sdk
+pyaudio
