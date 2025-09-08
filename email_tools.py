@@ -6,9 +6,9 @@ import smtplib
 from email.header import decode_header
 from email.utils import parseaddr
 from contextlib import contextmanager
-from bs4 import BeautifulSoup
 from email.message import EmailMessage
 import config
+import html2text
 
 @contextmanager
 def _get_imap_connection():
@@ -37,7 +37,8 @@ def _decode_header(header):
 def _get_body_from_msg(msg: email.message.Message) -> str:
     """
     Extracts the body from an email.message.Message object.
-    It prioritizes text/plain, but falls back to converting text/html to plain text.
+    It prioritizes text/plain, but falls back to converting text/html to Markdown
+    to preserve links and basic formatting.
     """
     plain_text_body = ""
     html_body = ""
@@ -80,9 +81,12 @@ def _get_body_from_msg(msg: email.message.Message) -> str:
         return plain_text_body.strip()
     
     if html_body:
-        # Use BeautifulSoup to convert HTML to clean text
-        soup = BeautifulSoup(html_body, "html.parser")
-        return soup.get_text(separator='\n', strip=True)
+        # Convert HTML to Markdown to preserve links and basic formatting.
+        h = html2text.HTML2Text()
+        # Configure to ignore images and format links nicely.
+        h.ignore_images = True
+        markdown_body = h.handle(html_body)
+        return markdown_body.strip()
         
     return "" # Return empty string if no body is found
 
