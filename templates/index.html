@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Nexus Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        // Set theme from localStorage before page loads to prevent flash
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    </script>
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            /* Silver Surfer (Light) HD Theme */
+            --theme-bg: #f8f9fa; /* Bootstrap light for familiarity */
+            --theme-text: #212529;
+            --theme-border: #dee2e6;
+            --theme-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --theme-bg-image: none;
+            --theme-sidebar-bg: #ffffff;
+            --theme-launcher-bg: #ffffff;
+            --theme-launcher-hover-bg: #f0f4ff; /* A subtle blue tint */
+            --theme-chat-header-bg: #f8f9fa;
+            --theme-chat-window-bg: #ffffff;
+            --theme-ai-message-bg: #e9ecef;
+            --theme-ai-message-text: #212529;
+            --theme-user-message-bg: #4a90e2; /* Modern, softer blue */
+            --theme-user-message-text: #fff;
+            --theme-thinking-text: #6c757d;
+        }
+
+        [data-bs-theme="dark"] {
+            /* The Batman (Dark) HD Theme */
+            --theme-bg: #1A1A1A; /* Figma background */
+            --theme-text: #F2F2F2; /* Figma text */
+            --theme-border: #3A3A3A; /* Darker border */
+            --theme-shadow: 0 4px 8px -2px rgba(238, 31, 37, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2); /* Subtle red glow shadow */
+            --theme-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+            --theme-sidebar-bg: #1A1A1A; /* Consistent background */
+            --theme-launcher-bg: #2C2C2C; /* Slightly lighter than bg */
+            --theme-launcher-hover-bg: #EE1F25; /* Red accent on hover */
+            --theme-chat-header-bg: #1A1A1A; /* Consistent background */
+            --theme-chat-window-bg: #1A1A1A; /* Consistent background */
+            --theme-ai-message-bg: #2C2C2C; /* Same as launcher bg */
+            --theme-ai-message-text: #F2F2F2;
+            --theme-user-message-bg: #EE1F25; /* Batman Red */
+            --theme-user-message-text: #ffffff; /* White text for red bg */
+            --theme-thinking-text: #888888; /* Dimmer gray */
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--theme-bg);
+            background-image: var(--theme-bg-image);
+            color: var(--theme-text);
+        }
+
+        /* --- Sidebar --- */
+        #app-sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 240px;
+            padding: 20px;
+            border-right: 1px solid var(--theme-border);
+            flex-shrink: 0;
+            box-sizing: border-box;
+            background-color: var(--theme-sidebar-bg);
+            box-shadow: var(--theme-shadow);
+            z-index: 10; /* Ensure it's above the main content bg */
+        }
+
+        #app-sidebar h1 {
+            font-size: 1.8em;
+            margin: 20px 0 30px 0;
+            padding-left: 10px;
+        }
+
+        .app-launcher {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background-color: var(--theme-launcher-bg);
+            color: var(--theme-text);
+            border: 1px solid var(--theme-border);
+            border-radius: .375rem; /* Bootstrap default */
+            cursor: pointer;
+            text-align: left;
+            font-size: 1em;
+            font-weight: 500;
+            box-shadow: var(--theme-shadow);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .app-launcher:hover, .app-launcher.active {
+            background-color: var(--theme-launcher-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px -2px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        /* --- Agent Floating Action Button --- */
+        #agent-fab {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            font-size: 2.5em; /* For the light mode emoji */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050; /* Above most content, below modals */
+            cursor: move; /* Indicate it's draggable */
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        }
+
+        #agent-fab svg {
+            width: 65%;
+            height: 65%;
+        }
+
+        #agent-fab.dragging {
+            cursor: grabbing;
+            z-index: 1051;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            transition: none; /* Disable transition while dragging for smooth movement */
+        }
+
+        /* Wrapper for theme switcher to push it to the bottom */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--theme-border);
+        }
+
+        /* --- Main Content Area --- */
+        #app-content-area {
+            flex-grow: 1;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px; /* Add some padding for content */
+        }
+
+        /* --- Chat App Specific Styles --- */
+        #chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: -20px; /* Counteract parent padding to fill space */
+        }
+
+        #chat-container h1 {
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 1.1em;
+            text-align: center;
+            border-bottom: 1px solid var(--theme-border);
+            background-color: var(--theme-chat-header-bg);
+        }
+
+        #chat-window {
+            flex-grow: 1;
+            padding: 20px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: var(--theme-chat-window-bg);
+        }
+
+        .message {
+            display: flex;
+            max-width: 75%;
+        }
+
+        .message p {
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin: 0;
+            line-height: 1.4;
+            word-wrap: break-word;
+            box-shadow: var(--theme-shadow);
+        }
+
+        .ai-message { align-self: flex-start; }
+        .ai-message p {
+            background-color: var(--theme-ai-message-bg);
+            color: var(--theme-ai-message-text);
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message { align-self: flex-end; }
+        .user-message p {
+            background-color: var(--theme-user-message-bg);
+            color: var(--theme-user-message-text);
+            border-bottom-right-radius: 4px;
+        }
+        .thinking p { color: var(--theme-thinking-text); font-style: italic; }
+
+        #chat-form {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-top: 1px solid var(--theme-border);
+            background-color: var(--theme-chat-header-bg);
+        }
+
+        #message-input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        #chat-form button {
+            background-color: var(--theme-user-message-bg);
+            color: var(--theme-user-message-text);
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            font-size: 1.5em;
+            line-height: 38px; /* Center the arrow */
+            transition: all 0.2s ease;
+        }
+
+        #chat-form button:hover { opacity: 0.8; }
+
+    </style>
+</head>
+<body>
+    <div id="app-sidebar">
+        <h1>Web-Nexus</h1>
+        <button id="load-email-app" class="app-launcher">📧 Email Assistant</button>
+        <button id="load-odoo-app" class="app-launcher">⚙️ Odoo Environments</button>
+        <div class="sidebar-footer">
+            <button id="theme-switcher" class="btn btn-outline-secondary w-100"></button>
+        </div>
+    </div>
+    <div id="app-content-area">
+        <div style="padding: 40px; text-align: center;">
+            <h2>Welcome to your Dashboard</h2>
+            <p>Select an application from the sidebar to get started.</p>
+        </div>
+    </div>
+
+    <!-- Floating Action Button for Agent -->
+    <button id="agent-fab" class="btn btn-primary rounded-circle shadow-lg">
+        ✨
+    </button>
+
+    <!-- Agent Edit Modal -->
+    <div class="modal fade" id="agent-edit-modal" tabindex="-1" aria-labelledby="agentEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="agentEditModalLabel">Edit UI with Agent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Describe the change you want to make to the current view.</p>
+                    <div id="agent-edit-chat-window" class="mb-3" style="max-height: 400px; overflow-y: auto;"></div>
+                    <div class="input-group">
+                        <input type="text" id="agent-edit-input" class="form-control" placeholder="e.g., 'Make the title bigger and blue'">
+                        <button id="agent-edit-send" class="btn btn-outline-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const appContentArea = document.getElementById('app-content-area');
+            let odooPlannedModules = []; // State for Odoo app
+
+            /**
+             * This function is called whenever the app content area is replaced.
+             * It handles re-initialization of components that need it.
+             */
+            function onAppContentChange() {
+                // 1. Ensure chat window scrolls to bottom if it exists
+                const chatWindow = document.getElementById('chat-window');
+                if (chatWindow) {
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                }
+
+                // 2. Initialize any new Bootstrap components that rely on JS.
+                // This is crucial for making agent-added UI elements with Bootstrap features "active".
+                const tooltipTriggerList = appContentArea.querySelectorAll('[data-bs-toggle="tooltip"]');
+                [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+                const popoverTriggerList = appContentArea.querySelectorAll('[data-bs-toggle="popover"]');
+                [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+            }
+
+            // --- Theme Switcher Logic ---
+            const themeSwitcher = document.getElementById('theme-switcher');
+            const agentFab = document.getElementById('agent-fab');
+            const rootElement = document.documentElement;
+
+            // SVG for the Batman theme FAB
+            const batSignalSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="black"><path d="M12 3.434L9.698 6.017a5.25 5.25 0 0 0-2.83 4.483H3.75v3h3.118a5.25 5.25 0 0 0 2.83 4.483L12 20.566l2.302-2.583a5.25 5.25 0 0 0 2.83-4.483H20.25v-3h-3.118a5.25 5.25 0 0 0-2.83-4.483L12 3.434z"/></svg>`;
+
+            function setTheme(theme) {
+                rootElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+
+                if (theme === 'dark') {
+                    // Batman theme
+                    themeSwitcher.innerHTML = `☀️ Silver Surfer Mode`;
+                    agentFab.innerHTML = batSignalSVG;
+                    agentFab.classList.remove('btn-primary');
+                    agentFab.classList.add('btn-danger');
+                } else {
+                    // Silver Surfer theme
+                    themeSwitcher.innerHTML = `🌙 Batman Mode`;
+                    agentFab.innerHTML = '✨';
+                    agentFab.classList.remove('btn-danger');
+                    agentFab.classList.add('btn-primary');
+                }
+            }
+
+            themeSwitcher.addEventListener('click', () => {
+                const newTheme = rootElement.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light';
+                setTheme(newTheme);
+            });
+
+            // --- Active App Button Logic ---
+            const appLaunchers = document.querySelectorAll('.app-launcher');
+
+            // --- Initial Setup on Load ---
+            
+            // Set initial theme from localStorage
+            setTheme(localStorage.getItem('theme') || 'light');
+
+
+
+            // --- App Loading Logic ---
+            document.getElementById('load-email-app').addEventListener('click', () => loadApp('/apps/email'));
+            document.getElementById('load-odoo-app').addEventListener('click', () => loadApp('/apps/odoo'));
+
+            async function loadApp(url) {
+                // Clear any running Odoo job polls when switching apps
+                if (window.odooPollInterval) clearInterval(window.odooPollInterval);
+
+                // Update active state on sidebar buttons
+                const targetId = url.includes('email') ? 'load-email-app' : 'load-odoo-app';
+                appLaunchers.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.id === targetId) btn.classList.add('active');
+                });
+
+                try {
+                    appContentArea.innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Failed to load app.');
+                    const appHtml = await response.text();
+                    appContentArea.innerHTML = appHtml;
+                    onAppContentChange(); // Initialize components in the newly loaded app
+                } catch (error) {
+                    appContentArea.innerHTML = `<div class="alert alert-danger m-4"><strong>Error:</strong> ${error.message}</div>`;
+                    console.error('App loading error:', error);
+                }
+            }
+
+            // --- Event Delegation for Dynamically Loaded Content ---
+            appContentArea.addEventListener('submit', async (event) => {
+                if (event.target.id === 'chat-form') {
+                    handleChatSubmit(event);
+                }
+            });
+
+            appContentArea.addEventListener('click', async (event) => {
+                if (event.target.id === 'plan-btn') {
+                    handleOdooPlan(event.target);
+                } else if (event.target.id === 'execute-btn') {
+                    handleOdooExecute(event.target);
+                }
+            });
+
+            function handleOdooPlan(planBtn) {
+                const businessNeedInput = document.getElementById('business-need');
+                const businessNeed = businessNeedInput.value.trim();
+                if (!businessNeed) {
+                    alert('Please describe your business need.');
+                    return;
+                }
+
+                const planBtnSpinner = planBtn.querySelector('.spinner-border');
+                const planDisplay = document.getElementById('plan-display');
+                const planError = document.getElementById('plan-error');
+
+                planBtn.disabled = true;
+                planBtnSpinner.style.display = 'inline-block';
+                planError.style.display = 'none';
+
+                fetch('/odoo/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ business_need: businessNeed })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    planDisplay.style.display = 'block';
+                    if (data.error || (data.modules && data.modules.length === 0)) {
+                        document.getElementById('plan-summary').textContent = data.summary || data.error || 'Could not determine modules. Please try rephrasing your request.';
+                        document.getElementById('module-container').style.display = 'none';
+                        document.getElementById('execute-btn').style.display = 'none';
+                    } else {
+                        odooPlannedModules = data.modules;
+                        document.getElementById('plan-summary').textContent = data.summary;
+                        const moduleList = document.getElementById('module-list');
+                        moduleList.innerHTML = '';
+                        data.modules.forEach(module => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.textContent = module;
+                            moduleList.appendChild(li);
+                        });
+                        document.getElementById('module-container').style.display = 'block';
+                        document.getElementById('execute-btn').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    planDisplay.style.display = 'block';
+                    planError.textContent = `A network error occurred: ${error.message}`;
+                    planError.style.display = 'block';
+                })
+                .finally(() => {
+                    planBtn.disabled = false;
+                    planBtnSpinner.style.display = 'none';
+                });
+            }
+
+            function handleOdooExecute(executeBtn) {
+                executeBtn.disabled = true;
+                document.getElementById('creation-status').style.display = 'block';
+                const creationLog = document.getElementById('creation-log');
+                creationLog.textContent = 'Sending request to create environment...';
+
+                fetch('/odoo/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ modules: odooPlannedModules })
+                })
+                .then(response => response.json())
+                .then(data => data.job_id ? pollJobStatus(data.job_id) : (creationLog.textContent = `Error: ${data.error}`))
+                .catch(error => creationLog.textContent = `Error: ${error.message}`);
+            }
+
+            async function pollJobStatus(jobId) {
+                // Use a global-like variable on window to be able to clear it when switching apps
+                window.odooPollInterval = setInterval(() => {
+                    fetch(`/odoo/job_status/${jobId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const creationLog = document.getElementById('creation-log');
+                            if (!creationLog) { // If user navigated away
+                                clearInterval(window.odooPollInterval);
+                                return;
+                            }
+                            creationLog.textContent = data.log ? data.log.join('\n') : 'Waiting for log...';
+                            creationLog.scrollTop = creationLog.scrollHeight;
+
+                            if (data.status === 'completed' || data.status === 'failed') {
+                                clearInterval(window.odooPollInterval);
+                                if (data.status === 'completed' && data.url) {
+                                    document.getElementById('environment-link').href = data.url;
+                                    document.getElementById('environment-link-container').style.display = 'block';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Polling error:', error);
+                            clearInterval(window.odooPollInterval);
+                        });
+                }, 2000);
+            }
+
+            async function handleChatSubmit(event) {
+                event.preventDefault();
+                const messageInput = document.getElementById('message-input');
+                const userInput = messageInput.value.trim();
+                if (!userInput) return;
+
+                window.addMessage(userInput, 'user');
+                messageInput.value = '';
+                const thinkingMessage = window.addMessage('...', 'ai', true);
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: userInput }),
+                    });
+
+                    const data = await response.json();
+                    thinkingMessage.remove();
+
+                    if (response.ok) {
+                        window.addMessage(data.response, 'ai');
+                    } else {
+                        window.addMessage(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    thinkingMessage.remove();
+                    window.addMessage('An unexpected error occurred. Please check the server logs.', 'error');
+                    console.error('Fetch error:', error);
+                }
+            }
+
+            // This function is attached to the window object to be accessible
+            // after new content (like the email app) is loaded dynamically.
+            window.addMessage = function(content, type, isTemp = false) {
+                const chatWindow = document.getElementById('chat-window');
+                if (!chatWindow) return; // Don't do anything if the chat window isn't loaded
+
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', `${type}-message`);
+                const p = document.createElement('p');
+                p.innerHTML = content;
+                messageDiv.appendChild(p);
+
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                if (isTemp) {
+                    messageDiv.classList.add('thinking');
+                }
+                return messageDiv;
+            }
+
+            // --- Agent FAB and Edit Modal Logic ---
+            const agentEditModal = new bootstrap.Modal(document.getElementById('agent-edit-modal'));
+            const agentEditSendBtn = document.getElementById('agent-edit-send');
+            const agentEditInput = document.getElementById('agent-edit-input');
+            const agentEditChatWindow = document.getElementById('agent-edit-chat-window');
+
+            agentEditSendBtn.addEventListener('click', handleAgentEdit);
+            agentEditInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleAgentEdit();
+            });
+
+            async function handleAgentEdit() {
+                const userRequest = agentEditInput.value.trim();
+                if (!userRequest) return;
+
+                addMessageToEditChat(userRequest, 'user');
+                agentEditInput.value = '';
+                const thinkingIndicator = addMessageToEditChat('...', 'ai', true);
+                const currentAppHtml = appContentArea.innerHTML;
+
+                try {
+                    const response = await fetch('/edit_app', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_request: userRequest,
+                            app_html: currentAppHtml
+                        })
+                    });
+
+                    thinkingIndicator.remove();
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        addMessageToEditChat(data.suggested_html, 'ai-code');
+                    } else {
+                        addMessageToEditChat(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    thinkingIndicator.remove();
+                    addMessageToEditChat(`An unexpected network error occurred: ${error.message}`, 'error');
+                }
+            }
+
+            function addMessageToEditChat(content, type, isTemp = false) {
+                const messageContainer = document.createElement('div');
+                messageContainer.className = `p-2 mb-2 rounded`;
+
+                if (type === 'user') {
+                    messageContainer.classList.add('bg-light', 'text-dark', 'text-end');
+                    messageContainer.textContent = content;
+                } else if (type === 'ai') {
+                    messageContainer.classList.add('bg-secondary', 'text-white');
+                    messageContainer.textContent = content;
+                } else if (type === 'error') {
+                    messageContainer.classList.add('alert', 'alert-danger');
+                    messageContainer.textContent = content;
+                } else if (type === 'ai-code') {
+                    messageContainer.classList.add('bg-light', 'border', 'p-3');
+                    messageContainer.innerHTML = `
+                        <p class="fw-bold">Agent's Suggestion:</p>
+                        <pre class="bg-dark text-white p-2 rounded" style="max-height: 200px;">${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
+                        <button class="btn btn-success btn-sm mt-2">Apply Changes</button>
+                    `;
+                    messageContainer.querySelector('button').onclick = () => {
+                        appContentArea.innerHTML = content;
+                        onAppContentChange(); // Re-initialize components after applying agent changes
+                        agentEditModal.hide();
+                    };
+                }
+                if (isTemp) messageContainer.classList.add('thinking');
+                agentEditChatWindow.appendChild(messageContainer);
+                agentEditChatWindow.scrollTop = agentEditChatWindow.scrollHeight;
+                return messageContainer;
+            }
+
+            // --- Draggable FAB Logic ---
+            function makeDraggable(element, onClick) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                let isDragging = false;
+
+                // Load position from localStorage
+                const savedTop = localStorage.getItem('fab-top');
+                const savedLeft = localStorage.getItem('fab-left');
+                if (savedTop && savedLeft) {
+                    element.style.top = savedTop;
+                    element.style.left = savedLeft;
+                    element.style.right = 'auto';
+                    element.style.bottom = 'auto';
+                } else {
+                    // Default position if none is saved
+                    element.style.right = '25px';
+                    element.style.bottom = '25px';
+                }
+
+                element.addEventListener('mousedown', dragMouseDown);
+
+                function dragMouseDown(e) {
+                    // Only respond to left mouse button and direct clicks
+                    if (e.button !== 0 || e.target !== element) return;
+
+                    e.preventDefault();
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    isDragging = false; // Reset flag
+
+                    document.addEventListener('mousemove', elementDrag);
+                    document.addEventListener('mouseup', closeDragElement);
+                }
+
+                function elementDrag(e) {
+                    if (!isDragging) {
+                        // On first move, set the dragging flag and add the class
+                        isDragging = true;
+                        element.classList.add('dragging');
+                    }
+                    
+                    e.preventDefault();
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+
+                    let newTop = Math.max(0, Math.min(element.offsetTop - pos2, window.innerHeight - element.offsetHeight));
+                    let newLeft = Math.max(0, Math.min(element.offsetLeft - pos1, window.innerWidth - element.offsetWidth));
+
+                    element.style.top = newTop + "px";
+                    element.style.left = newLeft + "px";
+                    element.style.right = 'auto'; // Ensure top/left positioning is used
+                    element.style.bottom = 'auto'; // Ensure top/left positioning is used
+                }
+
+                function closeDragElement() {
+                    document.removeEventListener('mousemove', elementDrag);
+                    document.removeEventListener('mouseup', closeDragElement);
+
+                    if (isDragging) {
+                        element.classList.remove('dragging');
+                        localStorage.setItem('fab-top', element.style.top);
+                        localStorage.setItem('fab-left', element.style.left);
+                    } else if (onClick) {
+                        // If we didn't drag, it's a click
+                        onClick();
+                    }
+                }
+            }
+            makeDraggable(agentFab, () => agentEditModal.show());
+        });
+    </script>
+</body>
+</html>

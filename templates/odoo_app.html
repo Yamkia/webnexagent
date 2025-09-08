@@ -1,0 +1,73 @@
+<!-- This is a partial template. Styles and scripts are in the main index.html -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Web-Nexus Agent</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/apps/email">Email Assistant</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/apps/odoo">Odoo Environments</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h1 class="mb-3">Odoo Environment Planner</h1>
+                <p class="lead mb-4">Describe your business needs, and the agent will propose a set of Odoo modules for your new environment.</p>
+
+                <!-- Step 1: Input -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="business-need" class="form-label fw-bold">Business Need:</label>
+                            <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a website for my clothing brand with accounting and invoicing.'"></textarea>
+                        </div>
+                        <button id="plan-btn" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                            Create Deployment Plan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Plan Display -->
+                <div id="plan-display" class="card shadow-sm mb-4" style="display: none;">
+                    <div class="card-header fw-bold">
+                        Deployment Plan
+                    </div>
+                    <div class="card-body">
+                        <p id="plan-summary"></p>
+                        <div id="module-container" style="display: none;">
+                            <h5 class="mt-3">Modules to be installed:</h5>
+                            <ul id="module-list" class="list-group"></ul>
+                        </div>
+                        <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
+                        <button id="execute-btn" class="btn btn-success mt-3" style="display: none;">Create Environment</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Creation Status -->
+                <div id="creation-status" class="card shadow-sm" style="display: none;">
+                    <div class="card-header fw-bold">
+                        Environment Creation Status
+                    </div>
+                    <div class="card-body">
+                        <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;"></pre>
+                        <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
+                            <a href="#" id="environment-link" class="btn btn-lg btn-primary" target="_blank">🚀 Go to Your New Environment</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
