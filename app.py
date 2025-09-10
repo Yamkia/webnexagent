@@ -27,6 +27,7 @@ JOBS = {} # In-memory job store. For production, use Redis or a database.
 try:
     from main import process_agent_request
     from langchain_core.messages import HumanMessage, AIMessage
+    import config
     AGENT_LOADED = True
 except (ValueError, ImportError) as e:
     # This typically happens if .env is not configured or dependencies are missing.
@@ -84,24 +85,63 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 # In a production app, this should be a long, random, and secret string.
 app.secret_key = token_hex(16)
 
+def get_app_visibility():
+    """
+    Gets app visibility from session, initializing from config if not present.
+    """
+    if 'app_visibility' not in session:
+        # Initialize from config file on first load for this session
+        session['app_visibility'] = {
+            'email': config.ENABLE_EMAIL_APP if AGENT_LOADED else False,
+            'odoo': config.ENABLE_ODOO_APP if AGENT_LOADED else False,
+            'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
+        }
+    # Ensure all keys are present if new apps are added to config later
+    if 'email' not in session['app_visibility']:
+        session['app_visibility']['email'] = config.ENABLE_EMAIL_APP if AGENT_LOADED else False
+    if 'odoo' not in session['app_visibility']:
+        session['app_visibility']['odoo'] = config.ENABLE_ODOO_APP if AGENT_LOADED else False
+    if 'social_media' not in session['app_visibility']:
+        session['app_visibility']['social_media'] = config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False
+    
+    session.modified = True
+    return session['app_visibility']
+
 @app.route('/')
 def index():
     """Serves the main dashboard page."""
-    return render_template('index.html')
+    visibility = get_app_visibility()
+    # The template name 'index.html' is kept, but now it receives the visibility dict.
+    return render_template('index.html', visibility=visibility)
 
 @app.route('/apps/email')
 def email_app():
     """Serves the HTML for the Email Assistant app."""
+    visibility = get_app_visibility()
+    if not visibility.get('email'):
+        return render_template('app_disabled.html', app_name="Email Assistant", visibility=visibility), 403
+
     # Initialize chat history in the session if it doesn't exist.
     if 'chat_history' not in session:
         session['chat_history'] = [] # Stored as a serializable list
     welcome_message = "Welcome! I'm your business assistant. How can I help you manage your emails today?"
-    return render_template('email_app.html', welcome_message=welcome_message)
+    return render_template('email_app.html', welcome_message=welcome_message, visibility=visibility)
 
 @app.route('/apps/odoo')
 def odoo_app():
     """Serves the HTML for the Odoo Environments app."""
-    return render_template('odoo_app.html')
+    visibility = get_app_visibility()
+    if not visibility.get('odoo'):
+        return render_template('app_disabled.html', app_name="Odoo Environments", visibility=visibility), 403
+    return render_template('odoo_app.html', visibility=visibility)
+
+@app.route('/apps/social_media')
+def social_media_app():
+    """Serves the HTML for the Social Media app."""
+    visibility = get_app_visibility()
+    if not visibility.get('social_media'):
+        return render_template('app_disabled.html', app_name="Social Media Suite", visibility=visibility), 403
+    return render_template('social_media_app.html', visibility=visibility)
 
 def _create_real_environment(job_id, modules):
     """A background task that creates a real Odoo environment using Docker."""
@@ -128,6 +168,8 @@ def _create_real_environment(job_id, modules):
     db_container_name = f"{name_prefix}-db"
     odoo_container_name = f"{name_prefix}-app"
     network_name = f"{name_prefix}-net"
+    db_name = f"odoo-{job_id[:8]}-db" # Define a unique database name for Odoo
+    master_password = uuid.uuid4().hex[:12]
     db_password = uuid.uuid4().hex[:12]
 
     try:
@@ -153,11 +195,21 @@ def _create_real_environment(job_id, modules):
             detach=True,
         )
         log.append(f"Database container '{db_container.short_id}' started.")
+        log.append(f"ℹ️ Database user: 'odoo'")
+        log.append(f"ℹ️ Database password: {db_password}")
         log.append("Waiting for database to initialize...")
         time.sleep(10) # Give postgres time to initialize
 
         log.append("Provisioning Odoo container (odoo:17.0)...")
         module_string = ",".join(modules)
+
+        # Construct the command for Odoo.
+        # The --database flag specifies the database to create/use.
+        # The --init flag installs modules into that database.
+        # This automates the setup and bypasses the manual database creation screen.
+        odoo_command = f"--database={db_name}"
+        if module_string:
+            odoo_command += f" --init={module_string}"
 
         odoo_container = client.containers.run(
             "odoo:17.0",
@@ -168,11 +220,13 @@ def _create_real_environment(job_id, modules):
                 'HOST': db_container_name,
                 'USER': 'odoo',
                 'PASSWORD': db_password,
+                'MASTER_PASSWORD': master_password,
             },
-            command=f"--init={module_string}" if module_string else "",
+            command=odoo_command,
             detach=True,
         )
         log.append(f"Odoo container '{odoo_container.short_id}' started.")
+        log.append(f"ℹ️ Odoo master password set to: {master_password} (for database management).")
         log.append("Waiting for Odoo to initialize (this may take a few minutes)...")
         time.sleep(45) # Odoo startup can be slow, especially with new modules
 
@@ -181,6 +235,11 @@ def _create_real_environment(job_id, modules):
         url = f"http://localhost:{host_port}"
 
         log.append(f"✅ Environment created successfully! Access it at: {url}")
+        log.append("--- Odoo Application Login ---")
+        log.append("Email: admin")
+        log.append("Password: admin")
+        log.append("(It is recommended to change this password after your first login.)")
+        log.append("------------------------------")
         job['status'] = 'completed'
         job['url'] = url
 
@@ -198,39 +257,132 @@ def _create_real_environment(job_id, modules):
 @app.route('/odoo/plan', methods=['POST'])
 def odoo_plan():
     """Handles a request to create an Odoo environment plan."""
-    business_need = request.json.get('business_need')
+    data = request.json
+    business_need = data.get('business_need')
+    plan_type = data.get('plan_type', 'community') # Default to community
+
     if not business_need:
         return jsonify({'error': 'No business need provided'}), 400
 
-    prompt = f"A user wants to create an Odoo environment. Analyze the following business need and use the `plan_odoo_environment` tool to create a plan: '{business_need}'"
-    
+    if plan_type == 'community':
+        prompt = f"A user wants to create an Odoo environment. Analyze the following business need and use the `plan_odoo_environment` tool to create a plan: '{business_need}'"
+    elif plan_type == 'online':
+        prompt = f"""
+A user wants to start a free trial on Odoo Online. Based on their business need, determine the appropriate Odoo applications.
+Business Need: "{business_need}"
+
+Your task is to generate a URL to pre-select these apps on the Odoo trial page.
+The base URL is `https://www.odoo.com/trial`. Apps are added with `?app_names=app1,app2,app3`.
+The app names must be the technical names (e.g., `crm`, `sale_management`, `website`, `mrp`, `account_accountant`).
+Also provide a short, user-friendly summary of the apps you selected.
+
+Return a JSON object with two keys: "summary" and "url".
+Example:
+{{
+  "summary": "For your needs, I recommend starting with the CRM, Sales, and Website apps.",
+  "url": "https://www.odoo.com/trial?app_names=crm,sale_management,website"
+}}
+You MUST return ONLY the JSON object.
+"""
+    elif plan_type == 'sh':
+        prompt = f"""
+A user wants to deploy a project on Odoo.sh. Based on their business need, generate a step-by-step guide for them.
+Business Need: "{business_need}"
+
+The guide should be in Markdown format and include:
+1.  A list of recommended technical Odoo module names (e.g., `mrp`, `quality_control`).
+2.  Instructions on how to create a new GitHub repository.
+3.  Instructions on how to add the module names to a `requirements.txt` or explain how to add them as submodules.
+4.  A brief overview of how to deploy that repository on Odoo.sh.
+
+Return ONLY the Markdown text for the guide.
+"""
+    else:
+        return jsonify({'error': 'Invalid plan type'}), 400
+
     success, agent_output = process_agent_request(prompt, [])
 
     if success:
-        # The agent might wrap the dictionary output in conversational text,
-        # contrary to the prompt. We'll robustly extract the dictionary.
-        # The regex looks for a string that starts with { and ends with }, spanning multiple lines.
-        dict_match = re.search(r"\{.*\}", agent_output, re.DOTALL)
-        
-        if dict_match:
-            dict_str = dict_match.group(0)
+        if plan_type == 'online':
+            # The agent should return JSON. Let's try to parse it.
             try:
-                plan_data = ast.literal_eval(dict_str)
-                if isinstance(plan_data, dict) and 'modules' in plan_data:
-                    # If parsing is successful, return the structured data.
-                    # The frontend expects 'summary' and 'modules'. The tool provides both.
-                    return jsonify(plan_data)
+                dict_match = re.search(r"\{.*\}", agent_output, re.DOTALL)
+                if dict_match:
+                    plan_data = ast.literal_eval(dict_match.group(0))
+                    if isinstance(plan_data, dict) and 'url' in plan_data:
+                        return jsonify(plan_data)
+                return jsonify({'error': 'The agent could not generate a valid plan. Please try again.', 'summary': agent_output})
             except (ValueError, SyntaxError):
-                # If parsing the extracted string fails, we fall through and treat
-                # the whole agent output as a summary.
-                pass
+                return jsonify({'error': 'The agent response was not in the expected format.', 'summary': agent_output})
 
-        # If no dictionary is found or if parsing fails, return the full agent
-        # output as the summary and an empty list for modules. This gracefully
-        # handles cases where the agent provides a text-only answer.
-        return jsonify({'summary': agent_output, 'modules': []})
+        elif plan_type == 'sh':
+            # For .sh, the output is markdown text. Convert it to HTML for better rendering.
+            guide_html = markdown.markdown(agent_output, extensions=['fenced_code', 'tables'])
+            return jsonify({'guide_html': guide_html})
+
+        else: # Community
+            dict_match = re.search(r"\{.*\}", agent_output, re.DOTALL)
+            if dict_match:
+                dict_str = dict_match.group(0)
+                try:
+                    plan_data = ast.literal_eval(dict_str)
+                    if isinstance(plan_data, dict) and 'modules' in plan_data:
+                        return jsonify(plan_data)
+                except (ValueError, SyntaxError):
+                    pass
+
+            parsed_modules = []
+            list_items = re.findall(r"^\s*(?:\d+\.|\*|-)\s+(.*)", agent_output, re.MULTILINE)
+
+            for item in list_items:
+                if ':' in item:
+                    parts = item.split(':', 1)
+                    header = parts[0]
+                    if 'module' in header.lower() or 'select' in header.lower():
+                        modules_str = parts[1]
+                        potential_modules = [m.strip() for m in modules_str.split(',')]
+                        for mod in potential_modules:
+                            if mod:
+                                mod_cleaned = re.sub(r'[\*`]', '', mod).strip()
+                                technical_name = mod_cleaned.lower().replace(' ', '_')
+                                if technical_name and technical_name not in parsed_modules:
+                                    parsed_modules.append(technical_name)
+                        continue
+
+                module_name_candidate = re.split(r'\s*[:\-]\s+', item, 1)[0]
+                module_name_candidate = re.sub(r'[\*`]', '', module_name_candidate).strip()
+
+                if module_name_candidate and len(module_name_candidate.split()) <= 4:
+                    technical_name = module_name_candidate.lower().replace(' ', '_')
+                    if technical_name and technical_name not in parsed_modules:
+                        parsed_modules.append(technical_name)
+
+            return jsonify({'summary': agent_output, 'modules': list(set(parsed_modules))})
     else:
         return jsonify({'error': agent_output}), 500
+
+@app.route('/apps/manage')
+def manage_apps():
+    """Serves the page for managing app visibility."""
+    visibility = get_app_visibility()
+    return render_template('manage_apps.html', visibility=visibility)
+
+@app.route('/apps/toggle', methods=['POST'])
+def toggle_app_visibility():
+    """Toggles the visibility of a given app in the session."""
+    app_name = request.json.get('app_name')
+    if not app_name:
+        return jsonify({'error': 'No app name provided'}), 400
+    
+    visibility = get_app_visibility() # Ensures it's initialized
+    
+    if app_name in visibility:
+        visibility[app_name] = not visibility[app_name]
+        session['app_visibility'] = visibility
+        session.modified = True
+        return jsonify({'success': True, 'new_state': visibility})
+    else:
+        return jsonify({'error': f'Unknown app: {app_name}'}), 404
 
 @app.route('/odoo/execute', methods=['POST'])
 def odoo_execute():
@@ -259,6 +411,61 @@ def odoo_job_status(job_id):
     if not job:
         return jsonify({'status': 'not_found'}), 404
     return jsonify(job)
+
+@app.route('/social/generate_content', methods=['POST'])
+def social_generate_content():
+    """Handles a request to generate social media content (post or video script)."""
+    data = request.json
+    content_type = data.get('content_type')
+    topic = data.get('topic')
+
+    if not all([content_type, topic]):
+        return jsonify({'error': 'Missing content type or topic.'}), 400
+
+    if content_type == 'post':
+        platform = data.get('platform', 'social media')
+        style = data.get('style', 'informative')
+        prompt = f"Use the `create_social_media_post` tool to create a '{style}' post for '{platform}' about the topic: '{topic}'."
+    elif content_type == 'video_script':
+        audience = data.get('audience', 'a general audience')
+        prompt = f"Use the `generate_short_form_video_script` tool to create a video script about '{topic}' for the target audience: '{audience}'."
+    else:
+        return jsonify({'error': 'Invalid content type specified.'}), 400
+
+    success, agent_output = process_agent_request(prompt, [])
+    if success:
+        return jsonify({'content': agent_output})
+    else:
+        return jsonify({'error': agent_output}), 500
+
+@app.route('/social/find_leads', methods=['POST'])
+def social_find_leads():
+    """Handles a request to find business leads."""
+    data = request.json
+    business_type = data.get('business_type')
+    location = data.get('location')
+
+    if not all([business_type, location]):
+        return jsonify({'error': 'Missing business type or location.'}), 400
+
+    prompt = f"Use the `find_business_leads` tool to find leads for business type '{business_type}' in '{location}'."
+    success, agent_output = process_agent_request(prompt, [])
+
+    if success:
+        # The agent output might be a string representation of a list of dicts.
+        # We need to parse it robustly.
+        try:
+            # Use regex to find the list within any conversational text.
+            list_match = re.search(r"\[.*\]", agent_output, re.DOTALL)
+            if list_match:
+                leads_list = ast.literal_eval(list_match.group(0))
+                return jsonify({'leads': leads_list})
+            else: # If no list is found, return the raw text as a message.
+                return jsonify({'leads': [], 'message': agent_output})
+        except (ValueError, SyntaxError): # If parsing fails, return the raw text.
+            return jsonify({'leads': [], 'message': agent_output})
+    else:
+        return jsonify({'error': agent_output}), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():

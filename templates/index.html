@@ -374,7 +374,7 @@
             });
 
             appContentArea.addEventListener('click', async (event) => {
-                if (event.target.id === 'plan-btn') {
+                if (event.target.classList.contains('plan-btn')) {
                     handleOdooPlan(event.target);
                 } else if (event.target.id === 'execute-btn') {
                     handleOdooExecute(event.target);
@@ -382,7 +382,8 @@
             });
 
             function handleOdooPlan(planBtn) {
-                const businessNeedInput = document.getElementById('business-need');
+                const planType = planBtn.dataset.planType;
+                const businessNeedInput = document.getElementById(planType === 'community' ? 'business-need' : `business-need-${planType}`);
                 const businessNeed = businessNeedInput.value.trim();
                 if (!businessNeed) {
                     alert('Please describe your business need.');
@@ -390,44 +391,69 @@
                 }
 
                 const planBtnSpinner = planBtn.querySelector('.spinner-border');
-                const planDisplay = document.getElementById('plan-display');
-                const planError = document.getElementById('plan-error');
+                const planError = document.getElementById(planType === 'community' ? 'plan-error' : `plan-error-${planType}`);
 
                 planBtn.disabled = true;
                 planBtnSpinner.style.display = 'inline-block';
-                planError.style.display = 'none';
+                if (planError) planError.style.display = 'none';
 
                 fetch('/odoo/plan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ business_need: businessNeed })
+                    body: JSON.stringify({
+                        business_need: businessNeed,
+                        plan_type: planType
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    planDisplay.style.display = 'block';
-                    if (data.error || (data.modules && data.modules.length === 0)) {
-                        document.getElementById('plan-summary').textContent = data.summary || data.error || 'Could not determine modules. Please try rephrasing your request.';
-                        document.getElementById('module-container').style.display = 'none';
-                        document.getElementById('execute-btn').style.display = 'none';
-                    } else {
-                        odooPlannedModules = data.modules;
-                        document.getElementById('plan-summary').textContent = data.summary;
-                        const moduleList = document.getElementById('module-list');
-                        moduleList.innerHTML = '';
-                        data.modules.forEach(module => {
-                            const li = document.createElement('li');
-                            li.className = 'list-group-item';
-                            li.textContent = module;
-                            moduleList.appendChild(li);
-                        });
-                        document.getElementById('module-container').style.display = 'block';
-                        document.getElementById('execute-btn').style.display = 'block';
+                    if (planType === 'community') {
+                        const planDisplay = document.getElementById('plan-display');
+                        planDisplay.style.display = 'block';
+                        if (data.error || (data.modules && data.modules.length === 0)) {
+                            document.getElementById('plan-summary').textContent = data.summary || data.error || 'Could not determine modules. Please try rephrasing your request.';
+                            document.getElementById('module-container').style.display = 'none';
+                            document.getElementById('execute-btn').style.display = 'none';
+                        } else {
+                            odooPlannedModules = data.modules;
+                            document.getElementById('plan-summary').textContent = data.summary;
+                            const moduleList = document.getElementById('module-list');
+                            moduleList.innerHTML = '';
+                            data.modules.forEach(module => {
+                                const li = document.createElement('li');
+                                li.className = 'list-group-item';
+                                li.textContent = module;
+                                moduleList.appendChild(li);
+                            });
+                            document.getElementById('module-container').style.display = 'block';
+                            document.getElementById('execute-btn').style.display = 'block';
+                        }
+                    } else if (planType === 'online') {
+                        const planDisplay = document.getElementById('plan-display-online');
+                        planDisplay.style.display = 'block';
+                        if (data.error) {
+                            document.getElementById('plan-summary-online').textContent = data.summary || data.error;
+                            document.getElementById('execute-btn-online').style.display = 'none';
+                        } else {
+                            document.getElementById('plan-summary-online').innerHTML = data.summary;
+                            document.getElementById('execute-btn-online').href = data.url;
+                            document.getElementById('execute-btn-online').style.display = 'inline-block';
+                        }
+                    } else if (planType === 'sh') {
+                        const planDisplay = document.getElementById('plan-display-sh');
+                        planDisplay.style.display = 'block';
+                        if (data.error) {
+                            document.getElementById('plan-summary-sh').textContent = data.summary || data.error;
+                        } else {
+                            document.getElementById('plan-summary-sh').innerHTML = data.guide_html;
+                        }
                     }
                 })
                 .catch(error => {
-                    planDisplay.style.display = 'block';
-                    planError.textContent = `A network error occurred: ${error.message}`;
-                    planError.style.display = 'block';
+                    if(planError) {
+                        planError.textContent = `A network error occurred: ${error.message}`;
+                        planError.style.display = 'block';
+                    }
                 })
                 .finally(() => {
                     planBtn.disabled = false;

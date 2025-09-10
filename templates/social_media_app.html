@@ -1,0 +1,231 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Web-Nexus Agent</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Dashboard</a>
+                </li>
+                {% if visibility.email %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/apps/email">Email Assistant</a>
+                </li>
+                {% endif %}
+                {% if visibility.odoo %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/apps/odoo">Odoo Environments</a>
+                </li>
+                {% endif %}
+                {% if visibility.social_media %}
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="/apps/social_media">Social Media</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav><!-- Dashboard for Social Media App -->
+<div id="social-app-dashboard" class="container py-5 text-center">
+    <h1 class="display-5">Social & Leads</h1>
+    <p class="lead text-muted">Choose a tool to get started.</p>
+    <div class="row justify-content-center g-4 mt-4">
+        <div class="col-lg-4 col-md-6">
+            <div id="show-content-generator" class="card h-100 shadow-sm" style="cursor: pointer;">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">✍️</div>
+                    <h5 class="card-title">Social Media Content</h5>
+                    <p class="card-text small text-muted">Generate posts and video scripts using AI.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div id="show-lead-finder" class="card h-100 shadow-sm" style="cursor: pointer;">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                    <h5 class="card-title">Lead Generation</h5>
+                    <p class="card-text small text-muted">Find new business leads.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container for the tools, hidden by default -->
+<div id="social-app-tool-view" class="container-fluid" style="display: none;">
+    <button id="back-to-social-dashboard" class="btn btn-outline-secondary btn-sm mb-3">← Back to menu</button>
+    
+    <!-- Platform Selection View -->
+    <div id="platform-selection-wrapper" class="text-center" style="display: none;">
+        <h3 class="mb-4">Create Content For...</h3>
+        <div class="row justify-content-center g-4">
+            <div class="col-lg-3 col-md-4 mb-4">
+                <div class="card platform-card shadow-sm h-100" data-platform="LinkedIn" style="cursor: pointer;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💼</div>
+                        <h5 class="card-title">LinkedIn</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 mb-4">
+                <div class="card platform-card shadow-sm h-100" data-platform="Twitter" style="cursor: pointer;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🐦</div>
+                        <h5 class="card-title">Twitter / X</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 mb-4">
+                <div class="card platform-card shadow-sm h-100" data-platform="Facebook" style="cursor: pointer;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">👍</div>
+                        <h5 class="card-title">Facebook</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-4 mb-4">
+                <div class="card platform-card shadow-sm h-100" data-platform="Instagram" style="cursor: pointer;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+                        <h5 class="card-title">Instagram</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12"><hr class="my-3"></div>
+            <div class="col-lg-3 col-md-4">
+                <div id="show-account-management" class="card h-100 shadow-sm" style="cursor: pointer;">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔗</div>
+                        <h5 class="card-title">Manage Accounts</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <!-- Account Management View -->
+        <div id="account-management-wrapper" class="col-lg-10 mb-4" style="display: none;">
+            <button id="back-to-platform-selection" class="btn btn-outline-secondary btn-sm mb-3">← Back to Platforms</button>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🔗 Link Social Media Accounts</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Connect your accounts to enable direct posting in the future. (This is a UI demonstration).</p>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>💼 LinkedIn</span><button class="btn btn-outline-primary btn-sm connect-account-btn">Connect</button></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>🐦 Twitter / X</span><button class="btn btn-outline-primary btn-sm connect-account-btn">Connect</button></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>👍 Facebook</span><button class="btn btn-outline-primary btn-sm connect-account-btn">Connect</button></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center"><span>📸 Instagram</span><button class="btn btn-outline-primary btn-sm connect-account-btn">Connect</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Generation View -->
+        <div id="content-generator-wrapper" class="col-lg-10 mb-4" style="display: none;">
+            <button id="back-to-platform-selection" class="btn btn-outline-secondary btn-sm mb-3">← Back to Platforms</button>
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🤖 AI Content Generator for <span id="generator-platform-name" class="fw-bold">Platform</span></h5>
+                </div>
+                <div class="card-body">
+                    <form id="content-generation-form">
+                        <input type="hidden" id="post-platform" value="">
+                        <div class="mb-3">
+                            <label for="content-template" class="form-label">Content Template (Optional)</label>
+                            <select class="form-select" id="content-template">
+                                <option value="" data-topic="">Start from scratch</option>
+                                <option value="product_announcement" data-topic="Announcing our new product: [Product Name]">Product Announcement</option>
+                                <option value="weekly_tip" data-topic="This week's tip for [Your Industry] professionals:">Weekly Industry Tip</option>
+                                <option value="behind_the_scenes" data-topic="A quick look behind the scenes at [Your Company Name]!">Behind The Scenes</option>
+                                <option value="event_promotion" data-topic="Join us for our upcoming event: [Event Name] on [Date]!">Event Promotion</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content-topic" class="form-label">Topic</label>
+                            <input type="text" class="form-control" id="content-topic" placeholder="e.g., 'The future of AI'" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Content Type</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="content-type" id="type-post" value="post" checked>
+                                    <label class="form-check-label" for="type-post">Text Post</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="content-type" id="type-video" value="video_script">
+                                    <label class="form-check-label" for="type-video">Video Script</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fields for Text Post -->
+                        <div id="post-fields">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="post-style" class="form-label">Style</label>
+                                    <select class="form-select" id="post-style">
+                                        <option value="informative">Informative</option>
+                                        <option value="humorous">Humorous</option>
+                                        <option value="inspirational">Inspirational</option>
+                                        <option value="professional">Professional</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fields for Video Script -->
+                        <div id="video-fields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="video-audience" class="form-label">Target Audience</label>
+                                <input type="text" class="form-control" id="video-audience" placeholder="e.g., 'Small business owners'">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="generate-content-btn" class="btn btn-primary w-100">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                            Generate Content
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer" id="content-result-container" style="display: none;">
+                    <h6>Generated Content:</h6>
+                    <pre id="content-result" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Generation View (hidden by default) -->
+        <div id="lead-finder-wrapper" class="col-lg-10 mb-4" style="display: none;">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">🔍 Lead Finder</h5>
+                </div>
+                <div class="card-body">
+                    <form id="lead-finder-form">
+                        <div class="mb-3">
+                            <label for="lead-business-type" class="form-label">Business Type</label>
+                            <input type="text" class="form-control" id="lead-business-type" placeholder="e.g., 'Cafe', 'Bookstore'" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lead-location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="lead-location" placeholder="e.g., 'New York'" required>
+                        </div>
+                        <button type="submit" id="find-leads-btn" class="btn btn-primary w-100">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                            Find Leads
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer" id="leads-result-container" style="display: none;">
+                    <h6>Found Leads:</h6>
+                    <div id="leads-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

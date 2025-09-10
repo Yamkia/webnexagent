@@ -25,3 +25,5 @@ def plan_odoo_environment(business_need: str, required_modules: List[str]) -> Di
         "modules": required_modules,
         "summary": summary
     }
+
+tools = [plan_odoo_environment]

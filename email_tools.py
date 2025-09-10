@@ -228,3 +228,5 @@ def send_email(to: str, subject: str, body: str) -> str:
                 "If using Gmail, you must use an 'App Password'. For other services, ensure credentials are correct.")
     except Exception as e:
         return f"An unexpected error occurred while sending the email: {e}"
+
+tools = [check_new_emails, read_email_content, draft_reply, send_email]

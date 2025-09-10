@@ -20,6 +20,12 @@ ANTHROPIC_MODEL_NAME = os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-5-sonnet-2024
 # --- Agent Settings ---
 AGENT_VERBOSE = os.getenv("AGENT_VERBOSE", "False").lower() in ('true', '1', 't')
 
+# --- App Visibility Settings ---
+# Control which applications are enabled and visible in the UI.
+ENABLE_EMAIL_APP = os.getenv("ENABLE_EMAIL_APP", "True").lower() in ('true', '1', 't')
+ENABLE_ODOO_APP = os.getenv("ENABLE_ODOO_APP", "True").lower() in ('true', '1', 't')
+ENABLE_SOCIAL_MEDIA_APP = os.getenv("ENABLE_SOCIAL_MEDIA_APP", "True").lower() in ('true', '1', 't')
+
 # --- Input Settings ---
 ENABLE_VOICE_INPUT = os.getenv("ENABLE_VOICE_INPUT", "False").lower() in ('true', '1', 't')
 
@@ -62,15 +68,16 @@ if ENABLE_VOICE_INPUT and (not DEEPGRAM_API_KEY or "your-deepgram-api-key-here" 
     )
 
 # 3. Check for Email Credentials
-if not all([IMAP_SERVER, SMTP_SERVER, EMAIL_USER, EMAIL_PASSWORD]) or \
-   EMAIL_USER == "your-email@example.com" or \
-   EMAIL_PASSWORD == "your-email-password" or \
-   IMAP_SERVER == "imap.example.com" or \
-   SMTP_SERVER == "smtp.example.com":
-    raise ValueError(
-        "Email credentials (IMAP_SERVER, SMTP_SERVER, EMAIL_USER, EMAIL_PASSWORD) not found or are placeholders in the .env file. "
-        "Please add your actual email details to connect to your account."
-    )
+if ENABLE_EMAIL_APP:
+    if not all([IMAP_SERVER, SMTP_SERVER, EMAIL_USER, EMAIL_PASSWORD]) or \
+       EMAIL_USER == "your-email@example.com" or \
+       EMAIL_PASSWORD == "your-email-password" or \
+       IMAP_SERVER == "imap.example.com" or \
+       SMTP_SERVER == "smtp.example.com":
+        raise ValueError(
+            "ENABLE_EMAIL_APP is true, but email credentials (IMAP_SERVER, SMTP_SERVER, EMAIL_USER, EMAIL_PASSWORD) are missing or placeholders in the .env file. "
+            "Please add your email details or set ENABLE_EMAIL_APP to false."
+        )
 
 # 4. Validate SMTP_PORT
 try:

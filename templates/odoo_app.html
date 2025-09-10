@@ -1,73 +1,158 @@
-<!-- This is a partial template. Styles and scripts are in the main index.html -->
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">Web-Nexus Agent</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/apps/email">Email Assistant</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/apps/odoo">Odoo Environments</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="mb-3">Choose Your Odoo Edition</h1>
+            <p class="lead mb-4">Select the Odoo hosting option that best fits your needs. You can plan and create a local Community instance, or get guidance on Odoo's cloud solutions.</p>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <h1 class="mb-3">Odoo Environment Planner</h1>
-                <p class="lead mb-4">Describe your business needs, and the agent will propose a set of Odoo modules for your new environment.</p>
-
-                <!-- Step 1: Input -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="business-need" class="form-label fw-bold">Business Need:</label>
-                            <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a website for my clothing brand with accounting and invoicing.'"></textarea>
-                        </div>
-                        <button id="plan-btn" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                            Create Deployment Plan
+            <div class="accordion" id="odoo-options-accordion">
+                <!-- Option 1: Odoo Community (Self-Hosted) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingCommunity">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCommunity" aria-expanded="true" aria-controls="collapseCommunity">
+                            <strong>Odoo Community Edition (Self-Hosted)</strong>
                         </button>
-                    </div>
-                </div>
+                    </h2>
+                    <div id="collapseCommunity" class="accordion-collapse collapse show" aria-labelledby="headingCommunity" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Create a local Odoo environment on your machine using Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
+                            
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Environment</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a simple CRM to track leads and a website to sell products.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="community" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Plan Modules
+                                    </button>
+                                    <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
 
-                <!-- Step 2: Plan Display -->
-                <div id="plan-display" class="card shadow-sm mb-4" style="display: none;">
-                    <div class="card-header fw-bold">
-                        Deployment Plan
-                    </div>
-                    <div class="card-body">
-                        <p id="plan-summary"></p>
-                        <div id="module-container" style="display: none;">
-                            <h5 class="mt-3">Modules to be installed:</h5>
-                            <ul id="module-list" class="list-group"></ul>
+                            <!-- Step 2: Review and Execute -->
+                            <div id="plan-display" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Review and Execute Plan</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p id="plan-summary"></p>
+                                    <div id="module-container" style="display: none;">
+                                        <h6>Modules to be installed:</h6>
+                                        <ul id="module-list" class="list-group mb-3"></ul>
+                                    </div>
+                                    <button id="execute-btn" class="btn btn-success" style="display: none;">Create Environment</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Creation Status -->
+                            <div id="creation-status" class="card shadow-sm border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 3: Environment Creation Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
+                                    <div id="environment-link-container" class="mt-3" style="display: none;">
+                                        <a id="environment-link" href="#" class="btn btn-lg btn-success" target="_blank">Access Your Odoo Environment</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
-                        <button id="execute-btn" class="btn btn-success mt-3" style="display: none;">Create Environment</button>
                     </div>
                 </div>
 
-                <!-- Step 3: Creation Status -->
-                <div id="creation-status" class="card shadow-sm" style="display: none;">
-                    <div class="card-header fw-bold">
-                        Environment Creation Status
+                <!-- Option 2: Odoo Online (SaaS) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOnline">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOnline" aria-expanded="false" aria-controls="collapseOnline">
+                            <strong>Odoo Online (SaaS)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseOnline" class="accordion-collapse collapse" aria-labelledby="headingOnline" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Odoo Online is a SaaS platform managed by Odoo. Use the planner below to get a customized link that pre-selects the right apps for you on the Odoo trial page.</p>
+                            
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Odoo Online Instance</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need-online" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need-online" rows="3" placeholder="e.g., 'I want to manage customer relationships and send them marketing emails.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="online" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Generate Trial Link
+                                    </button>
+                                    <div id="plan-error-online" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Launch -->
+                            <div id="plan-display-online" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Launch on Odoo.com</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The agent recommends the following setup. Click the button to open the Odoo trial page with these apps pre-selected.</p>
+                                    <div id="plan-summary-online" class="alert alert-info"></div>
+                                    <a id="execute-btn-online" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success" style="display: none;">Create Free Trial on Odoo.com</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;"></pre>
-                        <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
-                            <a href="#" id="environment-link" class="btn btn-lg btn-primary" target="_blank">🚀 Go to Your New Environment</a>
+                </div>
+
+                <!-- Option 3: Odoo.sh (PaaS) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingSh">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSh" aria-expanded="false" aria-controls="collapseSh">
+                            <strong>Odoo.sh (PaaS)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseSh" class="accordion-collapse collapse" aria-labelledby="headingSh" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Odoo.sh is a PaaS for hosting custom projects. It integrates with GitHub for development and deployment. Use the planner to generate a custom deployment guide based on your needs.</p>
+    
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Odoo.sh Project</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need-sh" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need-sh" rows="3" placeholder="e.g., 'I need a full ERP with custom modules for manufacturing.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="sh" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Generate Deployment Guide
+                                    </button>
+                                    <div id="plan-error-sh" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Follow Guide -->
+                            <div id="plan-display-sh" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Follow Your Custom Guide</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The agent has generated the following guide to help you set up your project on Odoo.sh.</p>
+                                    <div id="plan-summary-sh" class="bg-light p-3 rounded border" style="white-space: pre-wrap;"></div>
+                                    <a href="https://www.odoo.sh" target="_blank" rel="noopener noreferrer" class="btn btn-info mt-3">Go to Odoo.sh to Get Started</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
