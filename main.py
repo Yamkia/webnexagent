@@ -16,16 +16,21 @@ except ValueError as e: # Catches configuration errors from config.py
     print("\nPlease check your .env file and ensure all required variables are set correctly.", file=sys.stderr)
     print("The application cannot start without valid configuration.", file=sys.stderr)
     sys.exit(1)
-except ImportError as e:
-    try:
-        from voice_input import run_transcription_loop
-        from voice_output import speak_text
-        from shared_events import interrupt_playback_event
-    except ImportError as e:
-        print("\n--- VOICE INPUT ERROR ---", file=sys.stderr)
-        print(f"Failed to import voice components: {e}", file=sys.stderr)
-        print("Please ensure 'pyaudio', 'deepgram-sdk', and 'keyboard' are installed ('pip install -r requirements.txt').", file=sys.stderr)
-        sys.exit(1)
+except ImportError as e: # Catches errors from agent or tool imports
+    print("\n--- CRITICAL IMPORT ERROR ---", file=sys.stderr)
+    print(f"Error: {e}", file=sys.stderr)
+    print("\nThis may be due to a missing dependency or a problem in the agent/tool files.", file=sys.stderr)
+    print("The application cannot start.", file=sys.stderr)
+    sys.exit(1)
+
+# --- Optional Voice Component Imports (for CLI mode) ---
+try:
+    from voice_input import run_transcription_loop
+    from voice_output import speak_text
+    from shared_events import interrupt_playback_event
+except ImportError:
+    # These are optional for the CLI, so we don't exit. The CLI will handle their absence.
+    pass
 
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import ResourceExhausted
