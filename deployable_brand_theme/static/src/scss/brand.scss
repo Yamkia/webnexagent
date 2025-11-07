@@ -1,0 +1,34 @@
+// GreenMotive brand SCSS - modify colors and spacing here
+$gm-accent: #34D399; // emerald
+$gm-accent-dark: #0f766e;
+$gm-bg: #f7f7f7;
+
+:root {
+  --gm-accent: #34D399;
+  --gm-text: #1a1a1a;
+}
+
+body {
+  background-color: $gm-bg;
+}
+
+.gm-header {
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(6px);
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.gm-brand { text-decoration: none; color: inherit; }
+.gm-logo { height: 40px; margin-right: 0.5rem; }
+.gm-title { font-size: 1.25rem; margin: 0; font-weight: 700; }
+
+/* Example button styles */
+.btn-gm {
+  background: linear-gradient(135deg, $gm-accent 0%, $gm-accent-dark 100%);
+  color: white;
+  border-radius: 999px;
+}
+
+/* Small helpers */
+.container { max-width: 1200px; }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Example: set default website name and company details -->
+  <record id="gm_company" model="res.company">
+    <field name="name">GreenMotive</field>
+    <!-- logo can be set via binary in real use; keep blank here -->
+  </record>
+
+  <!-- Optionally create a homepage snippet or demo page -->
+</odoo>

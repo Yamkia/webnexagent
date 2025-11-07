@@ -1,0 +1,89 @@
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex align-items-center mb-4">
+                <span class="fs-1 me-3">🎨</span>
+                <div>
+                    <h1 class="h3 mb-0">Brand Manager & Deploy</h1>
+                    <p class="text-muted mb-0">Create and deploy white-labeled Odoo environments for your clients.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Project Setup -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Step 1: Define Project</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="bm-customer-name" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="bm-customer-name" placeholder="e.g., Acme Inc.">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bm-business-need" class="form-label">Describe Business Requirements</label>
+                        <textarea class="form-control" id="bm-business-need" rows="4" placeholder="e.g., They need a website, CRM to track leads, and a way to send invoices."></textarea>
+                    </div>
+                    <button id="bm-plan-btn" class="btn btn-primary w-100">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                        Plan Required Modules
+                    </button>
+                    <div id="bm-plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4" id="bm-plan-display" style="display: none;">
+                <div class="card-header">
+                    <h5 class="mb-0">Planned Modules</h5>
+                </div>
+                <div class="card-body">
+                    <p id="bm-plan-summary"></p>
+                    <ul id="bm-module-list" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Branding and Deployment -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Step 2: Select Brand & Deploy</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Your custom branding modules will be automatically included.</p>
+                    <div class="mb-3">
+                        <label for="bm-odoo-version-input" class="form-label">Odoo Version</label>
+                        <select class="form-select" id="bm-odoo-version-input">
+                            <option value="19.0" selected>19.0</option>
+                            <option value="18.0">18.0</option>
+                            <option value="17.0">17.0</option>
+                        </select>
+                    </div>
+
+                    <!-- This is where you would add more branding options in the future -->
+                    <div class="alert alert-info">
+                        <strong>Branding Package:</strong> Your Software Brand v1.0
+                        <br>
+                        <small>(Modules: <code>my_software_theme</code>, <code>my_software_debrand</code>)</small>
+                    </div>
+
+                    <button id="bm-execute-btn" class="btn btn-success w-100" style="display: none;">
+                        🚀 Create Branded Environment
+                    </button>
+                </div>
+            </div>
+
+            <div id="bm-creation-status" class="mt-4" style="display: none;">
+                <h5>Deployment Status</h5>
+                <pre id="bm-creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 300px; overflow-y: auto;"></pre>
+                <div id="bm-environment-link-container" class="alert alert-success" style="display: none;">
+                    <strong>Success!</strong>
+                    <a href="#" id="bm-environment-link" target="_blank" class="alert-link">Click here to access the new environment.</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

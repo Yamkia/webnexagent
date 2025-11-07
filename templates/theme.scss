@@ -1,0 +1,28 @@
+/**
+ * My Software - Core Theme SCSS
+ * 
+ * This file is where you will implement your unique UI/UX.
+ */
+
+// Principle: Expressive Typography
+// 1. Import a modern, clean font from Google Fonts.
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+// 2. Override Odoo's default font to apply your new font.
+body, .o_web_client {
+    font-family: 'Inter', sans-serif !important;
+}
+
+// Principle: Clean Minimalism with a Pop
+// 1. Override Odoo's default purple primary color with a modern blue.
+// This single change will affect buttons, links, and active states across the UI.
+$o-brand-primary: #4A90E2; // A modern, softer blue
+
+// This is just the beginning! From here you can override any Odoo style.
+// For example, to start implementing Glassmorphism on the header:
+/*
+.o_main_navbar {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px);
+}
+*/

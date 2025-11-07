@@ -1,0 +1,236 @@
+/* --- Theme Variables --- */
+body {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    color: #374151;
+    background-color: #f9fafb;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    font-family: 'Inter', sans-serif; /* A modern sans-serif font */
+    color: #374151; /* text-gray-700 */
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+
+/* --- Top Navigation --- */
+.hover-text-green:hover {
+    color: #10b981; /* hover:text-green-600 */
+    transition: color 0.2s;
+}
+
+.nav-main-btn {
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d; /* Gray border */
+}
+
+.nav-main-btn:hover {
+    background-color: #1f2937; /* hover:bg-gray-800 */
+    color: #ffffff; /* hover:text-white */
+}
+
+/* --- Main Content --- */
+.tracking-tighter {
+    letter-spacing: -0.05em;
+}
+
+.text-green-500 { color: #22c55e; }
+.text-blue-500 { color: #3b82f6; }
+.text-indigo-500 { color: #6366f1; }
+
+/* --- Image Styles --- */
+.rounded {
+    border-radius: 1rem; /* Consistent rounded corners */
+}
+/* --- Glassmorphism Cards --- */
+.glass-card {
+    width: 18rem; /* w-72 */
+    height: 24rem; /* h-96 */
+    border-radius: 1.5rem; /* rounded-3xl */
+    padding: 2rem; /* p-8 */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.5); /* bg-white/50 */
+    backdrop-filter: blur(10px); /* backdrop-blur-md */
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* border-white/30 */
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-lg */
+    transition: all 0.2s ease-in-out;
+}
+
+.glass-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767.98px) {
+    .glass-card {
+        width: 100%;
+        max-width: 20rem; /* Optional: constrain width on mobile */
+    }
+}
+
+/* --- Agent Floating Action Button --- */
+#agent-fab {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    font-size: 2.5em; /* For the light mode emoji */
+    height: 60px;    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050; /* Above most content, below modals */
+    width: 56px; height: 56px;
+    cursor: move; /* Indicate it's draggable */
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+}
+
+#agent-fab svg {
+    width: 65%;
+    height: 65%;
+}
+
+#agent-fab.dragging {
+    cursor: grabbing;
+    z-index: 1051;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+    transition: none; /* Disable transition while dragging for smooth movement */
+}
+
+/* --- Chat App Specific Styles --- */
+#chat-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: -20px; /* Counteract parent padding to fill space */
+}
+
+#chat-container h1 {
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 1.1em;
+    text-align: center;
+    border-bottom: 1px solid var(--theme-border);
+    background-color: #F5F5F5;
+}
+
+#chat-window {
+    flex-grow: 1;
+    padding: 20px 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: #F5F5F5;
+}
+
+.message {
+    display: flex;
+    max-width: 75%;
+}
+
+.message p {
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin: 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: var(--theme-shadow);
+}
+
+.ai-message { align-self: flex-start; }
+.ai-message p {
+    background-color: #DCDCDC;
+    color: #1A1A1A;
+    border-bottom-left-radius: 4px;
+}
+
+.user-message { align-self: flex-end; }
+.user-message p {
+    background-color: #333333;
+    color: #FFFFFF;
+    border-bottom-right-radius: 4px;
+}
+.thinking p { color: #6c757d; font-style: italic; }
+
+#chat-form {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-top: 1px solid var(--theme-border);
+    background-color: #F5F5F5;
+}
+
+#message-input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+#chat-form button {
+    background-color: #333333;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    font-size: 1.5em;
+    line-height: 38px; /* Center the arrow */
+    transition: all 0.2s ease;
+}
+
+#chat-form button:hover { opacity: 0.8; }
+
+/* --- Odoo Theme Selector Styles --- */
+.theme-card {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 3px solid transparent;
+}
+.theme-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 12px -2px rgba(0,0,0,0.15), 0 4px 6px -2px rgba(0,0,0,0.1);
+}
+.theme-card.selected {
+    border-color: #333333; /* Use a theme color for the border */
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.3);
+}
+
+/* --- Agent Modal Code Block --- */
+.agent-code-block {
+    background-color: #282c34; /* Dark background for code */
+    color: #abb2bf; /* Light text color */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.agent-code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.agent-code-block-header .fw-bold {
+    color: #e5c07b; /* A gold-like color for the title */
+}
+
+/* --- GreenMotive Styles --- */
+.hero-container {
+    font-family: 'Inter', sans-serif;
+    background-color: #f7f7f7;
+    color: #374151;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}

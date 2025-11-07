@@ -45,6 +45,47 @@
                                         <h6>Modules to be installed:</h6>
                                         <ul id="module-list" class="list-group mb-3"></ul>
                                     </div>
+                                    <!-- This new section will appear if the 'website' module is planned -->
+                                    <div id="website-design-selector" class="mb-3" style="display: none;">
+                                        <h6>Optional: Select a Website Design</h6>
+                                        <p class="text-muted small">Since you've included the 'website' module, you can choose a pre-built theme to install.</p>
+                                        <!-- Hidden input to store the selected theme's value -->
+                                        <input type="hidden" id="website-design-input" value="">
+
+                                        <!-- Visual Theme Selector -->
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-md-4">
+                                                <div class="card theme-card h-100" data-theme-value="">
+                                                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                                                        <h5 class="card-title">Default Odoo Design</h5>
+                                                        <p class="card-text small text-muted">A clean, standard Odoo website.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card theme-card h-100" data-theme-value="theme_anemone">
+                    <img src="https://apps.odoo.com/apps/themes/17.0/theme_anemone/cover.png" class="card-img-top" alt="Anemone Theme Preview">
+                                                    <div class="card-body text-center"><h6 class="card-title mb-0">Anemone</h6></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card theme-card h-100" data-theme-value="theme_autoflip">
+                    <img src="https://apps.odoo.com/apps/themes/17.0/theme_autoflip/cover.png" class="card-img-top" alt="Autoflip Theme Preview">
+                                                    <div class="card-body text-center"><h6 class="card-title mb-0">Autoflip</h6></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- This new section allows selecting the Odoo version -->
+                                    <div class="mb-3">
+                                        <h6>Select Odoo Version</h6>
+                                        <p class="text-muted small">Choose the version for your self-hosted Odoo environment.</p>
+                                        <select class="form-select" id="odoo-version-input">
+                                            <option value="19.0">Odoo 19.0 (Latest)</option>
+                                            <option value="18.0">Odoo 18.0</option>
+                                            <option value="17.0">Odoo 17.0</option>
+                                        </select>
+                                    </div>
                                     <button id="execute-btn" class="btn btn-success" style="display: none;">Create Environment</button>
                                 </div>
                             </div>
@@ -56,8 +97,10 @@
                                 </div>
                                 <div class="card-body">
                                     <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
-                                    <div id="environment-link-container" class="mt-3" style="display: none;">
-                                        <a id="environment-link" href="#" class="btn btn-lg btn-success" target="_blank">Access Your Odoo Environment</a>
+                                    <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
+                                        <p class="fw-bold">Your new environment is ready!</p>
+                                        <!-- The link to the standard Odoo backend -->
+                                        <a id="environment-link" href="#" class="btn btn-lg btn-primary" target="_blank">🚀 Access Odoo Backend</a>
                                     </div>
                                 </div>
                             </div>

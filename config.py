@@ -25,6 +25,8 @@ AGENT_VERBOSE = os.getenv("AGENT_VERBOSE", "False").lower() in ('true', '1', 't'
 ENABLE_EMAIL_APP = os.getenv("ENABLE_EMAIL_APP", "True").lower() in ('true', '1', 't')
 ENABLE_ODOO_APP = os.getenv("ENABLE_ODOO_APP", "True").lower() in ('true', '1', 't')
 ENABLE_SOCIAL_MEDIA_APP = os.getenv("ENABLE_SOCIAL_MEDIA_APP", "True").lower() in ('true', '1', 't')
+ENABLE_TRAFFIC_APP = os.getenv("ENABLE_TRAFFIC_APP", "True").lower() in ('true', '1', 't')
+ENABLE_BRAND_MANAGER_APP = os.getenv("ENABLE_BRAND_MANAGER_APP", "True").lower() in ('true', '1', 't')
 
 # --- Input Settings ---
 ENABLE_VOICE_INPUT = os.getenv("ENABLE_VOICE_INPUT", "False").lower() in ('true', '1', 't')
