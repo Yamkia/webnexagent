@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="assets_frontend" inherit_id="website.assets_frontend" name="GreenMotive brand assets">
+    <xpath expr="." position="inside">
+      <!-- SCSS and JS for brand customizations -->
+      <link rel="stylesheet/scss" href="/deployable_brand_theme/static/src/scss/brand.scss"/>
+      <script type="text/javascript" src="/deployable_brand_theme/static/src/js/brand.js"></script>
+    </xpath>
+  </template>
+</odoo>

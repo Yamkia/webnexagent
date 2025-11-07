@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="layout" inherit_id="website.layout" name="GreenMotive Layout">
+    <xpath expr="//header" position="replace">
+      <header class="gm-header">
+        <div class="container d-flex align-items-center justify-content-between">
+          <a t-attf-href="/" class="gm-brand d-flex align-items-center">
+            <img src="/deployable_brand_theme/static/src/img/logo.svg" alt="GreenMotive" class="gm-logo"/>
+            <h1 class="gm-title">GreenMotive</h1>
+          </a>
+          <nav class="gm-nav">
+            <ul class="list-unstyled d-flex gap-3 mb-0">
+              <li><a href="/">Home</a></li>
+              <li><a href="/shop">Products</a></li>
+              <li><a href="/contactus">Contact</a></li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+    </xpath>
+  </template>
+</odoo>

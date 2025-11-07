@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session
+from jinja2 import TemplateNotFound
 import sys
 import os
 from secrets import token_hex
@@ -7,6 +8,8 @@ import time
 import uuid
 import ast
 import re
+import random
+import ipaddress
 
 import markdown
 # --- Setup Python Path ---
@@ -85,68 +88,77 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 # In a production app, this should be a long, random, and secret string.
 app.secret_key = token_hex(16)
 
-def get_app_visibility():
-    """
-    Gets app visibility from session, initializing from config if not present.
-    """
-    if 'app_visibility' not in session:
-        # Initialize from config file on first load for this session
-        session['app_visibility'] = {
-            'email': config.ENABLE_EMAIL_APP if AGENT_LOADED else False,
-            'odoo': config.ENABLE_ODOO_APP if AGENT_LOADED else False,
-            'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
-        }
-    # Ensure all keys are present if new apps are added to config later
-    if 'email' not in session['app_visibility']:
-        session['app_visibility']['email'] = config.ENABLE_EMAIL_APP if AGENT_LOADED else False
-    if 'odoo' not in session['app_visibility']:
-        session['app_visibility']['odoo'] = config.ENABLE_ODOO_APP if AGENT_LOADED else False
-    if 'social_media' not in session['app_visibility']:
-        session['app_visibility']['social_media'] = config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False
-    
-    session.modified = True
-    return session['app_visibility']
-
 @app.route('/')
 def index():
     """Serves the main dashboard page."""
-    visibility = get_app_visibility()
-    # The template name 'index.html' is kept, but now it receives the visibility dict.
-    return render_template('index.html', visibility=visibility)
-
-@app.route('/apps/email')
-def email_app():
-    """Serves the HTML for the Email Assistant app."""
-    visibility = get_app_visibility()
-    if not visibility.get('email'):
-        return render_template('app_disabled.html', app_name="Email Assistant", visibility=visibility), 403
-
     # Initialize chat history in the session if it doesn't exist.
     if 'chat_history' not in session:
         session['chat_history'] = [] # Stored as a serializable list
-    welcome_message = "Welcome! I'm your business assistant. How can I help you manage your emails today?"
-    return render_template('email_app.html', welcome_message=welcome_message, visibility=visibility)
+    
+    # Determine which apps are enabled from the config
+    # This will be passed to the main template to conditionally show UI elements.
+    enabled_apps = {
+        'email': config.ENABLE_EMAIL_APP if AGENT_LOADED else False,
+        'odoo': config.ENABLE_ODOO_APP if AGENT_LOADED else False,
+        'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
+    }
+    
+    return render_template('index.html', enabled_apps=enabled_apps)
 
-@app.route('/apps/odoo')
-def odoo_app():
-    """Serves the HTML for the Odoo Environments app."""
-    visibility = get_app_visibility()
-    if not visibility.get('odoo'):
-        return render_template('app_disabled.html', app_name="Odoo Environments", visibility=visibility), 403
-    return render_template('odoo_app.html', visibility=visibility)
 
-@app.route('/apps/social_media')
-def social_media_app():
-    """Serves the HTML for the Social Media app."""
-    visibility = get_app_visibility()
-    if not visibility.get('social_media'):
-        return render_template('app_disabled.html', app_name="Social Media Suite", visibility=visibility), 403
-    return render_template('social_media_app.html', visibility=visibility)
+@app.route('/apps/<app_name>')
+def serve_app(app_name):
+    """Serve a specific app fragment (e.g., 'odoo' -> 'odoo_app.html').
+    This endpoint is used by the frontend JS to load app HTML into the dashboard.
+    """
+    enabled_apps = {
+        'email': config.ENABLE_EMAIL_APP if AGENT_LOADED else False,
+        'odoo': config.ENABLE_ODOO_APP if AGENT_LOADED else False,
+        'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
+    }
+    template_file = f"{app_name}_app.html"
+    try:
+        return render_template(template_file, visibility=enabled_apps)
+    except TemplateNotFound:
+        return jsonify({'error': 'App not found'}), 404
 
-def _create_real_environment(job_id, modules):
+def _create_real_environment(job_id, modules, website_design=None, odoo_version='19.0', branding_modules=None, branding_repos=None):
     """A background task that creates a real Odoo environment using Docker."""
     job = JOBS[job_id]
     log = job['log']
+
+    # If branding_repos provided, attempt to clone them into an extra_addons dir
+    extra_addons_dir = None
+    if branding_repos:
+        try:
+            import shutil, subprocess, tempfile
+            log.append(f"Preparing branding repos ({len(branding_repos)})...")
+            tmp_root = os.path.join(tempfile.gettempdir(), name_prefix)
+            extra_addons_dir = os.path.join(tmp_root, 'extra_addons')
+            os.makedirs(extra_addons_dir, exist_ok=True)
+            for repo in branding_repos:
+                try:
+                    repo_name = os.path.splitext(os.path.basename(repo))[0]
+                    dest = os.path.join(extra_addons_dir, repo_name)
+                    if os.path.exists(dest):
+                        log.append(f"Branding repo already present: {repo_name}")
+                        continue
+                    log.append(f"Cloning branding repo: {repo}")
+                    subprocess.check_call(['git', 'clone', '--depth', '1', repo, dest], cwd=extra_addons_dir)
+                    log.append(f"Cloned {repo_name}")
+                except Exception as cre:
+                    log.append(f"Warning: failed to clone {repo}: {cre}")
+        except Exception as e:
+            log.append(f"Error preparing branding repos: {e}")
+            extra_addons_dir = None
+
+    # Ensure website_design is included if present
+    if website_design and website_design not in modules:
+        modules.append(website_design)
+
+    # Add any specified branding modules to the list of modules to install
+    if branding_modules and isinstance(branding_modules, list):
+        modules.extend([bm for bm in branding_modules if bm not in modules])
 
     if not DOCKER_LOADED:
         log.append(f"❌ Configuration Error: {DOCKER_LOAD_ERROR}")
@@ -177,8 +189,56 @@ def _create_real_environment(job_id, modules):
         job['status'] = 'running'
         time.sleep(1)
 
-        log.append(f"Creating Docker network: {network_name}")
-        network = client.networks.create(network_name, driver="bridge")
+        try:
+            log.append(f"Creating Docker network: {network_name}")
+            network = client.networks.create(network_name, driver="bridge")
+        except docker.errors.APIError as e:
+            if "fully subnetted" in str(e):
+                log.append("⚠️ Default network pool exhausted. Attempting to create network with a custom subnet...")
+                # --- Intelligent Subnet Finding ---
+                # Deterministic search for a free subnet instead of random guessing.
+                found_subnet = None
+                try:
+                    # 1. Get all existing network subnets from Docker.
+                    existing_networks = {
+                        ipaddress.ip_network(config['Subnet'])
+                        for net in client.networks.list() if net.attrs.get('IPAM') and net.attrs['IPAM'].get('Config')
+                        for config in net.attrs['IPAM']['Config'] if config.get('Subnet')
+                    }
+                    
+                    # 2. Sequentially search a very large private IP space to guarantee finding a free subnet.
+                    # We will check 172.17.x.x through 172.31.x.x.
+                    for second_octet in range(17, 32):
+                        search_range = ipaddress.ip_network(f'172.{second_octet}.0.0/16')
+                        for candidate_subnet in search_range.subnets(new_prefix=24):
+                            is_overlap = any(candidate_subnet.overlaps(net) for net in existing_networks)
+                            if not is_overlap:
+                                log.append(f"Found non-overlapping subnet: {str(candidate_subnet)}")
+                                found_subnet = str(candidate_subnet)
+                                break # Exit inner loop
+                        if found_subnet:
+                            break # Exit outer loop
+                
+                except Exception as find_err:
+                    log.append(f"⚠️ An unexpected error occurred while searching for a subnet: {find_err}")
+                    # Fall through to the 'if not found_subnet' block
+
+                if found_subnet:
+                    gateway_str = str(ipaddress.ip_network(found_subnet)[1])
+                    ipam_pool = docker.types.IPAMPool(subnet=found_subnet, gateway=gateway_str)
+                    ipam_config = docker.types.IPAMConfig(pool_configs=[ipam_pool])
+                    network = client.networks.create(network_name, driver="bridge", ipam=ipam_config)
+                    log.append(f"✅ Successfully created network with custom subnet ({found_subnet}).")
+                else:
+                    # If all retries fail, raise a more informative exception.
+                    error_message = (
+                        "Failed to find an available network subnet after multiple attempts. "
+                        "This suggests heavy Docker network usage on your system. "
+                        "Please try cleaning up unused networks with 'docker network prune' or inspect existing network configurations with 'docker network ls'."
+                    )
+                    raise Exception(error_message)
+            else:
+                raise # Re-raise the original error if it's not the one we can handle.
         time.sleep(1)
 
         log.append("Provisioning PostgreSQL database container (postgres:15)...")
@@ -200,7 +260,8 @@ def _create_real_environment(job_id, modules):
         log.append("Waiting for database to initialize...")
         time.sleep(10) # Give postgres time to initialize
 
-        log.append("Provisioning Odoo container (odoo:17.0)...")
+        odoo_image = f"odoo:{odoo_version}"
+        log.append(f"Provisioning Odoo container ({odoo_image})...")
         module_string = ",".join(modules)
 
         # Construct the command for Odoo.
@@ -210,9 +271,17 @@ def _create_real_environment(job_id, modules):
         odoo_command = f"--database={db_name}"
         if module_string:
             odoo_command += f" --init={module_string}"
+        # If we prepared an extra_addons dir above, add it to the addons path
+        if extra_addons_dir:
+            odoo_command += f" --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons"
+
+        # Prepare volume mounts
+        volumes = None
+        if extra_addons_dir and os.path.exists(extra_addons_dir):
+            volumes = { extra_addons_dir: {'bind': '/mnt/extra-addons', 'mode': 'rw'} }
 
         odoo_container = client.containers.run(
-            "odoo:17.0",
+            odoo_image,
             name=odoo_container_name,
             network=network.name,
             ports={'8069/tcp': None}, # Let Docker assign a random available host port
@@ -224,6 +293,7 @@ def _create_real_environment(job_id, modules):
             },
             command=odoo_command,
             detach=True,
+            volumes=volumes
         )
         log.append(f"Odoo container '{odoo_container.short_id}' started.")
         log.append(f"ℹ️ Odoo master password set to: {master_password} (for database management).")
@@ -243,15 +313,101 @@ def _create_real_environment(job_id, modules):
         job['status'] = 'completed'
         job['url'] = url
 
+        # If branding modules were provided as repos, attempt to chown and install them via XML-RPC
+        if extra_addons_dir:
+            try:
+                log.append("Adjusting ownership for extra addons and attempting theme install...")
+                # chown inside container to match odoo uid (typically 1000)
+                try:
+                    odoo_container.exec_run(['chown', '-R', '1000:1000', '/mnt/extra-addons'])
+                except Exception:
+                    # Not fatal; continue
+                    pass
+
+                # Wait a bit for Odoo to be ready to accept XML-RPC calls
+                import xmlrpc.client, time
+                common = xmlrpc.client.ServerProxy(f'http://127.0.0.1:{host_port}/xmlrpc/2/common')
+                models = xmlrpc.client.ServerProxy(f'http://127.0.0.1:{host_port}/xmlrpc/2/object')
+                ready = False
+                for _ in range(40):
+                    try:
+                        common.version()
+                        ready = True
+                        break
+                    except Exception:
+                        time.sleep(2)
+                if not ready:
+                    log.append('Branding install: Odoo did not respond to XML-RPC in time.')
+                else:
+                    # login as admin (default admin password is 'admin' in this flow)
+                    try:
+                        uid = common.authenticate(db_name, 'admin', 'admin', {})
+                        if not uid:
+                            log.append('Branding install: failed to authenticate to Odoo XML-RPC (admin).')
+                        else:
+                            # attempt to find any new modules in the extra_addons dir and install them
+                            # This will try to install any modules that match names in branding_modules
+                            if branding_modules:
+                                for mod in branding_modules:
+                                    try:
+                                        mids = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'search', [[['name','=',mod]]])
+                                        if mids:
+                                            models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
+                                            log.append(f'Branding module {mod} install triggered.')
+                                    except Exception as imex:
+                                        log.append(f'Error installing branding module {mod}: {imex}')
+                            else:
+                                # Attempt to auto-detect modules inside /mnt/extra-addons and install them
+                                try:
+                                    # list modules by searching for manifest files
+                                    # This is a simple heuristic: search for module folders with __manifest__.py
+                                    for root, dirs, files in os.walk(extra_addons_dir):
+                                        if '__manifest__.py' in files:
+                                            module_name = os.path.basename(root)
+                                            try:
+                                                mids = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'search', [[['name','=',module_name]]])
+                                                if mids:
+                                                    models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
+                                                    log.append(f'Auto-install triggered for branding module: {module_name}')
+                                            except Exception as autoex:
+                                                log.append(f'Auto-install error for {module_name}: {autoex}')
+                                except Exception as walkex:
+                                    log.append(f'Error scanning extra_addons for modules: {walkex}')
+                    except Exception as authex:
+                        log.append(f'Branding install authentication error: {authex}')
+            except Exception as bex:
+                log.append(f'Branding post-install step failed: {bex}')
+
     except Exception as e:
-        log.append(f"❌ An unexpected error occurred: {str(e)}")
+        error_str = str(e)
+        if "fully subnetted" in error_str:
+            log.append("❌ Docker Error: Docker has run out of network address pools.")
+            log.append("This is a common issue that can be resolved by cleaning up unused Docker networks.")
+            log.append("Please run the following command in your terminal and then try again:")
+            log.append("-> docker network prune")
+        else:
+            log.append(f"❌ An unexpected error occurred: {error_str}")
+
         job['status'] = 'failed'
         log.append("Attempting to clean up created resources...")
-        for container_name in [odoo_container_name, db_container_name]:
-            try: client.containers.get(container_name).remove(force=True); log.append(f"Removed container: {container_name}")
-            except docker.errors.NotFound: pass
-        try: client.networks.get(network_name).remove(); log.append(f"Removed network: {network_name}")
-        except docker.errors.NotFound: pass
+        # Use a more robust cleanup method by finding all resources with the job's prefix.
+        # This ensures that even partially created environments are fully removed.
+        try:
+            # Clean up containers
+            for container in client.containers.list(all=True, filters={"name": f"{name_prefix}*"}):
+                log.append(f"Removing container: {container.name} ({container.short_id})")
+                container.remove(force=True)
+            
+            # Clean up networks
+            for net in client.networks.list(filters={"name": f"{name_prefix}*"}):
+                log.append(f"Removing network: {net.name}")
+                net.remove()
+            
+            log.append("Cleanup complete.")
+        except Exception as cleanup_error:
+            log.append(f"⚠️ An error occurred during cleanup: {str(cleanup_error)}")
+            log.append("Some Docker resources may need to be removed manually.")
+
 
 
 @app.route('/odoo/plan', methods=['POST'])
@@ -300,7 +456,7 @@ Return ONLY the Markdown text for the guide.
     else:
         return jsonify({'error': 'Invalid plan type'}), 400
 
-    success, agent_output = process_agent_request(prompt, [])
+    success, agent_output, _ = process_agent_request(prompt, [])
 
     if success:
         if plan_type == 'online':
@@ -361,45 +517,25 @@ Return ONLY the Markdown text for the guide.
     else:
         return jsonify({'error': agent_output}), 500
 
-@app.route('/apps/manage')
-def manage_apps():
-    """Serves the page for managing app visibility."""
-    visibility = get_app_visibility()
-    return render_template('manage_apps.html', visibility=visibility)
-
-@app.route('/apps/toggle', methods=['POST'])
-def toggle_app_visibility():
-    """Toggles the visibility of a given app in the session."""
-    app_name = request.json.get('app_name')
-    if not app_name:
-        return jsonify({'error': 'No app name provided'}), 400
-    
-    visibility = get_app_visibility() # Ensures it's initialized
-    
-    if app_name in visibility:
-        visibility[app_name] = not visibility[app_name]
-        session['app_visibility'] = visibility
-        session.modified = True
-        return jsonify({'success': True, 'new_state': visibility})
-    else:
-        return jsonify({'error': f'Unknown app: {app_name}'}), 404
-
 @app.route('/odoo/execute', methods=['POST'])
 def odoo_execute():
     """Executes a plan to create an Odoo environment."""
     modules = request.json.get('modules')
+    website_design = request.json.get('website_design')
+    odoo_version = request.json.get('odoo_version', '19.0') # Get Odoo version, default to 19.0
+    branding_modules = request.json.get('branding_modules', []) # New: Get branding modules
+
     if not modules:
         return jsonify({'error': 'No modules provided for execution.'}), 400
     
     job_id = uuid.uuid4().hex
     JOBS[job_id] = {
         'status': 'pending',
-        'log': ['Request to create environment received.'],
-        'url': None # Initialize the URL field
+        'log': ['Request to create environment received.'], 'url': None # Initialize the URL field
     }
 
     # Start the background task
-    thread = threading.Thread(target=_create_real_environment, args=(job_id, modules))
+    thread = threading.Thread(target=_create_real_environment, args=(job_id, modules, website_design, odoo_version, branding_modules))
     thread.start()
 
     return jsonify({'job_id': job_id})
@@ -432,7 +568,7 @@ def social_generate_content():
     else:
         return jsonify({'error': 'Invalid content type specified.'}), 400
 
-    success, agent_output = process_agent_request(prompt, [])
+    success, agent_output, _ = process_agent_request(prompt, [])
     if success:
         return jsonify({'content': agent_output})
     else:
@@ -449,7 +585,7 @@ def social_find_leads():
         return jsonify({'error': 'Missing business type or location.'}), 400
 
     prompt = f"Use the `find_business_leads` tool to find leads for business type '{business_type}' in '{location}'."
-    success, agent_output = process_agent_request(prompt, [])
+    success, agent_output, _ = process_agent_request(prompt, [])
 
     if success:
         # The agent output might be a string representation of a list of dicts.
@@ -474,29 +610,36 @@ def chat():
     if not user_input:
         return jsonify({'error': 'No message provided'}), 400
 
-    # Deserialize history from session for the agent to use.
-    chat_history = deserialize_history(session.get('chat_history', []))
-    success, agent_output = process_agent_request(user_input, chat_history)
+    try:
+        # Deserialize history from session for the agent to use.
+        chat_history = deserialize_history(session.get('chat_history', []))
+        success, agent_output, verbose_log = process_agent_request(user_input, chat_history)
 
-    if success:
-        # Keep history from growing indefinitely in this simple example
-        if len(chat_history) > 20:
-            chat_history = chat_history[-20:]
-            
-        # Store the raw markdown output in the history for the agent's context
-        chat_history.append(HumanMessage(content=user_input))
-        chat_history.append(AIMessage(content=agent_output))
+        if success:
+            # Keep history from growing indefinitely in this simple example
+            if len(chat_history) > 20:
+                chat_history = chat_history[-20:]
+                
+            # Store the raw markdown output in the history for the agent's context
+            chat_history.append(HumanMessage(content=user_input))
+            chat_history.append(AIMessage(content=agent_output))
 
-        # Serialize history before saving it back to the session.
-        session['chat_history'] = serialize_history(chat_history)
+            # Serialize history before saving it back to the session.
+            session['chat_history'] = serialize_history(chat_history)
 
-        # Convert the agent's markdown response to HTML for rendering in the browser
-        html_output = markdown.markdown(agent_output, extensions=['fenced_code', 'tables'])
+            # Convert the agent's markdown response to HTML for rendering in the browser
+            html_output = markdown.markdown(agent_output, extensions=['fenced_code', 'tables'])
 
-        return jsonify({'response': html_output})
-    else:
-        # The error message from process_agent_request is already formatted.
-        return jsonify({'error': agent_output}), 500
+            return jsonify({'response': html_output, 'verbose_log': verbose_log})
+        else:
+            # The error message from process_agent_request is already formatted.
+            return jsonify({'error': agent_output, 'verbose_log': verbose_log}), 500
+
+    except Exception as e:
+        # This is a safety net. If any unexpected error occurs, log it and send a proper JSON error.
+        print(f"--- UNHANDLED EXCEPTION IN /chat ENDPOINT ---", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
+        return jsonify({'error': 'An unexpected server error occurred. Please check the server logs for details.'}), 500
 
 @app.route('/edit_app', methods=['POST'])
 def edit_app():
@@ -528,7 +671,7 @@ Your task is to return the complete, updated HTML for this content area that ful
 
     # We use the existing agent infrastructure but with a very specific, one-off prompt.
     # We don't need chat history for this task.
-    success, agent_output = process_agent_request(edit_prompt, [])
+    success, agent_output, _ = process_agent_request(edit_prompt, [])
 
     if success:
         # The agent's output should be the raw HTML.
