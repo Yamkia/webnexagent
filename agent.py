@@ -2,10 +2,11 @@ import sys
 import os
 import config
 from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI # Keep this as it's used for LLM selection
 from langchain_anthropic import ChatAnthropic
-from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # Add the project root directory to the Python path to ensure modules can be found.
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -62,8 +63,10 @@ system_prompt = system_prompt_base + system_prompt_tools + system_prompt_safety
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_prompt),
     ("placeholder", "{chat_history}"),
+    MessagesPlaceholder(variable_name="chat_history"),
     ("human", "{input}"),
     ("placeholder", "{agent_scratchpad}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
 
 # 3. Create the agent and executor
