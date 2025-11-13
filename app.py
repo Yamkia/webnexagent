@@ -117,8 +117,16 @@ def serve_app(app_name):
         'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
     }
     template_file = f"{app_name}_app.html"
+    # Provide per-app template context
+    context = {"visibility": enabled_apps, "agent_loaded": AGENT_LOADED}
+    if app_name == 'email':
+        # Helpful welcome text for the Email Assistant
+        context["welcome_message"] = (
+            "Welcome to the Email Assistant. You can ask me to read your inbox, summarize recent emails, "
+            "draft replies, or send a message. If email credentials are missing, please update your .env."
+        )
     try:
-        return render_template(template_file, visibility=enabled_apps)
+        return render_template(template_file, **context)
     except TemplateNotFound:
         return jsonify({'error': 'App not found'}), 404
 
@@ -126,6 +134,8 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
     """A background task that creates a real Odoo environment using Docker."""
     job = JOBS[job_id]
     log = job['log']
+    # Use a truncated job_id for shorter, Docker-friendly names
+    name_prefix = f"odoo-{job_id[:8]}"
 
     # If branding_repos provided, attempt to clone them into an extra_addons dir
     extra_addons_dir = None
@@ -152,6 +162,24 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
             log.append(f"Error preparing branding repos: {e}")
             extra_addons_dir = None
 
+    # Detect and mount local brand/theme module if present (e.g., deployable_brand_theme)
+    local_brand_module = os.path.join(project_root, 'deployable_brand_theme')
+    local_brand_present = os.path.isdir(local_brand_module) and os.path.isfile(os.path.join(local_brand_module, '__manifest__.py'))
+    if local_brand_present:
+        log.append("Detected local module 'deployable_brand_theme'; it will be mounted into the Odoo container.")
+        if branding_modules is None:
+            branding_modules = []
+        if 'deployable_brand_theme' not in branding_modules:
+            branding_modules.append('deployable_brand_theme')
+        # Ensure website module is installed (dependency)
+        if 'website' not in modules:
+            modules.insert(0, 'website')
+            log.append("Added 'website' module as dependency for brand theme.")
+        # Defer installing brand theme until after core website is fully initialized
+        if 'deployable_brand_theme' in modules:
+            modules = [m for m in modules if m != 'deployable_brand_theme']
+            log.append("Deferring 'deployable_brand_theme' installation to post-start phase.")
+
     # Ensure website_design is included if present
     if website_design and website_design not in modules:
         modules.append(website_design)
@@ -175,8 +203,7 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
         job['status'] = 'failed'
         return
 
-    # Use a truncated job_id for shorter, Docker-friendly names
-    name_prefix = f"odoo-{job_id[:8]}"
+    # name_prefix already defined above for early usage
     db_container_name = f"{name_prefix}-db"
     odoo_container_name = f"{name_prefix}-app"
     network_name = f"{name_prefix}-net"
@@ -201,9 +228,9 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
                 try:
                     # 1. Get all existing network subnets from Docker.
                     existing_networks = {
-                        ipaddress.ip_network(config['Subnet'])
+                        ipaddress.ip_network(ipam_cfg['Subnet'])
                         for net in client.networks.list() if net.attrs.get('IPAM') and net.attrs['IPAM'].get('Config')
-                        for config in net.attrs['IPAM']['Config'] if config.get('Subnet')
+                        for ipam_cfg in net.attrs['IPAM']['Config'] if ipam_cfg.get('Subnet')
                     }
                     
                     # 2. Sequentially search a very large private IP space to guarantee finding a free subnet.
@@ -272,13 +299,18 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
         if module_string:
             odoo_command += f" --init={module_string}"
         # If we prepared an extra_addons dir above, add it to the addons path
-        if extra_addons_dir:
+        if extra_addons_dir or local_brand_present:
             odoo_command += f" --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons"
 
         # Prepare volume mounts
-        volumes = None
+        volumes = {}
         if extra_addons_dir and os.path.exists(extra_addons_dir):
-            volumes = { extra_addons_dir: {'bind': '/mnt/extra-addons', 'mode': 'rw'} }
+            volumes[extra_addons_dir] = {'bind': '/mnt/extra-addons', 'mode': 'rw'}
+        if local_brand_present:
+            # Mount the local module directly into /mnt/extra-addons/deployable_brand_theme
+            volumes[local_brand_module] = {'bind': '/mnt/extra-addons/deployable_brand_theme', 'mode': 'rw'}
+        if not volumes:
+            volumes = None
 
         odoo_container = client.containers.run(
             odoo_image,
@@ -314,7 +346,7 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
         job['url'] = url
 
         # If branding modules were provided as repos, attempt to chown and install them via XML-RPC
-        if extra_addons_dir:
+        if extra_addons_dir or local_brand_present:
             try:
                 log.append("Adjusting ownership for extra addons and attempting theme install...")
                 # chown inside container to match odoo uid (typically 1000)
@@ -325,7 +357,7 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
                     pass
 
                 # Wait a bit for Odoo to be ready to accept XML-RPC calls
-                import xmlrpc.client, time
+                import xmlrpc.client
                 common = xmlrpc.client.ServerProxy(f'http://127.0.0.1:{host_port}/xmlrpc/2/common')
                 models = xmlrpc.client.ServerProxy(f'http://127.0.0.1:{host_port}/xmlrpc/2/object')
                 ready = False
@@ -345,34 +377,95 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
                         if not uid:
                             log.append('Branding install: failed to authenticate to Odoo XML-RPC (admin).')
                         else:
+                            # First, update the module list so Odoo discovers newly mounted modules
+                            log.append('Updating Odoo module list to discover mounted addons...')
+                            try:
+                                # Retry update_list to handle temporary locks from scheduled actions
+                                max_attempts = 5
+                                for attempt in range(1, max_attempts + 1):
+                                    try:
+                                        models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'update_list', [])
+                                        log.append('✅ Module list updated successfully.')
+                                        break
+                                    except Exception as uex:
+                                        if 'Invalid Operation' in str(uex) and attempt < max_attempts:
+                                            wait_s = attempt * 5
+                                            log.append(f"⏳ Module list update locked by scheduled action. Retrying in {wait_s}s (attempt {attempt}/{max_attempts})...")
+                                            time.sleep(wait_s)
+                                            continue
+                                        raise
+                                time.sleep(3)  # Give Odoo time to scan
+                            except Exception as update_ex:
+                                log.append(f'⚠️ Module list update failed: {update_ex}')
+                            
                             # attempt to find any new modules in the extra_addons dir and install them
                             # This will try to install any modules that match names in branding_modules
                             if branding_modules:
+                                log.append(f'Installing specified branding modules: {branding_modules}')
                                 for mod in branding_modules:
                                     try:
                                         mids = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'search', [[['name','=',mod]]])
                                         if mids:
-                                            models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
-                                            log.append(f'Branding module {mod} install triggered.')
+                                            # Check state before installing
+                                            mod_info = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'read', [mids, ['state', 'name']])
+                                            if mod_info and mod_info[0]['state'] == 'uninstalled':
+                                                # Retry install to handle transient locks
+                                                max_attempts = 5
+                                                for attempt in range(1, max_attempts + 1):
+                                                    try:
+                                                        models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
+                                                        log.append(f'✅ Module {mod} installation triggered.')
+                                                        break
+                                                    except Exception as iex:
+                                                        if 'Invalid Operation' in str(iex) and attempt < max_attempts:
+                                                            wait_s = attempt * 5
+                                                            log.append(f"⏳ Module install locked by scheduled action. Retrying in {wait_s}s (attempt {attempt}/{max_attempts})...")
+                                                            time.sleep(wait_s)
+                                                            continue
+                                                        raise
+                                            else:
+                                                log.append(f'ℹ️ Module {mod} already installed or in progress (state: {mod_info[0]["state"] if mod_info else "unknown"}).')
+                                        else:
+                                            log.append(f'⚠️ Module {mod} not found in Odoo. Check module name and addons path.')
                                     except Exception as imex:
-                                        log.append(f'Error installing branding module {mod}: {imex}')
+                                        log.append(f'❌ Error installing branding module {mod}: {imex}')
                             else:
-                                # Attempt to auto-detect modules inside /mnt/extra-addons and install them
+                                # Attempt to auto-detect modules inside mounted addons and install them
+                                log.append('Auto-detecting modules in mounted addons...')
                                 try:
-                                    # list modules by searching for manifest files
-                                    # This is a simple heuristic: search for module folders with __manifest__.py
-                                    for root, dirs, files in os.walk(extra_addons_dir):
-                                        if '__manifest__.py' in files:
-                                            module_name = os.path.basename(root)
+                                    scan_dirs = []
+                                    if extra_addons_dir and os.path.exists(extra_addons_dir):
+                                        scan_dirs.append(extra_addons_dir)
+                                    if local_brand_present and os.path.exists(local_brand_module):
+                                        scan_dirs.append(local_brand_module)
+                                    
+                                    detected_modules = []
+                                    for scan_root in scan_dirs:
+                                        for root, dirs, files in os.walk(scan_root):
+                                            if '__manifest__.py' in files:
+                                                module_name = os.path.basename(root)
+                                                detected_modules.append(module_name)
+                                    
+                                    if detected_modules:
+                                        log.append(f'Found modules to install: {detected_modules}')
+                                        for module_name in detected_modules:
                                             try:
                                                 mids = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'search', [[['name','=',module_name]]])
                                                 if mids:
-                                                    models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
-                                                    log.append(f'Auto-install triggered for branding module: {module_name}')
+                                                    mod_info = models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'read', [mids, ['state', 'name']])
+                                                    if mod_info and mod_info[0]['state'] == 'uninstalled':
+                                                        models.execute_kw(db_name, uid, 'admin', 'ir.module.module', 'button_immediate_install', [mids])
+                                                        log.append(f'✅ Auto-install triggered for module: {module_name}')
+                                                    else:
+                                                        log.append(f'ℹ️ Module {module_name} state: {mod_info[0]["state"] if mod_info else "unknown"}')
+                                                else:
+                                                    log.append(f'⚠️ Module {module_name} not found after update_list. Check addons path.')
                                             except Exception as autoex:
-                                                log.append(f'Auto-install error for {module_name}: {autoex}')
+                                                log.append(f'❌ Auto-install error for {module_name}: {autoex}')
+                                    else:
+                                        log.append('No modules detected for auto-install.')
                                 except Exception as walkex:
-                                    log.append(f'Error scanning extra_addons for modules: {walkex}')
+                                    log.append(f'❌ Error scanning mounted addons for modules: {walkex}')
                     except Exception as authex:
                         log.append(f'Branding install authentication error: {authex}')
             except Exception as bex:

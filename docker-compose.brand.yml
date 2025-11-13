@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=odoo
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      - odoo-network
+
+  odoo:
+    image: odoo:17.0
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+      - ODOO_BRAND_CODE=${ODOO_BRAND_CODE:-greenmotive}
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./deployable_brand_theme:/mnt/extra-addons/deployable_brand_theme
+      - ./odoo.conf:/etc/odoo/odoo.conf
+    networks:
+      - odoo-network
+    command: >
+      bash -c "
+        echo 'Installing brand theme module...' &&
+        odoo -c /etc/odoo/odoo.conf -d odoo -i deployable_brand_theme --stop-after-init --without-demo=all &&
+        echo 'Provisioning brand: ${ODOO_BRAND_CODE:-greenmotive}' &&
+        python3 /mnt/extra-addons/deployable_brand_theme/provision_brand.py --brand-code ${ODOO_BRAND_CODE:-greenmotive} --db-name odoo --odoo-url http://localhost:8069 &&
+        echo 'Starting Odoo...' &&
+        odoo -c /etc/odoo/odoo.conf
+      "
+
+  # Optional: Separate brand environments
+  odoo-techpro:
+    image: odoo:17.0
+    depends_on:
+      - db
+    ports:
+      - "8070:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+      - ODOO_BRAND_CODE=techpro
+    volumes:
+      - odoo-techpro-data:/var/lib/odoo
+      - ./deployable_brand_theme:/mnt/extra-addons/deployable_brand_theme
+      - ./odoo.conf:/etc/odoo/odoo.conf
+    networks:
+      - odoo-network
+    command: >
+      bash -c "
+        odoo -c /etc/odoo/odoo.conf -d odoo_techpro -i deployable_brand_theme --stop-after-init &&
+        python3 /mnt/extra-addons/deployable_brand_theme/provision_brand.py --brand-code techpro --db-name odoo_techpro --odoo-url http://localhost:8069 &&
+        odoo -c /etc/odoo/odoo.conf -d odoo_techpro
+      "
+    profiles:
+      - multi-brand
+
+volumes:
+  odoo-db-data:
+  odoo-web-data:
+  odoo-techpro-data:
+
+networks:
+  odoo-network:
+    driver: bridge

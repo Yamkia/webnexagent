@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentAppHtml = appContentArea.innerHTML;
 
         try {
-            const response = await fetch('/gemini/edit_ui', {
+            const response = await fetch('/edit_app', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

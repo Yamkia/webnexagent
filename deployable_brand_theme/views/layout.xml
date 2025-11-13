@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
   <template id="layout" inherit_id="website.layout" name="GreenMotive Layout">
     <xpath expr="//header" position="replace">
       <header class="gm-header">
         <div class="container d-flex align-items-center justify-content-between">
           <a t-attf-href="/" class="gm-brand d-flex align-items-center">
-            <img src="/deployable_brand_theme/static/src/img/logo.svg" alt="GreenMotive" class="gm-logo"/>
-            <h1 class="gm-title">GreenMotive</h1>
+            <t t-if="website and website.brand_id">
+              <img t-att-src="website.brand_id.logo_svg or '/web/static/img/logo.png'" 
+                   t-att-alt="website.brand_id.name"
+                   class="gm-logo"/>
+              <h1 class="gm-title"><t t-esc="website.brand_id.name"/></h1>
+            </t>
+            <t t-else="">
+              <img src="/deployable_brand_theme/static/src/img/logo.svg" alt="Logo" class="gm-logo"/>
+              <h1 class="gm-title">GreenMotive</h1>
+            </t>
           </a>
           <nav class="gm-nav">
             <ul class="list-unstyled d-flex gap-3 mb-0">
@@ -19,4 +28,17 @@
       </header>
     </xpath>
   </template>
+
+  <!-- Inject brand CSS variables dynamically into <head> -->
+  <template id="brand_css_vars" inherit_id="web.layout" name="Brand CSS Variables">
+    <xpath expr="//head" position="inside">
+      <style t-if="website and website.brand_id">
+        :root {
+          --brand-primary: <t t-esc="website.brand_id.primary_color or '#34D399'"/>;
+          --brand-secondary: <t t-esc="website.brand_id.secondary_color or '#0f766e'"/>;
+        }
+      </style>
+    </xpath>
+  </template>
+
 </odoo>

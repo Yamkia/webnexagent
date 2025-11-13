@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_deployable_brand_user,access_deployable_brand_user,model_deployable_brand,base.group_user,1,0,0,0
+access_deployable_brand_manager,access_deployable_brand_manager,model_deployable_brand,website.group_website_designer,1,1,1,1
