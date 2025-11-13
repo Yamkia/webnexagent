@@ -28,13 +28,18 @@
         </div>
     </nav><div id="chat-container">
     <h1>Email Assistant</h1>
+    {% if not agent_loaded %}
+    <div class="alert alert-warning" role="alert">
+        The agent is not loaded due to configuration. Chat will be disabled until you update your .env.
+    </div>
+    {% endif %}
     <div id="chat-window">
         <div class="message ai-message">
-            <p>{{ welcome_message }}</p>
+            <p>{{ welcome_message or 'Welcome to the Email Assistant.' }}</p>
         </div>
     </div>
     <form id="chat-form">
-        <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off" required>
-        <button type="submit" title="Send">↑</button>
+        <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off" required {% if not agent_loaded %}disabled{% endif %}>
+        <button type="submit" title="Send" {% if not agent_loaded %}disabled{% endif %}>↑</button>
     </form>
 </div>

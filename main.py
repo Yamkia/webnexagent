@@ -2,8 +2,6 @@ import sys
 import os
 from typing import Optional
 import io
-from langchain.agents import AgentExecutor
-
 # Add the project root directory to the Python path to ensure modules can be found.
 project_root = os.path.dirname(os.path.abspath(__file__))
 if project_root not in sys.path:
@@ -14,10 +12,12 @@ try:
     from agent import agent_executor 
     import config
 except (ValueError, ImportError) as e: # Catch both config and import errors
+    # IMPORTANT: Do not exit here when imported by the Flask app.
+    # Re-raise so the web UI can start with the agent disabled and show a helpful message.
     print("\n--- CRITICAL STARTUP ERROR ---", file=sys.stderr)
     print(f"Error: {e}", file=sys.stderr)
     print("\nThis may be due to a missing dependency, a problem in the agent/tool files, or an invalid .env configuration.", file=sys.stderr)
-    sys.exit(1)
+    raise
 
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import ResourceExhausted

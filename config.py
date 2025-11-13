@@ -6,16 +6,38 @@ load_dotenv()
 # --- API Keys ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # For OpenAI models
 OPENAI_API_BASE = os.getenv("OPENAI_API_BASE") # For custom OpenAI-compatible endpoints like OpenRouter
+# OpenRouter convenience variables (optional): if using OpenRouter, you can set these
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_SITE = os.getenv("OPENROUTER_SITE")   # Will be used as HTTP-Referer header (recommended by OpenRouter)
+OPENROUTER_APP = os.getenv("OPENROUTER_APP")     # Will be used as X-Title header (recommended by OpenRouter)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Google Gemini models
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") # For Anthropic Claude models
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY") # For Deepgram voice transcription
 
 # --- Model Settings ---
-# Set the provider for the large language model. Can be "openai", "google", or "anthropic".
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "google").lower()
+# Provider can be: "openai", "google", "anthropic", or "auto" (auto-detect based on available keys)
+LLM_PROVIDER_RAW = os.getenv("LLM_PROVIDER", "auto").lower()
 OPENAI_MODEL_NAME = os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini")
 GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash-latest")
+# Normalize Gemini alias: remove "-latest" if library/API rejects it
+if GEMINI_MODEL_NAME.endswith("-latest"):
+    GEMINI_MODEL_NAME = GEMINI_MODEL_NAME.replace("-latest", "")
 ANTHROPIC_MODEL_NAME = os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-5-sonnet-20240620")
+
+# Auto-detect provider if requested
+if LLM_PROVIDER_RAW in ("", "auto"):
+    if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower() and (OPENAI_API_KEY or OPENROUTER_API_KEY):
+        LLM_PROVIDER = "openai"
+    elif OPENAI_API_KEY:
+        LLM_PROVIDER = "openai"
+    elif GOOGLE_API_KEY:
+        LLM_PROVIDER = "google"
+    elif ANTHROPIC_API_KEY:
+        LLM_PROVIDER = "anthropic"
+    else:
+        LLM_PROVIDER = "google"  # default fallback
+else:
+    LLM_PROVIDER = LLM_PROVIDER_RAW
 
 # --- Agent Settings ---
 AGENT_VERBOSE = os.getenv("AGENT_VERBOSE", "False").lower() in ('true', '1', 't')
@@ -41,12 +63,24 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 # --- Configuration Validation ---
 # We centralize all critical configuration checks here to fail fast.
 
+# If user is using OpenRouter via the OpenAI-compatible API, allow OPENROUTER_API_KEY as a fallback
+if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower():
+    if not OPENAI_API_KEY and OPENROUTER_API_KEY:
+        OPENAI_API_KEY = OPENROUTER_API_KEY
+
 if LLM_PROVIDER == "openai":
-    if not OPENAI_API_KEY or "your-openai-api-key-here" in OPENAI_API_KEY:
-        raise ValueError(
-            "LLM_PROVIDER is set to 'openai', but OPENAI_API_KEY is missing or is a placeholder in the .env file. "
-            "Please add your OpenAI API key."
-        )
+    if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower():
+        if not OPENAI_API_KEY:
+            raise ValueError(
+                "LLM_PROVIDER is 'openai' with OpenRouter base URL, but no API key was provided. "
+                "Set either OPENAI_API_KEY or OPENROUTER_API_KEY in your .env file."
+            )
+    else:
+        if not OPENAI_API_KEY or "your-openai-api-key-here" in OPENAI_API_KEY:
+            raise ValueError(
+                "LLM_PROVIDER is set to 'openai', but OPENAI_API_KEY is missing or is a placeholder in the .env file. "
+                "Please add your OpenAI API key."
+            )
 elif LLM_PROVIDER == "google":
     if not GOOGLE_API_KEY or "your-google-api-key-here" in GOOGLE_API_KEY:
         raise ValueError(
@@ -60,7 +94,7 @@ elif LLM_PROVIDER == "anthropic":
             "Please add your Anthropic API key."
         )
 else:
-    raise ValueError(f"Invalid LLM_PROVIDER '{LLM_PROVIDER}' in .env file. Must be 'openai', 'google', or 'anthropic'.")
+    raise ValueError(f"Invalid LLM_PROVIDER '{LLM_PROVIDER}' after auto-detection. Must resolve to 'openai', 'google', or 'anthropic'.")
 
 # 2. Check for Voice Input Dependencies
 if ENABLE_VOICE_INPUT and (not DEEPGRAM_API_KEY or "your-deepgram-api-key-here" in DEEPGRAM_API_KEY):

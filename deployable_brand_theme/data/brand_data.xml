@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Example Brand Data: GreenMotive -->
+  <record id="brand_greenmotive" model="deployable.brand">
+    <field name="name">GreenMotive</field>
+    <field name="code">greenmotive</field>
+    <field name="primary_color">#34D399</field>
+    <field name="secondary_color">#0f766e</field>
+    <field name="logo_svg">/deployable_brand_theme/static/src/img/logo.svg</field>
+    <field name="is_active" eval="True"/>
+  </record>
+
+  <!-- Example Brand Data: TechPro -->
+  <record id="brand_techpro" model="deployable.brand">
+    <field name="name">TechPro</field>
+    <field name="code">techpro</field>
+    <field name="primary_color">#3B82F6</field>
+    <field name="secondary_color">#1E40AF</field>
+    <field name="logo_svg">/deployable_brand_theme/static/src/img/techpro-logo.svg</field>
+    <field name="is_active" eval="True"/>
+  </record>
+
+  <!-- Example Brand Data: LuxeBrand -->
+  <record id="brand_luxe" model="deployable.brand">
+    <field name="name">LuxeBrand</field>
+    <field name="code">luxe</field>
+    <field name="primary_color">#A855F7</field>
+    <field name="secondary_color">#6B21A8</field>
+    <field name="logo_svg">/deployable_brand_theme/static/src/img/luxe-logo.svg</field>
+    <field name="is_active" eval="True"/>
+  </record>
+</odoo>

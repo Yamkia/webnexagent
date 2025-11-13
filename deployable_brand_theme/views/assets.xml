@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
   <template id="assets_frontend" inherit_id="website.assets_frontend" name="GreenMotive brand assets">
     <xpath expr="." position="inside">
       <!-- SCSS and JS for brand customizations -->
@@ -7,4 +8,11 @@
       <script type="text/javascript" src="/deployable_brand_theme/static/src/js/brand.js"></script>
     </xpath>
   </template>
+
+  <template id="assets_backend" inherit_id="web.assets_backend" name="Brand Switcher Backend Assets">
+    <xpath expr="." position="inside">
+      <script type="text/javascript" src="/deployable_brand_theme/static/src/js/brand_switcher.js"></script>
+    </xpath>
+  </template>
+
 </odoo>

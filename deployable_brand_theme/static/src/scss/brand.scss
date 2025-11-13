@@ -1,34 +1,121 @@
-// GreenMotive brand SCSS - modify colors and spacing here
-$gm-accent: #34D399; // emerald
+// ============================
+// Multi-Brand SCSS Architecture
+// ============================
+// This file contains:
+//  1. Base variables (fallback defaults)
+//  2. Brand-specific scopes (body.brand-<code>)
+//  3. Shared component styles that adapt to CSS custom properties
+
+// ---- Base Defaults ----
+$gm-accent: #34D399;
 $gm-accent-dark: #0f766e;
 $gm-bg: #f7f7f7;
 
 :root {
-  --gm-accent: #34D399;
-  --gm-text: #1a1a1a;
+  --brand-primary: #{$gm-accent};
+  --brand-secondary: #{$gm-accent-dark};
+  --brand-text: #1a1a1a;
+  --brand-bg: #{$gm-bg};
 }
 
+// ---- Brand-Specific Overrides ----
+// Each brand gets its own CSS scope via body class
+body.brand-greenmotive {
+  --brand-primary: #34D399;
+  --brand-secondary: #0f766e;
+  --brand-bg: #f7f7f7;
+}
+
+body.brand-techpro {
+  --brand-primary: #3B82F6;
+  --brand-secondary: #1E40AF;
+  --brand-bg: #f0f4f8;
+}
+
+body.brand-luxe {
+  --brand-primary: #A855F7;
+  --brand-secondary: #6B21A8;
+  --brand-bg: #faf5ff;
+}
+
+// ---- Global Styles ----
 body {
-  background-color: $gm-bg;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
 }
 
 .gm-header {
-  background: rgba(255,255,255,0.75);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(6px);
   padding: 1rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.gm-brand { text-decoration: none; color: inherit; }
-.gm-logo { height: 40px; margin-right: 0.5rem; }
-.gm-title { font-size: 1.25rem; margin: 0; font-weight: 700; }
+.gm-brand {
+  text-decoration: none;
+  color: inherit;
+}
 
-/* Example button styles */
-.btn-gm {
-  background: linear-gradient(135deg, $gm-accent 0%, $gm-accent-dark 100%);
+.gm-logo {
+  height: 40px;
+  margin-right: 0.5rem;
+}
+
+.gm-title {
+  font-size: 1.25rem;
+  margin: 0;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+// ---- Button Styles (Dynamic) ----
+.btn-brand {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
   color: white;
   border-radius: 999px;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  font-weight: 600;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 }
 
-/* Small helpers */
-.container { max-width: 1200px; }
+// Legacy class support
+.btn-gm {
+  @extend .btn-brand;
+}
+
+// ---- Container ----
+.container {
+  max-width: 1200px;
+}
+
+// ---- Header Scroll Effect ----
+.gm-header-scrolled {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+// ---- Card Components ----
+.brand-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-top: 3px solid var(--brand-primary);
+}
+
+// ---- Link Styles ----
+a {
+  color: var(--brand-primary);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--brand-secondary);
+    text-decoration: underline;
+  }
+}
+

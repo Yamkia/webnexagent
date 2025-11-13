@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <!-- Brand Preview Template -->
+  <template id="brand_preview_template" name="Brand Preview">
+    <t t-call="website.layout">
+      <div id="wrap" class="oe_structure">
+        <section class="container py-5">
+          <!-- Preview Banner -->
+          <div class="alert alert-info d-flex align-items-center justify-content-between mb-4">
+            <div>
+              <strong>🎨 Preview Mode</strong> — You're previewing the "<t t-esc="brand.name"/>" brand.
+            </div>
+            <a href="/web#action=deployable_brand_theme.action_deployable_brand" class="btn btn-sm btn-primary">
+              Exit Preview
+            </a>
+          </div>
+          
+          <!-- Brand Info Card -->
+          <div class="card brand-card mb-4">
+            <div class="card-header">
+              <h2 class="mb-0"><t t-esc="brand.name"/> Brand Preview</h2>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h5>Brand Details</h5>
+                  <ul class="list-unstyled">
+                    <li><strong>Code:</strong> <code t-esc="brand.code"/></li>
+                    <li>
+                      <strong>Primary Color:</strong> 
+                      <span class="badge" t-attf-style="background-color: {{ brand.primary_color }}; color: white;">
+                        <t t-esc="brand.primary_color"/>
+                      </span>
+                    </li>
+                    <li>
+                      <strong>Secondary Color:</strong>
+                      <span class="badge" t-attf-style="background-color: {{ brand.secondary_color }}; color: white;">
+                        <t t-esc="brand.secondary_color"/>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h5>Logo Preview</h5>
+                  <img t-if="brand.logo_svg" 
+                       t-att-src="brand.logo_svg" 
+                       t-att-alt="brand.name"
+                       style="max-height: 80px;"
+                       class="img-fluid"/>
+                  <p t-else="" class="text-muted">No logo configured</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Component Showcase -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3 class="mb-0">Component Showcase</h3>
+            </div>
+            <div class="card-body">
+              <!-- Buttons -->
+              <div class="mb-4">
+                <h5>Buttons</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                  <button class="btn-brand">Primary Button</button>
+                  <button class="btn btn-secondary">Secondary</button>
+                  <button class="btn btn-outline-primary">Outline</button>
+                  <button class="btn-brand btn-sm">Small</button>
+                  <button class="btn-brand btn-lg">Large</button>
+                </div>
+              </div>
+              
+              <!-- Cards -->
+              <div class="mb-4">
+                <h5>Cards</h5>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="brand-card">
+                      <h6>Sample Card</h6>
+                      <p class="mb-0">This is how cards look with your brand colors.</p>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="brand-card">
+                      <h6>Another Card</h6>
+                      <p class="mb-0">Consistent styling across all components.</p>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="brand-card">
+                      <h6>Third Card</h6>
+                      <p class="mb-0">Beautiful and responsive design.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Links -->
+              <div class="mb-4">
+                <h5>Links</h5>
+                <p>
+                  <a href="#">Standard link</a> | 
+                  <a href="#" class="text-muted">Muted link</a> | 
+                  <a href="#" style="color: var(--brand-primary);">Brand color link</a>
+                </p>
+              </div>
+              
+              <!-- Typography -->
+              <div>
+                <h5>Typography</h5>
+                <h1>Heading 1</h1>
+                <h2>Heading 2</h2>
+                <h3>Heading 3</h3>
+                <p class="lead">Lead paragraph with emphasis.</p>
+                <p>Regular paragraph text with normal weight and spacing.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- CSS Variables Info -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="mb-0">Active CSS Variables</h3>
+            </div>
+            <div class="card-body">
+              <pre class="bg-light p-3" style="border-radius: 8px;">
+:root {
+  --brand-primary: <t t-esc="brand.primary_color"/>;
+  --brand-secondary: <t t-esc="brand.secondary_color"/>;
+  --brand-text: #1a1a1a;
+  --brand-bg: #f7f7f7;
+}
+
+body.brand-<t t-esc="brand.code"/> {
+  /* Brand-specific overrides here */
+}</pre>
+            </div>
+          </div>
+        </section>
+      </div>
+    </t>
+  </template>
+</odoo>
