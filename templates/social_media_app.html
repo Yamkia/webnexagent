@@ -1,3 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Suite - Web-Nexus Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">Web-Nexus Agent</a>
@@ -29,23 +49,17 @@
     </nav><!-- Dashboard for Social Media App -->
 <div id="social-app-dashboard" class="container py-5 text-center">
     <h1 class="display-5">Social & Leads</h1>
-    <p class="lead text-muted">Choose a tool to get started.</p>
+    <p class="lead text-muted">Instagram Business Account Manager</p>
     <div class="row justify-content-center g-4 mt-4">
-        <div class="col-lg-4 col-md-6">
-            <div id="show-content-generator" class="card h-100 shadow-sm" style="cursor: pointer;">
-                <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">✍️</div>
-                    <h5 class="card-title">Social Media Content</h5>
-                    <p class="card-text small text-muted">Generate posts and video scripts using AI.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <div id="show-lead-finder" class="card h-100 shadow-sm" style="cursor: pointer;">
-                <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-                    <h5 class="card-title">Lead Generation</h5>
-                    <p class="card-text small text-muted">Find new business leads.</p>
+        <div class="col-lg-6 col-md-8">
+            <div id="show-instagram-manager" class="card h-100 shadow" style="cursor: pointer; border: 3px solid #833ab4; background: linear-gradient(135deg, rgba(131,58,180,0.1) 0%, rgba(253,29,29,0.1) 50%, rgba(252,176,69,0.1) 100%);">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center p-5">
+                    <div style="font-size: 5rem; margin-bottom: 1.5rem;">🤖</div>
+                    <h2 class="card-title mb-3">Instagram AI Growth</h2>
+                    <p class="card-text text-muted mb-4">AI-powered assistant to analyze your account and grow it organically</p>
+                    <button class="btn btn-lg" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); color: white; border: none;">
+                        Open AI Growth Assistant
+                    </button>
                 </div>
             </div>
         </div>
@@ -227,5 +241,921 @@
                 </div>
             </div>
         </div>
+
+        <!-- Instagram Follower Manager View -->
+        <div id="instagram-manager-wrapper" class="col-lg-10 mb-4" style="display: none;">
+            <div class="card h-100">
+                <div class="card-header bg-gradient d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);">
+                    <h5 class="card-title mb-0 text-white">🤖 Instagram AI Growth Suite</h5>
+                    <div id="ig-login-status" class="text-white small">
+                        <span id="ig-status-text">Not connected</span>
+                        <button id="ig-logout-btn" class="btn btn-sm btn-light ms-2" style="display: none;">Logout</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Logged In Dashboard -->
+                    <div id="instagram-dashboard" style="display: none;">
+                        <!-- User Profile Header -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(131,58,180,0.1) 0%, rgba(253,29,29,0.1) 100%);">
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <div class="rounded-circle bg-gradient p-3" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                                    <span style="font-size: 2.5rem;">📸</span>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <h4 class="mb-1" id="dashboard-username">@username</h4>
+                                                <p class="text-muted mb-2" id="dashboard-account-type">Personal Account</p>
+                                                <div class="d-flex gap-4">
+                                                    <div>
+                                                        <strong id="dashboard-posts">0</strong>
+                                                        <small class="text-muted">Posts</small>
+                                                    </div>
+                                                    <div>
+                                                        <strong id="dashboard-followers">0</strong>
+                                                        <small class="text-muted">Followers</small>
+                                                    </div>
+                                                    <div>
+                                                        <strong id="dashboard-following">0</strong>
+                                                        <small class="text-muted">Following</small>
+                                                    </div>
+                                                    <div>
+                                                        <strong id="dashboard-engagement">0%</strong>
+                                                        <small class="text-muted">Avg Engagement</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <button id="refresh-data-btn" class="btn btn-outline-primary">
+                                                    <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Tabs -->
+                        <ul class="nav nav-tabs mb-4" id="instagram-tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis-panel" type="button">
+                                    📊 Growth Analysis
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="content-tab" data-bs-toggle="tab" data-bs-target="#content-panel" type="button">
+                                    🎨 Create Content
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="insights-tab" data-bs-toggle="tab" data-bs-target="#insights-panel" type="button">
+                                    💡 Next Steps
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="instagram-tab-content">
+                            <!-- Analysis Panel -->
+                            <div class="tab-pane fade show active" id="analysis-panel" role="tabpanel">
+                                <div id="ig-analysis-results">
+                                    <!-- Will be populated by displayAnalysisResults() -->
+                                </div>
+                            </div>
+
+                            <!-- Content Creation Panel -->
+                            <div class="tab-pane fade" id="content-panel" role="tabpanel">
+                                <div class="row g-4">
+                                    <!-- Image Post Generator -->
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-3">🖼️ Generate Image Post</h5>
+                                                <form id="image-post-form">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Post Topic/Theme</label>
+                                                        <input type="text" class="form-control" id="image-topic" placeholder="e.g., Morning motivation quote" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Style</label>
+                                                        <select class="form-select" id="image-style">
+                                                            <option value="minimalist">Minimalist</option>
+                                                            <option value="vibrant">Vibrant & Colorful</option>
+                                                            <option value="professional">Professional</option>
+                                                            <option value="aesthetic">Aesthetic/Dreamy</option>
+                                                            <option value="bold">Bold & Eye-catching</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Include Caption</label>
+                                                        <textarea class="form-control" id="image-caption-hint" rows="2" placeholder="Add caption suggestions or leave empty for AI to generate"></textarea>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary w-100">
+                                                        <span class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                                                        ✨ Generate Image
+                                                    </button>
+                                                </form>
+                                                <div id="image-preview" class="mt-3" style="display: none;">
+                                                    <!-- Image preview will go here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reel Script Generator -->
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border-0 shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-3">🎬 Generate Reel Script</h5>
+                                                <form id="reel-script-form">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Reel Topic</label>
+                                                        <input type="text" class="form-control" id="reel-topic" placeholder="e.g., 5 tips for productivity" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Reel Length</label>
+                                                        <select class="form-select" id="reel-length">
+                                                            <option value="15">15 seconds</option>
+                                                            <option value="30" selected>30 seconds</option>
+                                                            <option value="60">60 seconds</option>
+                                                            <option value="90">90 seconds</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Tone</label>
+                                                        <select class="form-select" id="reel-tone">
+                                                            <option value="energetic">Energetic</option>
+                                                            <option value="educational">Educational</option>
+                                                            <option value="funny">Funny/Entertaining</option>
+                                                            <option value="inspiring">Inspiring</option>
+                                                            <option value="casual">Casual/Relatable</option>
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-danger w-100">
+                                                        <span class="spinner-border spinner-border-sm me-2" style="display: none;"></span>
+                                                        🎥 Generate Script
+                                                    </button>
+                                                </form>
+                                                <div id="reel-script-output" class="mt-3" style="display: none;">
+                                                    <!-- Reel script will go here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Content Calendar Preview -->
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-3">📅 Your Generated Content</h5>
+                                                <div id="generated-content-list" class="list-group">
+                                                    <div class="text-center text-muted py-4">
+                                                        <p>No content generated yet. Create your first post or reel above!</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Next Steps Panel -->
+                            <div class="tab-pane fade" id="insights-panel" role="tabpanel">
+                                <div class="row g-4">
+                                    <!-- AI Recommendations -->
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0">🎯 Personalized Recommendations</h5>
+                                            </div>
+                                            <div class="card-body" id="ig-recommendations-panel">
+                                                <!-- Populated by displayAnalysisResults -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Plan -->
+                                    <div class="col-12">
+                                        <div class="card border-0 shadow-sm">
+                                            <div class="card-header bg-success text-white">
+                                                <h5 class="mb-0">📋 4-Week Action Plan</h5>
+                                            </div>
+                                            <div class="card-body" id="ig-action-plan-panel">
+                                                <!-- Populated by displayAnalysisResults -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Links -->
+                                    <div class="col-12">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <a href="/apps/growth_strategy" class="btn btn-outline-primary w-100">
+                                                    📈 Full Strategy Dashboard
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <a href="/apps/follower_analyzer" class="btn btn-outline-success w-100">
+                                                    🔍 Analyze Follower Quality
+                                                </a>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button id="export-plan-btn" class="btn btn-outline-secondary w-100">
+                                                    📄 Export Plan (PDF)
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Connect Account Section -->
+                    <div id="connect-section" class="text-center py-5">
+                        <div class="mb-4" style="font-size: 5rem;">📸</div>
+                        <h3 class="mb-3">Connect Your Instagram Account</h3>
+                        <p class="text-muted mb-4">AI will analyze your account and provide personalized growth strategies</p>
+                        
+                        <!-- Instagram OAuth Login -->
+                        <div class="card border-0 shadow-sm mx-auto mb-4" style="max-width: 500px;">
+                            <div class="card-body">
+                                <h5 class="mb-3">🔐 Login with Instagram</h5>
+                                <p class="text-muted small mb-3">Securely connect your Instagram account to automatically fetch all your data</p>
+                                <button id="instagram-oauth-btn" class="btn btn-lg w-100" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); color: white; border: none;">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display: none;"></span>
+                                    📸 Login with Instagram
+                                </button>
+                                <p class="text-muted small mt-2 mb-0">We'll fetch your profile, posts, and engagement data</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-muted mb-3">- OR -</div>
+                        
+                        <!-- Manual Entry Form -->
+                        <div class="card border-0 shadow-sm mx-auto" style="max-width: 500px;">
+                            <div class="card-body">
+                                <h5 class="mb-3">✍️ Enter Details Manually</h5>
+                                <form id="ig-connect-form">
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">Instagram Username</label>
+                                        <input type="text" class="form-control" name="username" 
+                                               placeholder="@yourusername" required>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">Followers</label>
+                                        <input type="number" class="form-control" name="followers" 
+                                               placeholder="1000" required>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">Following</label>
+                                        <input type="number" class="form-control" name="following" 
+                                               placeholder="500" required>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">Total Posts</label>
+                                        <input type="number" class="form-control" name="posts" 
+                                               placeholder="50" required>
+                                    </div>
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label">Average Engagement Rate (%)</label>
+                                        <input type="number" step="0.1" class="form-control" name="engagement" 
+                                               placeholder="2.5" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        🚀 Analyze My Account
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-muted small">
+                                <strong>Helpful Links:</strong> 
+                                <a href="/apps/growth_strategy">Full analytics dashboard</a> | 
+                                <a href="/apps/follower_analyzer">Check account quality</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="ig-loading" style="display: none;" class="text-center py-5">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Analyzing your account...</p>
+                    </div>
+
+                    <!-- Analysis Results Section (hidden initially) -->
+                    <div id="ig-analysis-results" style="display: none;">
+                        <!-- Health Score Card -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-body text-center">
+                                <h3 class="mb-3">Account Health Score</h3>
+                                <div id="ig-health-score">
+                                    <!-- Populated by JS -->
+                                </div>
+                                <div id="ig-account-stats" class="mt-4">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Recommendations -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">🎯 AI Recommendations</h5>
+                            </div>
+                            <div class="card-body" id="ig-ai-recommendations">
+                                <!-- Will be populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Growth Opportunities -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">🚀 Growth Opportunities</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="ig-growth-opportunities">
+                                    <!-- Will be populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly Action Plan -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">📅 Your 4-Week Action Plan</h5>
+                            </div>
+                            <div class="card-body" id="ig-action-plan">
+                                <!-- Will be populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <a href="/apps/growth_strategy" class="btn btn-outline-primary w-100">
+                                    📈 Full Strategy Dashboard
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="/apps/follower_analyzer" class="btn btn-outline-success w-100">
+                                    🔍 Analyze Follower Quality
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <button id="re-analyze-btn" class="btn btn-outline-secondary w-100">
+                                    🔄 Re-analyze Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+// Social Media App JavaScript
+(function() {
+    console.log('Social Media App script loaded');
+    
+    // Dashboard and tool view elements
+    const socialAppDashboard = document.getElementById('social-app-dashboard');
+    const socialAppToolView = document.getElementById('social-app-tool-view');
+    const backToSocialDashboard = document.getElementById('back-to-social-dashboard');
+    
+    console.log('Dashboard element:', socialAppDashboard);
+    console.log('Tool view element:', socialAppToolView);
+    
+    // Tool wrappers
+    const contentGeneratorWrapper = document.getElementById('content-generator-wrapper');
+    const leadFinderWrapper = document.getElementById('lead-finder-wrapper');
+    const platformSelectionWrapper = document.getElementById('platform-selection-wrapper');
+    const accountManagementWrapper = document.getElementById('account-management-wrapper');
+    const instagramManagerWrapper = document.getElementById('instagram-manager-wrapper');
+    
+    console.log('Instagram wrapper:', instagramManagerWrapper);
+    
+    // Dashboard cards
+    const showContentGenerator = document.getElementById('show-content-generator');
+    const showLeadFinder = document.getElementById('show-lead-finder');
+    const showInstagramManager = document.getElementById('show-instagram-manager');
+    const showAccountManagement = document.getElementById('show-account-management');
+    
+    console.log('Instagram card:', showInstagramManager);
+    
+    // Helper function to hide all tool wrappers
+    function hideAllTools() {
+        [contentGeneratorWrapper, leadFinderWrapper, platformSelectionWrapper, 
+         accountManagementWrapper, instagramManagerWrapper].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+    }
+    
+    // Show Instagram manager
+    if (showInstagramManager) {
+        console.log('Attaching click handler to Instagram card');
+        showInstagramManager.addEventListener('click', (e) => {
+            console.log('Instagram card clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (socialAppDashboard) socialAppDashboard.style.display = 'none';
+            if (socialAppToolView) socialAppToolView.style.display = 'block';
+            hideAllTools();
+            if (instagramManagerWrapper) {
+                instagramManagerWrapper.style.display = 'block';
+                console.log('Instagram wrapper displayed');
+            }
+        });
+    } else {
+        console.error('Instagram card element not found!');
+    }
+    
+    // Show account management
+    if (showAccountManagement) {
+        showAccountManagement.addEventListener('click', () => {
+            socialAppDashboard.style.display = 'none';
+            socialAppToolView.style.display = 'block';
+            hideAllTools();
+            if (accountManagementWrapper) accountManagementWrapper.style.display = 'block';
+        });
+    }
+    
+    // Back to dashboard
+    if (backToSocialDashboard) {
+        backToSocialDashboard.addEventListener('click', () => {
+            socialAppDashboard.style.display = 'block';
+            socialAppToolView.style.display = 'none';
+            hideAllTools();
+        });
+    }
+    
+    // Instagram AI Growth Functions
+    function analyzeInstagramAccount() {
+        const form = document.getElementById('ig-connect-form');
+        const formData = new FormData(form);
+        const btn = form.querySelector('button[type="submit"]');
+        const spinner = btn.querySelector('.spinner-border');
+        
+        // Show loading state
+        spinner.style.display = 'inline-block';
+        btn.disabled = true;
+        
+        // Hide results, show loading
+        document.getElementById('ig-analysis-results').style.display = 'none';
+        document.getElementById('ig-loading').style.display = 'block';
+        
+        // Prepare account data
+        const accountData = {
+            username: formData.get('username'),
+            followers: parseInt(formData.get('followers')),
+            following: parseInt(formData.get('following')),
+            posts: parseInt(formData.get('posts')),
+            avg_engagement_rate: parseFloat(formData.get('engagement'))
+        };
+        
+        fetch('/social/instagram/ai_analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(accountData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification('Error: ' + data.error, 'danger');
+                    return;
+                }
+                
+                displayAnalysisResults(data);
+                showNotification('✨ Analysis complete!', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to analyze account', 'danger');
+            })
+            .finally(() => {
+                spinner.style.display = 'none';
+                btn.disabled = false;
+                document.getElementById('ig-loading').style.display = 'none';
+            });
+    }
+    
+    function displayAnalysisResults(data) {
+        const resultsDiv = document.getElementById('ig-analysis-results');
+        
+        // Health Score
+        const healthScore = data.health_score;
+        const scoreColor = healthScore >= 80 ? 'success' : healthScore >= 60 ? 'warning' : 'danger';
+        document.getElementById('ig-health-score').innerHTML = `
+            <div class="display-3 text-${scoreColor}">${healthScore}/100</div>
+            <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar bg-${scoreColor}" style="width: ${healthScore}%"></div>
+            </div>
+        `;
+        
+        // Account Stats
+        document.getElementById('ig-account-stats').innerHTML = `
+            <div class="row g-3">
+                <div class="col-6">
+                    <div><strong>Username:</strong></div>
+                    <div class="text-muted">@${data.username}</div>
+                </div>
+                <div class="col-6">
+                    <div><strong>Followers:</strong></div>
+                    <div class="text-muted">${formatNumber(data.followers)}</div>
+                </div>
+                <div class="col-6">
+                    <div><strong>Following:</strong></div>
+                    <div class="text-muted">${formatNumber(data.following)}</div>
+                </div>
+                <div class="col-6">
+                    <div><strong>Posts:</strong></div>
+                    <div class="text-muted">${formatNumber(data.posts)}</div>
+                </div>
+                <div class="col-12">
+                    <div><strong>Engagement Rate:</strong></div>
+                    <div class="text-muted">${data.avg_engagement_rate.toFixed(2)}%</div>
+                </div>
+            </div>
+        `;
+        
+        // AI Recommendations
+        let recsHtml = '<div class="list-group">';
+        data.recommendations.forEach((rec, i) => {
+            recsHtml += `
+                <div class="list-group-item">
+                    <div class="d-flex align-items-start">
+                        <span class="badge bg-primary me-3">${i + 1}</span>
+                        <div>
+                            <strong>${rec.category}</strong>
+                            <p class="mb-0 mt-1">${rec.recommendation}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        recsHtml += '</div>';
+        document.getElementById('ig-ai-recommendations').innerHTML = recsHtml;
+        
+        // Growth Opportunities
+        let oppsHtml = '';
+        data.growth_opportunities.forEach(opp => {
+            const impactColor = opp.impact === 'High' ? 'danger' : opp.impact === 'Medium' ? 'warning' : 'info';
+            oppsHtml += `
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">${opp.opportunity}</h6>
+                                <span class="badge bg-${impactColor}">${opp.impact} Impact</span>
+                            </div>
+                            <p class="card-text small">${opp.action}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('ig-growth-opportunities').innerHTML = oppsHtml;
+        
+        // Action Plan
+        let planHtml = '<div class="timeline">';
+        data.action_plan.forEach((week, i) => {
+            planHtml += `
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <strong>Week ${i + 1}: ${week.focus}</strong>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            ${week.actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        });
+        planHtml += '</div>';
+        document.getElementById('ig-action-plan').innerHTML = planHtml;
+        
+        // Show results
+        resultsDiv.style.display = 'block';
+    }
+    
+    function formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    function showNotification(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 150);
+        }, 5000);
+    }
+    
+    // Instagram form submission
+    const igConnectForm = document.getElementById('ig-connect-form');
+    if (igConnectForm) {
+        igConnectForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            analyzeInstagramAccount();
+        });
+    }
+    
+    // Re-analyze button
+    const reAnalyzeBtn = document.getElementById('re-analyze-btn');
+    if (reAnalyzeBtn) {
+        reAnalyzeBtn.addEventListener('click', () => {
+            document.getElementById('ig-analysis-results').style.display = 'none';
+            document.getElementById('connect-section').style.display = 'block';
+        });
+    }
+    
+    // Instagram OAuth Login
+    const instagramOAuthBtn = document.getElementById('instagram-oauth-btn');
+    if (instagramOAuthBtn) {
+        instagramOAuthBtn.addEventListener('click', () => {
+            const spinner = instagramOAuthBtn.querySelector('.spinner-border');
+            spinner.style.display = 'inline-block';
+            instagramOAuthBtn.disabled = true;
+            
+            // Request auth URL from server
+            fetch('/auth/instagram/login')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification('Error: ' + data.error, 'danger');
+                        spinner.style.display = 'none';
+                        instagramOAuthBtn.disabled = false;
+                        return;
+                    }
+                    
+                    // Open Instagram OAuth in popup window
+                    const width = 600;
+                    const height = 700;
+                    const left = (screen.width - width) / 2;
+                    const top = (screen.height - height) / 2;
+                    
+                    const popup = window.open(
+                        data.auth_url,
+                        'Instagram Login',
+                        `width=${width},height=${height},left=${left},top=${top}`
+                    );
+                    
+                    // Listen for OAuth callback
+                    window.addEventListener('message', function(event) {
+                        if (event.data.type === 'instagram_auth_success') {
+                            popup.close();
+                            showNotification('✅ Instagram connected! Fetching your data...', 'success');
+                            
+                            // Fetch account data automatically
+                            fetchInstagramAccountData();
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Failed to initiate Instagram login', 'danger');
+                })
+                .finally(() => {
+                    spinner.style.display = 'none';
+                    instagramOAuthBtn.disabled = false;
+                });
+        });
+    }
+    
+    // Fetch Instagram account data and analyze
+    function fetchInstagramAccountData() {
+        document.getElementById('connect-section').style.display = 'none';
+        document.getElementById('ig-loading').style.display = 'block';
+        
+        fetch('/social/instagram/fetch_account_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification('Error: ' + data.error, 'danger');
+                    document.getElementById('ig-loading').style.display = 'none';
+                    document.getElementById('connect-section').style.display = 'block';
+                    return;
+                }
+                
+                // Calculate engagement rate from fetched data
+                const avgEngagement = ((data.avg_likes_per_post + data.avg_comments_per_post) / 1000) * 100;
+                
+                // Prepare account data for analysis
+                // Note: Instagram Basic Display API doesn't provide follower counts
+                // For demo, we'll use placeholder or ask user to upgrade to Business account
+                const accountData = {
+                    username: data.username,
+                    followers: 1000, // Placeholder - need Instagram Business API
+                    following: 500,  // Placeholder
+                    posts: data.media_count,
+                    avg_engagement_rate: avgEngagement
+                };
+                
+                // Analyze with AI
+                fetch('/social/instagram/ai_analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(accountData)
+                })
+                    .then(response => response.json())
+                    .then(analysis => {
+                        if (analysis.error) {
+                            showNotification('Error: ' + analysis.error, 'danger');
+                            return;
+                        }
+                        
+                        displayAnalysisResults(analysis);
+                        showNotification('✨ Analysis complete!', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Failed to analyze account', 'danger');
+                    })
+                    .finally(() => {
+                        document.getElementById('ig-loading').style.display = 'none';
+                    });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to fetch Instagram data', 'danger');
+                document.getElementById('ig-loading').style.display = 'none';
+                document.getElementById('connect-section').style.display = 'block';
+            });
+    }
+    
+    // Platform selection
+    const platformCards = document.querySelectorAll('.platform-card');
+    platformCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const platform = card.dataset.platform;
+            document.getElementById('post-platform').value = platform;
+            document.getElementById('generator-platform-name').textContent = platform;
+            hideAllTools();
+            if (contentGeneratorWrapper) contentGeneratorWrapper.style.display = 'block';
+        });
+    });
+    
+    // Back to platform selection
+    document.querySelectorAll('#back-to-platform-selection').forEach(btn => {
+        btn.addEventListener('click', () => {
+            hideAllTools();
+            if (platformSelectionWrapper) platformSelectionWrapper.style.display = 'block';
+        });
+    });
+    
+    // Content type toggle
+    document.querySelectorAll('input[name="content-type"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const postFields = document.getElementById('post-fields');
+            const videoFields = document.getElementById('video-fields');
+            if (e.target.value === 'post') {
+                if (postFields) postFields.style.display = 'block';
+                if (videoFields) videoFields.style.display = 'none';
+            } else {
+                if (postFields) postFields.style.display = 'none';
+                if (videoFields) videoFields.style.display = 'block';
+            }
+        });
+    });
+    
+    // Content generation form
+    const contentForm = document.getElementById('content-generation-form');
+    if (contentForm) {
+        contentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('generate-content-btn');
+            const spinner = btn.querySelector('.spinner-border');
+            const resultContainer = document.getElementById('content-result-container');
+            const resultElement = document.getElementById('content-result');
+            
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            resultContainer.style.display = 'none';
+            
+            const contentType = document.querySelector('input[name="content-type"]:checked').value;
+            const topic = document.getElementById('content-topic').value;
+            const platform = document.getElementById('post-platform').value;
+            
+            const payload = { content_type: contentType, topic, platform };
+            
+            if (contentType === 'post') {
+                payload.style = document.getElementById('post-style').value;
+            } else {
+                payload.audience = document.getElementById('video-audience').value;
+            }
+            
+            try {
+                const response = await fetch('/social/generate_content', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultElement.textContent = 'Error: ' + data.error;
+                } else {
+                    resultElement.textContent = data.content;
+                }
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                resultElement.textContent = 'Error: ' + error.message;
+                resultContainer.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
+    
+    // Lead finder form
+    const leadForm = document.getElementById('lead-finder-form');
+    if (leadForm) {
+        leadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('find-leads-btn');
+            const spinner = btn.querySelector('.spinner-border');
+            const resultContainer = document.getElementById('leads-result-container');
+            const resultElement = document.getElementById('leads-result');
+            
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            resultContainer.style.display = 'none';
+            
+            const businessType = document.getElementById('lead-business-type').value;
+            const location = document.getElementById('lead-location').value;
+            
+            try {
+                const response = await fetch('/social/find_leads', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ business_type: businessType, location })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultElement.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+                } else if (data.leads && data.leads.length > 0) {
+                    let html = '<ul class="list-group">';
+                    data.leads.forEach(lead => {
+                        html += `<li class="list-group-item"><strong>${lead.name}</strong><br><small>${lead.contact_email}</small></li>`;
+                    });
+                    html += '</ul>';
+                    resultElement.innerHTML = html;
+                } else {
+                    resultElement.innerHTML = '<div class="alert alert-info">' + (data.message || 'No leads found.') + '</div>';
+                }
+                resultContainer.style.display = 'block';
+            } catch (error) {
+                resultElement.innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';
+                resultContainer.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        });
+    }
+    
+    // Content template selector
+    const templateSelect = document.getElementById('content-template');
+    if (templateSelect) {
+        templateSelect.addEventListener('change', (e) => {
+            const topic = e.target.options[e.target.selectedIndex].dataset.topic;
+            if (topic) document.getElementById('content-topic').value = topic;
+        });
+    }
+    
+    // Connect account buttons (demo)
+    document.querySelectorAll('.connect-account-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.textContent = 'Connected ✓';
+            this.classList.remove('btn-outline-primary');
+            this.classList.add('btn-success');
+            this.disabled = true;
+        });
+    });
+})();
+</script>
+
+<script src="/static/js/instagram_suite.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

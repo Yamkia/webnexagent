@@ -1,11 +1,13 @@
 from odoo import api, SUPERUSER_ID
 
 def post_init_hook(cr, registry):
-    """Assign a default brand to existing websites after module install."""
+    """Create a default brand after module install."""
     env = api.Environment(cr, SUPERUSER_ID, {})
     Brand = env['deployable.brand']
-    Website = env['website']
-    if not Brand.search([], limit=1):
+    
+    # Get or create default brand
+    default_brand = Brand.search([('code', '=', 'greenmotive')], limit=1)
+    if not default_brand:
         default_brand = Brand.create({
             'name': 'GreenMotive',
             'code': 'greenmotive',
@@ -13,5 +15,5 @@ def post_init_hook(cr, registry):
             'secondary_color': '#0f766e',
             'logo_svg': '/deployable_brand_theme/static/src/img/logo.svg'
         })
-        for website in Website.search([]):
-            website.brand_id = default_brand.id
+    
+    cr.commit()

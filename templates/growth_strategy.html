@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Growth Strategy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .strategy-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .metric-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .metric-box h3 {
+            font-size: 2.5rem;
+            margin: 10px 0;
+        }
+        .content-day {
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .tactic-card {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .badge-custom {
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="strategy-container">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="mb-3">🚀 Instagram Growth Strategy Generator</h1>
+                <p class="text-muted">Get your personalized 30-day plan for organic growth</p>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Generate Your Strategy</h5>
+            </div>
+            <div class="card-body">
+                <form id="strategyForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Business Niche</label>
+                            <select class="form-select" id="niche" required>
+                                <option value="web_design">Web Design</option>
+                                <option value="digital_marketing">Digital Marketing</option>
+                                <option value="business_tips">Business Tips</option>
+                                <option value="behind_the_scenes">Behind The Scenes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Current Followers</label>
+                            <input type="number" class="form-control" id="currentFollowers" value="1000" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        📈 Generate 30-Day Strategy
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" style="display: none;">
+            <!-- Overview -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">🎯 Strategy Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="metric-box">
+                                <small>Current</small>
+                                <h3 id="currentCount">--</h3>
+                                <small>followers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-box">
+                                <small>Target (30d)</small>
+                                <h3 id="targetCount">--</h3>
+                                <small>followers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-box">
+                                <small>Projected Growth</small>
+                                <h3 id="growthCount">--</h3>
+                                <small>new followers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-box">
+                                <small>Growth Rate</small>
+                                <h3 id="growthRate">--</h3>
+                                <small>percent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3" id="postingFrequency"></div>
+                </div>
+            </div>
+
+            <!-- Content Calendar -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📅 Week 1 Content Calendar</h5>
+                </div>
+                <div class="card-body" id="contentCalendar">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Hashtag Strategy -->
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">#️⃣ Hashtag Strategy</h5>
+                </div>
+                <div class="card-body">
+                    <div id="hashtagStrategy"></div>
+                </div>
+            </div>
+
+            <!-- Engagement Tactics -->
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">💬 Daily Engagement Tactics</h5>
+                </div>
+                <div class="card-body" id="engagementTactics">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Growth Predictions -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">📊 Weekly Growth Predictions</h5>
+                </div>
+                <div class="card-body">
+                    <div id="growthPredictions"></div>
+                </div>
+            </div>
+
+            <!-- Reel Generator -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">🎥 Reel Script Generator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="reelTopic" placeholder="Enter topic (e.g., 'web design tips')">
+                        <button class="btn btn-primary" onclick="generateReelScript()">Generate Script</button>
+                    </div>
+                    <div id="reelScript"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('strategyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                niche: document.getElementById('niche').value,
+                current_followers: parseInt(document.getElementById('currentFollowers').value)
+            };
+
+            try {
+                const response = await fetch('/social/instagram/generate_strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const strategy = await response.json();
+                displayStrategy(strategy);
+            } catch (error) {
+                alert('Error generating strategy: ' + error.message);
+            }
+        });
+
+        function displayStrategy(strategy) {
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            // Overview metrics
+            const overview = strategy.overview;
+            document.getElementById('currentCount').textContent = overview.current_followers.toLocaleString();
+            document.getElementById('targetCount').textContent = overview.target_followers_30_days.toLocaleString();
+            const growth = overview.target_followers_30_days - overview.current_followers;
+            document.getElementById('growthCount').textContent = growth.toLocaleString();
+            const growthRate = ((growth / overview.current_followers) * 100).toFixed(1);
+            document.getElementById('growthRate').textContent = growthRate + '%';
+            document.getElementById('postingFrequency').innerHTML = `
+                <p class="lead"><strong>Posting Frequency:</strong> ${overview.posting_frequency}</p>
+            `;
+
+            // Content Calendar (Week 1)
+            const calendarDiv = document.getElementById('contentCalendar');
+            calendarDiv.innerHTML = '';
+            strategy.content_calendar.slice(0, 7).forEach(day => {
+                calendarDiv.innerHTML += `
+                    <div class="content-day">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6><strong>Day ${day.day} - ${day.day_of_week}</strong> (${day.date})</h6>
+                                <p class="mb-1"><span class="badge bg-primary">${day.post_type}</span> 
+                                   <span class="badge bg-secondary">${day.posting_time}</span></p>
+                                <p class="mb-1"><strong>Topic:</strong> ${day.topic}</p>
+                                <p class="mb-1"><strong>Hook:</strong> ${day.caption_hook}</p>
+                                <p class="mb-0 text-muted"><strong>CTA:</strong> ${day.cta}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Hashtag Strategy
+            const hashtagDiv = document.getElementById('hashtagStrategy');
+            const hashtags = strategy.hashtag_strategy;
+            hashtagDiv.innerHTML = `
+                <div class="mb-3">
+                    <h6>Primary Hashtags:</h6>
+                    ${hashtags.primary_hashtags.map(tag => `<span class="badge badge-custom bg-primary">${tag}</span>`).join('')}
+                </div>
+                <div class="mb-3">
+                    <h6>Secondary Hashtags:</h6>
+                    ${hashtags.secondary_hashtags.map(tag => `<span class="badge badge-custom bg-info">${tag}</span>`).join('')}
+                </div>
+                <div class="alert alert-info">
+                    <strong>Usage Guide:</strong><br>
+                    • Use ${hashtags.usage_guide.per_post} per post<br>
+                    • Place ${hashtags.usage_guide.placement}<br>
+                    • Mix: ${hashtags.usage_guide.mix}
+                </div>
+            `;
+
+            // Engagement Tactics
+            const tacticDiv = document.getElementById('engagementTactics');
+            tacticDiv.innerHTML = '';
+            strategy.engagement_tactics.forEach(tactic => {
+                tacticDiv.innerHTML += `
+                    <div class="tactic-card">
+                        <h6><strong>${tactic.tactic}</strong></h6>
+                        <ul class="mb-2">
+                            ${tactic.steps.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                        <small class="text-muted"><strong>Impact:</strong> ${tactic.impact}</small>
+                    </div>
+                `;
+            });
+
+            // Growth Predictions
+            const predictionDiv = document.getElementById('growthPredictions');
+            const predictions = strategy.growth_predictions;
+            predictionDiv.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>Week 1: +${predictions.week_1.new_followers} followers</h6>
+                        <p class="text-muted">${predictions.week_1.focus}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Week 2: +${predictions.week_2.new_followers} followers</h6>
+                        <p class="text-muted">${predictions.week_2.focus}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Week 3: +${predictions.week_3.new_followers} followers</h6>
+                        <p class="text-muted">${predictions.week_3.focus}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6>Week 4: +${predictions.week_4.new_followers} followers</h6>
+                        <p class="text-muted">${predictions.week_4.focus}</p>
+                    </div>
+                </div>
+                <div class="alert alert-success">
+                    <strong>Total Projected Growth:</strong> +${predictions.total_projected} followers<br>
+                    <strong>Target Engagement Rate:</strong> ${predictions.engagement_rate_goal}
+                </div>
+            `;
+        }
+
+        async function generateReelScript() {
+            const topic = document.getElementById('reelTopic').value;
+            if (!topic) {
+                alert('Please enter a topic');
+                return;
+            }
+
+            try {
+                const response = await fetch('/social/instagram/generate_reel_script', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: topic })
+                });
+
+                const script = await response.json();
+                displayReelScript(script);
+            } catch (error) {
+                alert('Error generating script: ' + error.message);
+            }
+        }
+
+        function displayReelScript(script) {
+            const scriptDiv = document.getElementById('reelScript');
+            scriptDiv.innerHTML = `
+                <div class="alert alert-primary">
+                    <h6><strong>📹 Reel Topic:</strong> ${script.topic}</h6>
+                    <p><strong>Duration:</strong> ${script.duration}</p>
+                    <hr>
+                    <p><strong>Hook:</strong> ${script.hook}</p>
+                    <p><strong>Content Flow:</strong></p>
+                    <ul>
+                        ${script.content.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                    <p><strong>Text Overlay:</strong> ${script.text_overlay}</p>
+                    <p><strong>Music:</strong> ${script.music}</p>
+                    <p><strong>Hashtags:</strong> ${script.hashtags}</p>
+                    <p class="mb-0"><strong>Posting Tip:</strong> ${script.posting_tip}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

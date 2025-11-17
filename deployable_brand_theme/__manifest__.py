@@ -5,18 +5,20 @@
     "category": "Theme/Website",
     "author": "Your Company",
     "license": "LGPL-3",
-    "depends": ["website", "web"],
+    "depends": ["web"],
+    "assets": {
+        "web.assets_backend": [
+            "deployable_brand_theme/static/src/css/backend_theme.css",
+        ],
+    },
     "data": [
         "security/ir.model.access.csv",
-        "data/website_data.xml",
+        "views/force_theme.xml",
         "data/brand_data.xml",
-        "views/assets.xml",
-        "views/layout.xml",
-        "views/brand_templates.xml",
+        "data/website_data.xml",
         "views/brand_views.xml",
         "views/brand_dashboard.xml",
         "views/brand_preview.xml",
-        "views/res_config_settings_view.xml"
     ],
     "post_init_hook": "post_init_hook",
     "installable": True,

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="modern_dashboard_inject" name="Modern Dashboard Theme" inherit_id="web.layout">
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" type="text/css" href="/deployable_brand_theme/static/src/css/modern_dashboard.css?v=1.2"/>
+            <style type="text/css">
+                /* Force Dark Theme */
+                body, html, .o_web_client {
+                    background: #0f172a !important;
+                    color: #f8fafc !important;
+                }
+                
+                /* Gradient Header */
+                .o_main_navbar, nav.o_main_navbar {
+                    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%) !important;
+                    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3) !important;
+                    height: 64px !important;
+                }
+                
+                .o_main_navbar * {
+                    color: white !important;
+                }
+                
+                /* Dark Sidebar */
+                .o_menu_sections, aside {
+                    background: #1e293b !important;
+                    border-right: 1px solid #334155 !important;
+                }
+                
+                /* Active Menu */
+                .o_menu_sections .dropdown-toggle.show,
+                .o_nav_entry.active {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+                    color: white !important;
+                }
+                
+                /* Dark Cards */
+                .o_form_sheet, .o_kanban_record, .o_list_view {
+                    background: #1e293b !important;
+                    border: 1px solid #334155 !important;
+                    border-radius: 12px !important;
+                }
+                
+                /* Modern Buttons */
+                .btn-primary {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+                    border: none !important;
+                    border-radius: 8px !important;
+                }
+                
+                /* Dark Inputs */
+                input, textarea, select {
+                    background: #020617 !important;
+                    border: 1px solid #334155 !important;
+                    color: #f8fafc !important;
+                }
+                
+                /* Dark Table */
+                .o_list_table thead {
+                    background: #020617 !important;
+                }
+                
+                .o_list_table tbody tr {
+                    border-bottom: 1px solid #334155 !important;
+                }
+                
+                .o_list_table th, .o_list_table td {
+                    color: #cbd5e1 !important;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

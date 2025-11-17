@@ -1,0 +1,239 @@
+/* ========================================
+   AGGRESSIVE ODOO BACKEND THEME OVERRIDE
+   Dark Mode with Purple Gradient Header
+   ======================================== */
+
+/* Force Dark Background on EVERYTHING */
+body,
+.o_web_client,
+.o_action_manager,
+.o_content,
+html {
+    background: #0f172a !important;
+    color: #f1f5f9 !important;
+}
+
+/* Top Navigation Bar - Purple Gradient */
+.o_navbar,
+.o_main_navbar,
+nav.o_main_navbar {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3) !important;
+}
+
+.o_navbar *,
+.o_main_navbar * {
+    color: white !important;
+}
+
+/* Sidebar/Menu - Dark */
+.o_menu_sections,
+.o_menu_brand,
+.o_main_sidebar {
+    background: #1e293b !important;
+    border-right: 1px solid #334155 !important;
+}
+
+.o_menu_sections .o_nav_entry,
+.o_menu_sections a {
+    color: #cbd5e1 !important;
+}
+
+.o_menu_sections .o_nav_entry:hover,
+.o_menu_sections a:hover {
+    background: #334155 !important;
+    color: white !important;
+}
+
+/* Content Cards */
+.o_content,
+.o_form_view,
+.o_kanban_view,
+.o_list_view {
+    background: #0f172a !important;
+}
+
+.o_form_sheet,
+.o_kanban_record,
+.o_data_row,
+table {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+}
+
+/* Buttons - Purple Theme */
+.btn-primary,
+.o_form_button_save {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-primary:hover,
+.o_form_button_save:hover {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn-secondary {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #f1f5f9 !important;
+}
+
+/* Input Fields */
+input,
+textarea,
+select,
+.o_input {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Dropdown Menus */
+.dropdown-menu,
+.o_dropdown_menu {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+.dropdown-item,
+.o_dropdown_item {
+    color: #cbd5e1 !important;
+}
+
+.dropdown-item:hover,
+.o_dropdown_item:hover {
+    background: #334155 !important;
+    color: white !important;
+}
+
+/* Search Bar */
+.o_searchview,
+.o_searchview_input {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+/* Kanban Cards */
+.o_kanban_record {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.o_kanban_record:hover {
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 8px 15px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* List/Table View */
+.o_list_table thead {
+    background: #334155 !important;
+    color: white !important;
+}
+
+.o_list_table tbody tr {
+    background: #1e293b !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+.o_list_table tbody tr:hover {
+    background: #334155 !important;
+}
+
+/* Control Panel */
+.o_control_panel {
+    background: #1e293b !important;
+    border-bottom: 1px solid #334155 !important;
+}
+
+/* Modals */
+.modal-content {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+.modal-header,
+.modal-footer {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+/* Chatter/Activity */
+.o_chatter,
+.o_activity {
+    background: #1e293b !important;
+}
+
+/* Status Tags */
+.badge,
+.o_tag {
+    background: #8b5cf6 !important;
+    color: white !important;
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: #1e293b !important;
+    color: white !important;
+    border-color: #8b5cf6 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb,
+.o_breadcrumb {
+    background: transparent !important;
+}
+
+.breadcrumb-item,
+.o_breadcrumb_item {
+    color: #cbd5e1 !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Force text color everywhere */
+div, span, p, label, h1, h2, h3, h4, h5, h6 {
+    color: inherit !important;
+}
+
+/* Make sure all panels are dark */
+.panel,
+.panel-default {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}

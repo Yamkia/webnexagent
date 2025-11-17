@@ -1,0 +1,8 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/odoo-source"
+  ],
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none"
+  }
+}

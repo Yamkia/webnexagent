@@ -117,6 +117,15 @@ def serve_app(app_name):
         'social_media': config.ENABLE_SOCIAL_MEDIA_APP if AGENT_LOADED else False,
     }
     template_file = f"{app_name}_app.html"
+    
+    # Special case: follower_analyzer is a standalone page
+    if app_name == 'follower_analyzer':
+        return render_template('follower_analyzer.html')
+    
+    # Special case: growth_strategy is a standalone page
+    if app_name == 'growth_strategy':
+        return render_template('growth_strategy.html')
+    
     # Provide per-app template context
     context = {"visibility": enabled_apps, "agent_loaded": AGENT_LOADED}
     if app_name == 'email':
@@ -695,6 +704,415 @@ def social_find_leads():
             return jsonify({'leads': [], 'message': agent_output})
     else:
         return jsonify({'error': agent_output}), 500
+
+@app.route('/social/instagram/account_info', methods=['GET'])
+def instagram_account_info():
+    """Retrieves Instagram business account information."""
+    try:
+        use_real_api = request.args.get('real_api', 'false').lower() == 'true'
+        
+        if use_real_api:
+            # Use real Instagram Graph API
+            from instagram_api import instagram_api
+            account_data = instagram_api.get_account_info()
+        else:
+            # Use demo/simulation data
+            from social_media_tools import get_instagram_account_info
+            account_id = request.args.get('account_id', 'business_main')
+            account_data = get_instagram_account_info.invoke({"account_id": account_id})
+        
+        return jsonify(account_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/add_followers', methods=['POST'])
+def instagram_add_followers():
+    """Adds followers to the Instagram business account."""
+    try:
+        from social_media_tools import add_instagram_followers
+        data = request.json or {}
+        count = data.get('count', 10000)
+        account_id = data.get('account_id', 'business_main')
+        result_data = add_instagram_followers.invoke({"account_id": account_id, "count": count})
+        return jsonify(result_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/follower_growth', methods=['GET'])
+def instagram_follower_growth():
+    """Retrieves follower growth history."""
+    try:
+        from social_media_tools import get_instagram_follower_growth
+        growth_data = get_instagram_follower_growth.invoke({"account_id": "business_main"})
+        return jsonify({'growth': growth_data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/insights', methods=['GET'])
+def instagram_insights():
+    """Get real Instagram account insights (analytics)."""
+    try:
+        from instagram_api import instagram_api
+        metrics = request.args.get('metrics', '').split(',') if request.args.get('metrics') else None
+        period = request.args.get('period', 'day')
+        insights_data = instagram_api.get_insights(metrics=metrics, period=period)
+        return jsonify(insights_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/media', methods=['GET'])
+def instagram_media():
+    """Get recent Instagram posts with engagement data."""
+    try:
+        from instagram_api import instagram_api
+        limit = int(request.args.get('limit', 10))
+        media_data = instagram_api.get_recent_media(limit=limit)
+        return jsonify({'media': media_data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/real_follower_growth', methods=['GET'])
+def instagram_real_follower_growth():
+    """Get real Instagram follower growth data."""
+    try:
+        from instagram_api import instagram_api
+        days = int(request.args.get('days', 30))
+        growth_data = instagram_api.get_follower_growth(days=days)
+        return jsonify(growth_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/analyze_quality', methods=['POST'])
+def analyze_follower_quality():
+    """Analyze Instagram account for fake followers and quality metrics."""
+    try:
+        from follower_quality_analyzer import FollowerQualityAnalyzer
+        
+        data = request.json or {}
+        account_data = {
+            'username': data.get('username', 'unknown'),
+            'followers': data.get('followers', 0),
+            'following': data.get('following', 0),
+            'posts': data.get('posts', 0),
+            'avg_likes': data.get('avg_likes', 0),
+            'avg_comments': data.get('avg_comments', 0)
+        }
+        
+        analyzer = FollowerQualityAnalyzer()
+        analysis = analyzer.analyze_account(account_data)
+        
+        return jsonify({
+            'username': account_data['username'],
+            'total_followers': analysis.total_followers,
+            'quality_score': analysis.quality_score,
+            'engagement_rate': analysis.engagement_rate,
+            'fake_percentage': analysis.fake_percentage,
+            'suspicious_followers': analysis.suspicious_followers,
+            'red_flags': analysis.red_flags,
+            'details': analysis.details
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/compare_accounts', methods=['POST'])
+def compare_instagram_accounts():
+    """Compare two Instagram accounts for quality."""
+    try:
+        from follower_quality_analyzer import FollowerQualityAnalyzer
+        
+        data = request.json or {}
+        account1 = data.get('account1', {})
+        account2 = data.get('account2', {})
+        
+        analyzer = FollowerQualityAnalyzer()
+        comparison = analyzer.compare_accounts(account1, account2)
+        
+        return jsonify(comparison)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/generate_strategy', methods=['POST'])
+def generate_growth_strategy():
+    """Generate a 30-day Instagram growth strategy."""
+    try:
+        from growth_strategy_generator import InstagramGrowthStrategy
+        
+        data = request.json or {}
+        niche = data.get('niche', 'web_design')
+        current_followers = data.get('current_followers', 1000)
+        
+        generator = InstagramGrowthStrategy()
+        strategy = generator.generate_30_day_strategy(niche, current_followers)
+        
+        return jsonify(strategy)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/generate_reel_script', methods=['POST'])
+def generate_reel_script():
+    """Generate a script for an Instagram Reel."""
+    try:
+        from growth_strategy_generator import InstagramGrowthStrategy
+        
+        data = request.json or {}
+        topic = data.get('topic', 'web design tips')
+        
+        generator = InstagramGrowthStrategy()
+        script = generator.generate_reel_script(topic)
+        
+        return jsonify(script)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/ai_analyze', methods=['POST'])
+def ai_analyze_instagram():
+    """Analyze an Instagram account with AI recommendations."""
+    try:
+        from instagram_ai_growth import InstagramAIGrowthAssistant
+        
+        data = request.json or {}
+        
+        # Validate required fields
+        required_fields = ['username', 'followers', 'following', 'posts', 'avg_engagement_rate']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Create account data
+        account_data = {
+            'username': data['username'],
+            'followers': int(data['followers']),
+            'following': int(data['following']),
+            'posts': int(data['posts']),
+            'avg_engagement_rate': float(data['avg_engagement_rate'])
+        }
+        
+        # Analyze with AI
+        assistant = InstagramAIGrowthAssistant()
+        analysis = assistant.analyze_account(account_data)
+        
+        return jsonify(analysis)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/auth/instagram/login')
+def instagram_login():
+    """Initiate Instagram OAuth login"""
+    try:
+        from instagram_oauth import InstagramOAuth
+        import secrets
+        
+        oauth = InstagramOAuth()
+        
+        # Generate state for CSRF protection
+        state = secrets.token_urlsafe(32)
+        session['oauth_state'] = state
+        
+        # Get authorization URL
+        auth_url = oauth.get_authorization_url(state)
+        
+        return jsonify({'auth_url': auth_url})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/auth/instagram/callback')
+def instagram_callback():
+    """Handle Instagram OAuth callback"""
+    try:
+        from instagram_oauth import InstagramOAuth, store_token
+        
+        # Verify state parameter
+        state = request.args.get('state')
+        stored_state = session.get('oauth_state')
+        
+        if not state or state != stored_state:
+            return "Invalid state parameter. Possible CSRF attack.", 400
+        
+        # Get authorization code
+        code = request.args.get('code')
+        if not code:
+            error = request.args.get('error')
+            error_reason = request.args.get('error_reason')
+            error_description = request.args.get('error_description')
+            return f"Authorization failed: {error_description or error}", 400
+        
+        oauth = InstagramOAuth()
+        
+        # Exchange code for token
+        token_response = oauth.exchange_code_for_token(code)
+        if not token_response:
+            return "Failed to exchange code for token", 500
+        
+        # Get long-lived token
+        short_lived_token = token_response.get('access_token')
+        long_lived_response = oauth.get_long_lived_token(short_lived_token)
+        
+        if long_lived_response:
+            access_token = long_lived_response.get('access_token')
+        else:
+            access_token = short_lived_token
+        
+        user_id = token_response.get('user_id')
+        
+        # Get user profile to store username
+        profile = oauth.get_user_profile(access_token)
+        username = profile.get('username', '') if profile else ''
+        
+        # Store token
+        store_token(user_id, {
+            'access_token': access_token,
+            'expires_in': long_lived_response.get('expires_in', 3600) if long_lived_response else 3600
+        })
+        
+        # Store in session
+        session['instagram_user_id'] = user_id
+        session['instagram_access_token'] = access_token
+        session['instagram_username'] = username
+        
+        # Redirect back to social media app
+        return """
+        <html>
+        <head>
+            <title>Instagram Login Success</title>
+            <script>
+                // Store token in parent window and close popup
+                if (window.opener) {
+                    window.opener.postMessage({
+                        type: 'instagram_auth_success',
+                        user_id: '""" + str(user_id) + """',
+                        access_token: '""" + access_token + """'
+                    }, '*');
+                    window.close();
+                } else {
+                    window.location.href = '/apps/social_media';
+                }
+            </script>
+        </head>
+        <body>
+            <h2>Login Successful!</h2>
+            <p>Redirecting back to Social Media Suite...</p>
+            <p>If you're not redirected, <a href="/apps/social_media">click here</a>.</p>
+        </body>
+        </html>
+        """
+    except Exception as e:
+        return f"Error during Instagram authentication: {str(e)}", 500
+
+@app.route('/social/instagram/fetch_account_data')
+def fetch_instagram_account_data():
+    """Fetch complete account data from Instagram using stored token"""
+    try:
+        from instagram_oauth import InstagramOAuth, get_token
+        
+        user_id = session.get('instagram_user_id')
+        access_token = session.get('instagram_access_token')
+        
+        if not user_id or not access_token:
+            return jsonify({'error': 'Not authenticated. Please login with Instagram first.'}), 401
+        
+        oauth = InstagramOAuth()
+        
+        # Get comprehensive account data
+        account_data = oauth.get_comprehensive_account_data(access_token)
+        
+        if not account_data:
+            return jsonify({'error': 'Failed to fetch account data from Instagram'}), 500
+        
+        return jsonify(account_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/generate_image', methods=['POST'])
+def generate_instagram_image():
+    """Generate an image post with AI"""
+    try:
+        data = request.json or {}
+        topic = data.get('topic', 'motivational quote')
+        style = data.get('style', 'minimalist')
+        caption_hint = data.get('caption_hint', '')
+        
+        # Generate caption using AI
+        from growth_strategy_generator import InstagramGrowthStrategy
+        generator = InstagramGrowthStrategy()
+        
+        # Create a prompt for caption generation
+        caption_prompt = f"Create an engaging Instagram caption for a {style} post about: {topic}"
+        if caption_hint:
+            caption_prompt += f". User wants: {caption_hint}"
+        
+        # For now, return a structured response
+        # In production, integrate with DALL-E or Midjourney for actual image generation
+        response = {
+            'success': True,
+            'image_url': f'/static/placeholder-{style}.jpg',  # Placeholder
+            'caption': f"✨ {topic.title()} ✨\n\n{caption_hint if caption_hint else 'Transform your mindset, transform your life.'}\n\n#motivation #inspiration #growth #success",
+            'hashtags': ['#motivation', '#inspiration', '#growth', '#success', '#mindset'],
+            'best_posting_time': '9:00 AM or 7:00 PM',
+            'style': style,
+            'topic': topic
+        }
+        
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/generate_reel_script', methods=['POST'])
+def generate_instagram_reel_script():
+    """Generate a Reel script with AI"""
+    try:
+        from growth_strategy_generator import InstagramGrowthStrategy
+        
+        data = request.json or {}
+        topic = data.get('topic', 'productivity tips')
+        length = int(data.get('length', 30))
+        tone = data.get('tone', 'energetic')
+        
+        generator = InstagramGrowthStrategy()
+        script_data = generator.generate_reel_script(topic)
+        
+        # Enhance with tone and length specifications
+        script_data['length'] = f"{length} seconds"
+        script_data['tone'] = tone
+        script_data['tips'] = [
+            f"Hook viewers in first 3 seconds with: '{script_data.get('hook', 'Hey!')}'",
+            f"Use trending audio for {tone} vibe",
+            "Add text overlays for each point",
+            f"End with strong CTA: '{script_data.get('cta', 'Follow for more!')}'"
+        ]
+        
+        return jsonify(script_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/session_status')
+def instagram_session_status():
+    """Check if user has active Instagram session"""
+    try:
+        user_id = session.get('instagram_user_id')
+        access_token = session.get('instagram_access_token')
+        username = session.get('instagram_username', '')
+        
+        if user_id and access_token:
+            return jsonify({
+                'logged_in': True,
+                'user_id': user_id,
+                'username': username
+            })
+        else:
+            return jsonify({'logged_in': False})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/auth/instagram/logout', methods=['POST'])
+def instagram_logout():
+    """Logout from Instagram"""
+    try:
+        session.pop('instagram_user_id', None)
+        session.pop('instagram_access_token', None)
+        session.pop('instagram_username', None)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/chat', methods=['POST'])
 def chat():

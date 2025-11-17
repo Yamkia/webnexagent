@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Instagram Follower Manager Test</h1>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h3 id="followers">Loading...</h3>
+                <button id="loadBtn" class="btn btn-primary">Load Account</button>
+                <button id="add10k" class="btn btn-success">Add 10K Followers</button>
+            </div>
+        </div>
+        
+        <div id="result" class="mt-3"></div>
+    </div>
+    
+    <script>
+        document.getElementById('loadBtn').addEventListener('click', async () => {
+            const response = await fetch('http://127.0.0.1:5001/social/instagram/account_info');
+            const data = await response.json();
+            document.getElementById('followers').textContent = 'Followers: ' + data.followers;
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        });
+        
+        document.getElementById('add10k').addEventListener('click', async () => {
+            const response = await fetch('http://127.0.0.1:5001/social/instagram/add_followers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({count: 10000})
+            });
+            const data = await response.json();
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            // Reload account
+            const r2 = await fetch('http://127.0.0.1:5001/social/instagram/account_info');
+            const d2 = await r2.json();
+            document.getElementById('followers').textContent = 'Followers: ' + d2.followers;
+        });
+    </script>
+</body>
+</html>

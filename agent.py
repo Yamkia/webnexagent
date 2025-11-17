@@ -2,11 +2,14 @@ import sys
 import os
 import config
 from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI  # Keep this as it's used for LLM selection
 from langchain_anthropic import ChatAnthropic
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage, AIMessage
-from google.api_core.exceptions import NotFound as GoogleModelNotFound
+try:
+    from google.api_core.exceptions import NotFound as GoogleModelNotFound
+except Exception:
+    class GoogleModelNotFound(Exception):
+        pass
 
 # Add the project root directory to the Python path to ensure modules can be found.
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +61,8 @@ def _create_llm(provider: str, model_name: str):
             default_headers=_openrouter_headers(),
         )
     if provider == "google":
+        # Lazy import to avoid heavy Google client imports unless actually used
+        from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
             model=model_name,
             google_api_key=config.GOOGLE_API_KEY,

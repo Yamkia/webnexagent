@@ -29,15 +29,6 @@ services:
       - ./odoo.conf:/etc/odoo/odoo.conf
     networks:
       - odoo-network
-    command: >
-      bash -c "
-        echo 'Installing brand theme module...' &&
-        odoo -c /etc/odoo/odoo.conf -d odoo -i deployable_brand_theme --stop-after-init --without-demo=all &&
-        echo 'Provisioning brand: ${ODOO_BRAND_CODE:-greenmotive}' &&
-        python3 /mnt/extra-addons/deployable_brand_theme/provision_brand.py --brand-code ${ODOO_BRAND_CODE:-greenmotive} --db-name odoo --odoo-url http://localhost:8069 &&
-        echo 'Starting Odoo...' &&
-        odoo -c /etc/odoo/odoo.conf
-      "
 
   # Optional: Separate brand environments
   odoo-techpro:
