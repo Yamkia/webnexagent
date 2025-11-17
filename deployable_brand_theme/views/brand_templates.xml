@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <!-- Add a brand-specific class to body to scope CSS: body.brand-<code> -->
-  <template id="website_layout_brand_class" inherit_id="website.layout" name="Website Layout with Brand Class">
-    <xpath expr="//body" position="attributes">
-      <attribute name="t-attf-class">brand-{{ (website and website._get_brand_code()) or 'default' }}</attribute>
-      <attribute name="data-brand" t-att="(website and website._get_brand_code()) or 'default'"/>
-    </xpath>
-  </template>
+  <!-- Brand templates disabled until website module is installed -->
 </odoo>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Follower Quality Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+        .analyzer-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .quality-score {
+            font-size: 4rem;
+            font-weight: bold;
+        }
+        .score-excellent { color: #10b981; }
+        .score-good { color: #3b82f6; }
+        .score-average { color: #f59e0b; }
+        .score-poor { color: #ef4444; }
+        .metric-card {
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+        }
+        .red-flag {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .green-flag {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .recommendation {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="analyzer-container">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="mb-3">🔍 Instagram Follower Quality Analyzer</h1>
+                <p class="text-muted">Detect fake followers and analyze account authenticity</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Analyze Account</h5>
+            </div>
+            <div class="card-body">
+                <form id="analyzeForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" placeholder="@username" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Followers</label>
+                            <input type="number" class="form-control" id="followers" placeholder="50000" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Following</label>
+                            <input type="number" class="form-control" id="following" placeholder="1200" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Total Posts</label>
+                            <input type="number" class="form-control" id="posts" placeholder="450" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Average Likes per Post</label>
+                            <input type="number" class="form-control" id="avgLikes" placeholder="2000" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Average Comments per Post</label>
+                            <input type="number" class="form-control" id="avgComments" placeholder="150" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        🔍 Analyze Account Quality
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" style="display: none;">
+            <!-- Quality Score Card -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>Quality Score</h3>
+                    <div class="quality-score" id="qualityScore">--</div>
+                    <div class="mt-3">
+                        <span class="badge bg-primary fs-5" id="qualityTier">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">📊 Key Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="metric-card card">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Engagement Rate</h6>
+                                    <h3 id="engagementRate">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card card">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Fake Followers</h6>
+                                    <h3 id="fakePercentage">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="metric-card card">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Real Followers (Est.)</h6>
+                                    <h3 id="realFollowers">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card card">
+                                <div class="card-body">
+                                    <h6 class="text-muted">Suspicious Accounts</h6>
+                                    <h3 id="suspiciousFollowers">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Red Flags -->
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">🚩 Red Flags</h5>
+                </div>
+                <div class="card-body" id="redFlagsContainer">
+                    <!-- Red flags will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">💡 Recommendations</h5>
+                </div>
+                <div class="card-body" id="recommendationsContainer">
+                    <!-- Recommendations will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Detailed Analysis -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">📈 Detailed Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody id="detailsTable">
+                            <!-- Details will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Analysis Examples -->
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">⚡ Quick Analysis Examples</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-success w-100" onclick="loadExample('good')">
+                            ✅ Authentic Account
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-warning w-100" onclick="loadExample('average')">
+                            ⚠️ Average Account
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-danger w-100" onclick="loadExample('fake')">
+                            🚫 Fake Followers
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Example data presets
+        const examples = {
+            good: {
+                username: '@authentic_influencer',
+                followers: 50000,
+                following: 1200,
+                posts: 450,
+                avgLikes: 2000,
+                avgComments: 150
+            },
+            average: {
+                username: '@average_account',
+                followers: 25000,
+                following: 800,
+                posts: 200,
+                avgLikes: 300,
+                avgComments: 25
+            },
+            fake: {
+                username: '@bought_followers',
+                followers: 100000,
+                following: 50,
+                posts: 25,
+                avgLikes: 300,
+                avgComments: 10
+            }
+        };
+
+        function loadExample(type) {
+            const example = examples[type];
+            document.getElementById('username').value = example.username;
+            document.getElementById('followers').value = example.followers;
+            document.getElementById('following').value = example.following;
+            document.getElementById('posts').value = example.posts;
+            document.getElementById('avgLikes').value = example.avgLikes;
+            document.getElementById('avgComments').value = example.avgComments;
+        }
+
+        document.getElementById('analyzeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                username: document.getElementById('username').value,
+                followers: parseInt(document.getElementById('followers').value),
+                following: parseInt(document.getElementById('following').value),
+                posts: parseInt(document.getElementById('posts').value),
+                avg_likes: parseInt(document.getElementById('avgLikes').value),
+                avg_comments: parseInt(document.getElementById('avgComments').value)
+            };
+
+            try {
+                const response = await fetch('/social/instagram/analyze_quality', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                alert('Error analyzing account: ' + error.message);
+            }
+        });
+
+        function displayResults(result) {
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            // Quality Score
+            const qualityScore = result.quality_score;
+            document.getElementById('qualityScore').textContent = qualityScore.toFixed(1);
+            document.getElementById('qualityScore').className = 'quality-score ' + getScoreClass(qualityScore);
+            document.getElementById('qualityTier').textContent = result.details.quality_tier;
+
+            // Key Metrics
+            document.getElementById('engagementRate').textContent = result.engagement_rate.toFixed(2) + '%';
+            document.getElementById('fakePercentage').textContent = result.fake_percentage.toFixed(1) + '%';
+            document.getElementById('realFollowers').textContent = result.details.real_followers_estimate.toLocaleString();
+            document.getElementById('suspiciousFollowers').textContent = result.suspicious_followers.toLocaleString();
+
+            // Red Flags
+            const redFlagsContainer = document.getElementById('redFlagsContainer');
+            redFlagsContainer.innerHTML = '';
+            result.red_flags.forEach(flag => {
+                const flagDiv = document.createElement('div');
+                flagDiv.className = flag.includes('✅') ? 'green-flag' : 'red-flag';
+                flagDiv.textContent = flag;
+                redFlagsContainer.appendChild(flagDiv);
+            });
+
+            // Recommendations
+            const recommendationsContainer = document.getElementById('recommendationsContainer');
+            recommendationsContainer.innerHTML = '';
+            result.details.recommendations.forEach(rec => {
+                const recDiv = document.createElement('div');
+                recDiv.className = 'recommendation';
+                recDiv.textContent = rec;
+                recommendationsContainer.appendChild(recDiv);
+            });
+
+            // Detailed Analysis Table
+            const detailsTable = document.getElementById('detailsTable');
+            detailsTable.innerHTML = `
+                <tr>
+                    <td><strong>Following Ratio</strong></td>
+                    <td>${result.details.following_ratio}</td>
+                </tr>
+                <tr>
+                    <td><strong>Posts per 1K Followers</strong></td>
+                    <td>${result.details.posts_per_1k_followers}</td>
+                </tr>
+                <tr>
+                    <td><strong>Authenticity Score</strong></td>
+                    <td>${result.details.authenticity_score.toFixed(1)}/100</td>
+                </tr>
+            `;
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'score-excellent';
+            if (score >= 60) return 'score-good';
+            if (score >= 40) return 'score-average';
+            return 'score-poor';
+        }
+    </script>
+</body>
+</html>

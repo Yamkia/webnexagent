@@ -1,0 +1,11 @@
+/* Test file to verify live editing works */
+/* Created: 2025-11-17 */
+
+body {
+    /* Add a bright border to test live changes */
+    border: 5px solid red !important;
+}
+
+.o_main_navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}

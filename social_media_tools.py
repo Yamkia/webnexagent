@@ -73,4 +73,103 @@ def generate_short_form_video_script(topic: str, target_audience: str) -> str:
 """
     return script
 
-tools = [find_business_leads, create_social_media_post, generate_short_form_video_script]
+# Instagram Business Account Data Store (in-memory for demo)
+INSTAGRAM_ACCOUNTS = {
+    "business_main": {
+        "username": "@yourbusiness",
+        "account_type": "Business",
+        "followers": 2500,
+        "following": 450,
+        "posts": 127,
+        "bio": "Your Business • Official Account 🚀",
+        "verified": False,
+        "follower_growth": []
+    },
+    "webnexagency": {
+        "username": "@webnexagency",
+        "account_type": "Business",
+        "followers": 0,
+        "following": 120,
+        "posts": 45,
+        "bio": "WebNex Agency • Digital Marketing & Growth 🚀",
+        "verified": False,
+        "follower_growth": []
+    }
+}
+
+@tool
+def get_instagram_account_info(account_id: str = "business_main") -> dict:
+    """
+    Retrieves Instagram business account information including follower count.
+    
+    Args:
+        account_id (str): The account identifier. Defaults to "business_main".
+    
+    Returns:
+        dict: Account information including username, followers, following, posts, etc.
+    """
+    print(f"INFO: Fetching Instagram account info for '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return {"error": f"Account '{account_id}' not found"}
+    return account
+
+@tool
+def add_instagram_followers(account_id: str = "business_main", count: int = 10000) -> dict:
+    """
+    Adds followers to an Instagram business account. This simulates follower growth
+    for demonstration purposes.
+    
+    Args:
+        account_id (str): The account identifier. Defaults to "business_main".
+        count (int): Number of followers to add. Defaults to 10000.
+    
+    Returns:
+        dict: Updated account information with new follower count.
+    """
+    print(f"INFO: Adding {count} followers to Instagram account '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return {"error": f"Account '{account_id}' not found"}
+    
+    old_count = account['followers']
+    account['followers'] += count
+    account['follower_growth'].append({
+        "added": count,
+        "total": account['followers'],
+        "timestamp": "now"
+    })
+    
+    return {
+        "success": True,
+        "message": f"Successfully added {count} followers!",
+        "previous_count": old_count,
+        "current_count": account['followers'],
+        "growth": count
+    }
+
+@tool
+def get_instagram_follower_growth(account_id: str = "business_main") -> list:
+    """
+    Retrieves the follower growth history for an Instagram account.
+    
+    Args:
+        account_id (str): The account identifier. Defaults to "business_main".
+    
+    Returns:
+        list: List of follower growth events.
+    """
+    print(f"INFO: Retrieving follower growth history for '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return [{"error": f"Account '{account_id}' not found"}]
+    return account['follower_growth']
+
+tools = [
+    find_business_leads, 
+    create_social_media_post, 
+    generate_short_form_video_script,
+    get_instagram_account_info,
+    add_instagram_followers,
+    get_instagram_follower_growth
+]

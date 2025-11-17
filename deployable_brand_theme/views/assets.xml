@@ -1,18 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+  <data>
+    <!-- Add glassmorphism theme CSS to web assets -->
+    <record id="glassmorphism_assets" model="ir.asset">
+      <field name="name">Glassmorphism Theme CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/scss/glassmorphism_theme.scss</field>
+    </record>
 
-  <template id="assets_frontend" inherit_id="website.assets_frontend" name="GreenMotive brand assets">
-    <xpath expr="." position="inside">
-      <!-- SCSS and JS for brand customizations -->
-      <link rel="stylesheet/scss" href="/deployable_brand_theme/static/src/scss/brand.scss"/>
-      <script type="text/javascript" src="/deployable_brand_theme/static/src/js/brand.js"></script>
-    </xpath>
-  </template>
+    <record id="brand_assets_css" model="ir.asset">
+      <field name="name">Brand Theme CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/scss/brand.scss</field>
+    </record>
 
-  <template id="assets_backend" inherit_id="web.assets_backend" name="Brand Switcher Backend Assets">
-    <xpath expr="." position="inside">
-      <script type="text/javascript" src="/deployable_brand_theme/static/src/js/brand_switcher.js"></script>
-    </xpath>
-  </template>
+    <!-- Add glassmorphism theme JS to web assets -->
+    <record id="glassmorphism_assets_js" model="ir.asset">
+      <field name="name">Glassmorphism Theme JS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/js/glassmorphism_theme.js</field>
+    </record>
 
+    <record id="brand_assets_js" model="ir.asset">
+      <field name="name">Brand Theme JS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/js/brand.js</field>
+    </record>
+
+    <record id="brand_switcher_js" model="ir.asset">
+      <field name="name">Brand Switcher JS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/js/brand_switcher.js</field>
+    </record>
+  </data>
 </odoo>

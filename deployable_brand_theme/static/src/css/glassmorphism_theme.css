@@ -1,0 +1,379 @@
+/* Clean Business Dashboard Theme - Odoo Style */
+
+:root {
+  --primary-purple: #6f42c1;
+  --primary-indigo: #5a32a3;
+  --light-purple: #8e6dc7;
+  --sidebar-bg: #f8f9fa;
+  --content-bg: #ffffff;
+  --text-dark: #212529;
+  --text-muted: #6c757d;
+  --border-light: #dee2e6;
+  --hover-bg: #f0ebf8;
+  --selected-bg: #e9dcf9;
+}
+
+/* Main Body - Clean White */
+body {
+  background: var(--content-bg) !important;
+  color: var(--text-dark) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  font-size: 14px !important;
+}
+
+/* Main Content Area - Clean White */
+.o_web_client,
+.o_action_manager,
+.o_content {
+  background: var(--content-bg) !important;
+}
+
+/* Forms and Views - Clean White Cards */
+.o_form_sheet_bg,
+.o_form_sheet {
+  background: var(--content-bg) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  padding: 24px !important;
+}
+
+.o_list_view,
+.o_kanban_view {
+  background: var(--content-bg) !important;
+  border-radius: 4px !important;
+}
+
+.o_kanban_record {
+  background: var(--content-bg) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+.o_kanban_record:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Header Bar - Deep Purple/Indigo */
+.o_main_navbar,
+.o_navbar_apps_menu,
+nav.o_main_navbar {
+  background: var(--primary-purple) !important;
+  border-bottom: 1px solid var(--primary-indigo) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  color: white !important;
+}
+
+.o_main_navbar .o_menu_brand,
+.o_main_navbar a,
+.o_main_navbar button,
+.o_navbar_apps_menu a {
+  color: white !important;
+}
+
+/* Sidebar Menu - Light Grey/White */
+.o_menu_sections,
+.o_action_manager > .o_xxl,
+aside {
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--border-light) !important;
+}
+
+/* Menu Items - Simple Flat Style */
+.o_menu_sections .dropdown-item,
+.o_menu_sections a {
+  color: var(--text-dark) !important;
+  padding: 10px 16px !important;
+  border-radius: 4px !important;
+  margin: 2px 8px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.o_menu_sections .dropdown-item:hover,
+.o_menu_sections a:hover {
+  background: var(--hover-bg) !important;
+  color: var(--primary-purple) !important;
+}
+
+/* Active/Selected Menu Item */
+.o_menu_sections .dropdown-toggle.show,
+.o_menu_sections .dropdown-item.active,
+.o_nav_entry.active {
+  background: var(--selected-bg) !important;
+  color: var(--primary-purple) !important;
+  border-left: 3px solid var(--primary-purple) !important;
+  font-weight: 500 !important;
+}
+
+/* Buttons - Clean Flat Design */
+.btn-primary,
+.o_form_button_save,
+.o_form_button_create,
+.btn.btn-primary {
+  background: var(--primary-purple) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.btn-primary:hover,
+.o_form_button_save:hover,
+.btn.btn-primary:hover {
+  background: var(--primary-indigo) !important;
+}
+
+.btn-secondary,
+.o_form_button_cancel {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  color: var(--text-dark) !important;
+  padding: 8px 16px !important;
+}
+
+.btn-secondary:hover {
+  background: var(--sidebar-bg) !important;
+  border-color: var(--text-muted) !important;
+}
+
+/* Input Fields - Clean and Simple */
+.o_input,
+.o_field_widget input,
+.o_field_widget textarea,
+.o_field_widget select,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea,
+select {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  color: var(--text-dark) !important;
+  padding: 8px 12px !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.o_input:focus,
+.o_field_widget input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--primary-purple) !important;
+  box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1) !important;
+  outline: none !important;
+}
+
+/* Tables - Clean Business Style */
+.o_list_table {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+}
+
+.o_list_table thead {
+  background: var(--sidebar-bg) !important;
+}
+
+.o_list_table thead th {
+  color: var(--text-dark) !important;
+  border-bottom: 2px solid var(--border-light) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  padding: 12px 16px !important;
+}
+
+.o_list_table tbody tr {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+.o_list_table tbody tr:hover {
+  background: var(--sidebar-bg) !important;
+}
+
+.o_list_table tbody td {
+  padding: 12px 16px !important;
+  color: var(--text-dark) !important;
+}
+
+/* Control Panel - Clean Header */
+.o_control_panel {
+  background: white !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 16px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Search Bar - Simple Input */
+.o_searchview_input_container,
+.o_searchview {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+}
+
+.o_searchview_input,
+.o_searchview input {
+  color: var(--text-dark) !important;
+  background: white !important;
+}
+
+/* Modal - Clean Dialog */
+.modal-content {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-light) !important;
+  background: var(--sidebar-bg) !important;
+  padding: 16px 24px !important;
+}
+
+.modal-title {
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+
+.modal-body {
+  padding: 24px !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-light) !important;
+  background: var(--sidebar-bg) !important;
+  padding: 12px 24px !important;
+}
+
+/* Dropdown - Clean Menu */
+.dropdown-menu {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  padding: 4px 0 !important;
+}
+
+.dropdown-item {
+  color: var(--text-dark) !important;
+  padding: 8px 16px !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--hover-bg) !important;
+  color: var(--primary-purple) !important;
+}
+
+/* Text - Professional Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+}
+
+.o_form_label,
+label {
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  margin-bottom: 6px !important;
+}
+
+/* Badges - Simple Tags */
+.badge {
+  background: var(--sidebar-bg) !important;
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-dark) !important;
+  border-radius: 12px !important;
+  padding: 4px 10px !important;
+  font-weight: 500 !important;
+}
+
+.badge-primary {
+  background: var(--selected-bg) !important;
+  color: var(--primary-purple) !important;
+  border-color: var(--light-purple) !important;
+}
+
+/* Scrollbar - Subtle */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sidebar-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-purple);
+}
+
+/* Tabs - Clean Style */
+.nav-tabs {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-muted) !important;
+  border: none !important;
+  padding: 12px 20px !important;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:hover {
+  color: var(--primary-purple) !important;
+  background: transparent !important;
+  border-bottom: 2px solid var(--primary-purple) !important;
+}
+
+/* Status Bar - Clean Workflow */
+.o_form_statusbar,
+.o_statusbar_status {
+  background: white !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+.o_statusbar_status button {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-muted) !important;
+  border-radius: 4px !important;
+  margin: 0 4px !important;
+}
+
+.o_statusbar_status button.btn-primary,
+.o_statusbar_status button.disabled {
+  background: var(--primary-purple) !important;
+  color: white !important;
+  border-color: var(--primary-purple) !important;
+}
+
+/* Notifications - Clean Toasts */
+.o_notification {
+  background: white !important;
+  border: 1px solid var(--border-light) !important;
+  border-left: 4px solid var(--primary-purple) !important;
+  border-radius: 4px !important;
+  color: var(--text-dark) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Remove all animations for flat design */
+* {
+  animation: none !important;
+  transition-duration: 0.2s !important;
+}

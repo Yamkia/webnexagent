@@ -6,5 +6,12 @@
     <!-- logo can be set via binary in real use; keep blank here -->
   </record>
 
-  <!-- Optionally create a homepage snippet or demo page -->
+  <!-- Assign default brand to default website if it exists -->
+  <function model="website" name="search">
+    <value eval="[]"/>
+  </function>
+  
+  <record id="website.default_website" model="website">
+    <field name="brand_id" ref="deployable_brand_theme.brand_greenmotive"/>
+  </record>
 </odoo>

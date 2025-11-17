@@ -1,0 +1,433 @@
+/* Modern Custom Dashboard Theme - NOT Odoo Style */
+
+:root {
+  /* Modern Color Palette */
+  --brand-primary: #6366f1;
+  --brand-secondary: #8b5cf6;
+  --brand-accent: #ec4899;
+  --dark-bg: #0f172a;
+  --darker-bg: #020617;
+  --card-bg: #1e293b;
+  --sidebar-bg: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --border-subtle: #334155;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* COMPLETE BODY OVERRIDE */
+body,
+html,
+.o_web_client {
+  background: var(--dark-bg) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* MODERN GRADIENT HEADER */
+.o_main_navbar,
+nav.o_main_navbar,
+.o_navbar_apps_menu {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 50%, var(--brand-accent) 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3) !important;
+  padding: 12px 24px !important;
+  height: 64px !important;
+}
+
+.o_main_navbar * {
+  color: white !important;
+}
+
+/* DARK SIDEBAR */
+.o_menu_sections,
+aside,
+.o_action_manager > .o_xxl > aside {
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  padding: 20px 12px !important;
+}
+
+/* MENU ITEMS WITH ICONS */
+.o_menu_sections .dropdown-item,
+.o_menu_sections a,
+.o_nav_entry {
+  color: var(--text-secondary) !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  margin: 4px 0 !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.o_menu_sections .dropdown-item:hover,
+.o_menu_sections a:hover {
+  background: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  transform: translateX(4px) !important;
+}
+
+.o_menu_sections .dropdown-item.active,
+.o_menu_sections .dropdown-toggle.show,
+.o_nav_entry.active {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* MAIN CONTENT AREA */
+.o_content,
+.o_action_manager {
+  background: var(--dark-bg) !important;
+  padding: 24px !important;
+}
+
+/* MODERN CARDS */
+.o_form_sheet_bg,
+.o_form_sheet,
+.o_kanban_record {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  padding: 24px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.o_kanban_record:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* LIST VIEW */
+.o_list_view {
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.o_list_table {
+  background: transparent !important;
+  border: none !important;
+}
+
+.o_list_table thead {
+  background: var(--darker-bg) !important;
+}
+
+.o_list_table thead th {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  padding: 16px !important;
+  border-bottom: 2px solid var(--brand-primary) !important;
+  text-transform: uppercase !important;
+  font-size: 12px !important;
+  letter-spacing: 1px !important;
+}
+
+.o_list_table tbody tr {
+  border-bottom: 1px solid var(--border-subtle) !important;
+  transition: background 0.2s ease !important;
+}
+
+.o_list_table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+.o_list_table tbody td {
+  padding: 16px !important;
+  color: var(--text-secondary) !important;
+}
+
+/* MODERN BUTTONS */
+.btn-primary,
+.o_form_button_save,
+.o_form_button_create,
+.btn.btn-primary {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  font-size: 13px !important;
+  letter-spacing: 0.5px !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6) !important;
+}
+
+.btn-secondary {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  font-weight: 500 !important;
+}
+
+.btn-secondary:hover {
+  border-color: var(--brand-primary) !important;
+  background: var(--darker-bg) !important;
+}
+
+/* INPUTS */
+.o_input,
+.o_field_widget input,
+.o_field_widget textarea,
+.o_field_widget select,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea,
+select {
+  background: var(--darker-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+  color: var(--text-primary) !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+}
+
+.o_input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  outline: none !important;
+  background: var(--card-bg) !important;
+}
+
+/* CONTROL PANEL */
+.o_control_panel {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  padding: 16px 24px !important;
+  margin-bottom: 24px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* SEARCH BAR */
+.o_searchview_input_container,
+.o_searchview {
+  background: var(--darker-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+}
+
+.o_searchview_input,
+.o_searchview input {
+  color: var(--text-primary) !important;
+  background: transparent !important;
+}
+
+/* MODALS */
+.modal-content {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-header {
+  background: var(--darker-bg) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  padding: 20px 24px !important;
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.modal-title {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+}
+
+.modal-body {
+  padding: 24px !important;
+}
+
+/* DROPDOWNS */
+.dropdown-menu {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  padding: 8px !important;
+}
+
+.dropdown-item {
+  color: var(--text-secondary) !important;
+  padding: 10px 16px !important;
+  border-radius: 6px !important;
+  margin: 2px 0 !important;
+}
+
+.dropdown-item:hover {
+  background: var(--darker-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* TEXT STYLING */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.o_form_label,
+label {
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 8px !important;
+}
+
+/* BADGES */
+.badge {
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+}
+
+.badge-success {
+  background: var(--success) !important;
+  color: white !important;
+}
+
+.badge-warning {
+  background: var(--warning) !important;
+  color: white !important;
+}
+
+.badge-danger {
+  background: var(--danger) !important;
+  color: white !important;
+}
+
+.badge-primary {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
+  color: white !important;
+}
+
+/* TABS */
+.nav-tabs {
+  border-bottom: 2px solid var(--border-subtle) !important;
+  background: transparent !important;
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-secondary) !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:hover {
+  color: var(--brand-primary) !important;
+  background: transparent !important;
+  border-bottom: 3px solid var(--brand-primary) !important;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-accent);
+}
+
+/* NOTIFICATIONS */
+.o_notification {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-left: 4px solid var(--brand-primary) !important;
+  border-radius: 8px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* KANBAN VIEW SPECIFIC */
+.o_kanban_view {
+  background: transparent !important;
+}
+
+.o_kanban_group {
+  background: var(--card-bg) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+/* STATUSBAR */
+.o_form_statusbar,
+.o_statusbar_status {
+  background: var(--card-bg) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  padding: 12px 24px !important;
+}
+
+.o_statusbar_status button {
+  background: var(--darker-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  color: var(--text-secondary) !important;
+  border-radius: 6px !important;
+  margin: 0 4px !important;
+  padding: 6px 16px !important;
+}
+
+.o_statusbar_status button.btn-primary,
+.o_statusbar_status button.disabled {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* APP ICONS CUSTOM STYLING */
+.o_app {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 16px !important;
+  padding: 24px !important;
+  transition: all 0.3s ease !important;
+}
+
+.o_app:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4) !important;
+}
+
+.o_app .o_app_icon {
+  font-size: 48px !important;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}

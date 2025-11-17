@@ -1,0 +1,398 @@
+/* Glassmorphism Dark Space Theme for Odoo */
+
+:root {
+  /* Color Palette */
+  --space-dark: #0a0e27;
+  --deep-blue: #1a1f3a;
+  --dark-indigo: #1e2139;
+  --neon-blue: #00d4ff;
+  --electric-blue: #0099ff;
+  --bright-blue: #4dd0ff;
+  --text-light: #e8f0ff;
+  --text-muted: #8b9dc3;
+  
+  /* Glow Effects */
+  --glow-blue: 0 0 20px rgba(0, 212, 255, 0.5),
+               0 0 40px rgba(0, 212, 255, 0.3),
+               0 0 60px rgba(0, 212, 255, 0.1);
+  --glow-strong: 0 0 30px rgba(0, 212, 255, 0.8),
+                 0 0 60px rgba(0, 212, 255, 0.5);
+  --inner-glow: inset 0 0 30px rgba(0, 212, 255, 0.2);
+}
+
+/* Space Background */
+body {
+  background: var(--space-dark);
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, white, transparent),
+    radial-gradient(2px 2px at 60% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 80% 10%, white, transparent),
+    radial-gradient(2px 2px at 90% 60%, white, transparent),
+    radial-gradient(1px 1px at 33% 80%, white, transparent);
+  background-size: 200% 200%;
+  background-position: 0% 0%, 40% 60%, 130% 270%, 70% 100%, 200% 150%, 150% 80%;
+  color: var(--text-light);
+  font-family: 'Inter', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Main Container Glassmorphism */
+.o_web_client {
+  background: transparent;
+}
+
+.o_action_manager,
+.o_form_view,
+.o_list_view,
+.o_kanban_view {
+  background: rgba(26, 31, 58, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(77, 208, 255, 0.2);
+  border-radius: 24px;
+  box-shadow: var(--glow-blue);
+  padding: 20px;
+  margin: 20px;
+}
+
+/* Glassmorphic Cards */
+.o_kanban_record,
+.o_form_sheet,
+.o_list_table,
+.o_cp_switch_buttons,
+.o_control_panel {
+  background: rgba(30, 33, 57, 0.6) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: var(--inner-glow), var(--glow-blue);
+  padding: 16px;
+  margin: 12px 0;
+  transition: all 0.3s ease;
+}
+
+.o_kanban_record:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--glow-strong);
+  border-color: var(--neon-blue);
+}
+
+/* Sidebar Navigation */
+.o_main_navbar {
+  background: rgba(26, 31, 58, 0.8) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 4px 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.o_menu_sections,
+.o_menu_brand {
+  background: transparent !important;
+}
+
+/* Active Menu Item Glow */
+.o_nav_entry.active,
+.o_menu_sections .dropdown.show > a,
+.o_menu_sections a:hover {
+  background: linear-gradient(90deg, 
+    rgba(0, 212, 255, 0.3) 0%, 
+    rgba(0, 153, 255, 0.1) 100%) !important;
+  border-left: 3px solid var(--neon-blue);
+  box-shadow: var(--glow-blue);
+  color: var(--neon-blue) !important;
+}
+
+/* Buttons with Gradient */
+.btn-primary,
+.o_form_button_save,
+.o_form_button_create {
+  background: linear-gradient(135deg, 
+    var(--electric-blue) 0%, 
+    var(--neon-blue) 100%) !important;
+  border: none !important;
+  border-radius: 12px;
+  color: white !important;
+  box-shadow: var(--glow-blue);
+  font-weight: 600;
+  padding: 10px 24px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+.o_form_button_save:hover {
+  transform: scale(1.05);
+  box-shadow: var(--glow-strong);
+}
+
+.btn-secondary,
+.o_form_button_cancel {
+  background: rgba(30, 33, 57, 0.6) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 212, 255, 0.4) !important;
+  border-radius: 12px;
+  color: var(--neon-blue) !important;
+  padding: 10px 24px;
+  transition: all 0.3s ease;
+}
+
+/* Input Fields */
+.o_input,
+.o_field_widget input,
+.o_field_widget textarea,
+.o_field_widget select {
+  background: rgba(10, 14, 39, 0.5) !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 10px;
+  color: var(--text-light) !important;
+  padding: 10px 16px;
+  transition: all 0.3s ease;
+}
+
+.o_input:focus,
+.o_field_widget input:focus,
+.o_field_widget textarea:focus {
+  border-color: var(--neon-blue) !important;
+  box-shadow: var(--glow-blue) !important;
+  outline: none;
+}
+
+/* Progress Bars */
+.progress,
+.o_progressbar {
+  background: rgba(10, 14, 39, 0.5);
+  border-radius: 20px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-bar,
+.o_progressbar_value {
+  background: linear-gradient(90deg, 
+    var(--electric-blue) 0%, 
+    var(--neon-blue) 100%);
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
+/* Tables */
+.o_list_table thead th {
+  background: rgba(26, 31, 58, 0.8) !important;
+  color: var(--neon-blue) !important;
+  border-bottom: 2px solid var(--neon-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.o_list_table tbody tr {
+  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.o_list_table tbody tr:hover {
+  background: rgba(0, 212, 255, 0.1) !important;
+  box-shadow: var(--inner-glow);
+}
+
+/* Modal/Dialog */
+.modal-content {
+  background: rgba(26, 31, 58, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: var(--glow-strong);
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+  color: var(--neon-blue);
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+/* Stat Cards */
+.o_kanban_card_header,
+.o_kanban_card_content {
+  color: var(--text-light);
+}
+
+.o_primary,
+.o_stat_value {
+  color: var(--neon-blue) !important;
+  text-shadow: var(--glow-blue);
+  font-weight: 700;
+}
+
+/* Tags/Badges */
+.badge,
+.o_tag {
+  background: linear-gradient(135deg, 
+    rgba(0, 212, 255, 0.3) 0%, 
+    rgba(0, 153, 255, 0.3) 100%);
+  border: 1px solid var(--neon-blue);
+  border-radius: 20px;
+  color: var(--bright-blue);
+  padding: 4px 12px;
+  font-weight: 500;
+}
+
+/* Search Bar */
+.o_searchview_input_container,
+.o_searchview {
+  background: rgba(10, 14, 39, 0.5) !important;
+  border: 1px solid rgba(0, 212, 255, 0.3) !important;
+  border-radius: 12px;
+  padding: 8px 16px;
+}
+
+.o_searchview_input {
+  color: var(--text-light) !important;
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+  background: rgba(26, 31, 58, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: var(--glow-blue);
+}
+
+.dropdown-item {
+  color: var(--text-light) !important;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 212, 255, 0.2) !important;
+  color: var(--neon-blue) !important;
+}
+
+/* Icons Glow */
+.fa, .oi, i[class*="fa-"], i[class*="oi-"] {
+  filter: drop-shadow(0 0 3px rgba(0, 212, 255, 0.5));
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 14, 39, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    var(--electric-blue) 0%, 
+    var(--neon-blue) 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 5px var(--neon-blue);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue);
+  box-shadow: var(--glow-blue);
+}
+
+/* Text Styling */
+h1, h2, h3, h4, h5, h6,
+.o_form_label {
+  color: var(--text-light) !important;
+  font-weight: 600;
+}
+
+.o_form_label {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--text-muted) !important;
+}
+
+/* Notification */
+.o_notification {
+  background: rgba(26, 31, 58, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border-left: 4px solid var(--neon-blue);
+  border-radius: 12px;
+  box-shadow: var(--glow-blue);
+  color: var(--text-light);
+}
+
+/* Loading Spinner */
+.o_loading {
+  color: var(--neon-blue) !important;
+  filter: drop-shadow(var(--glow-blue));
+}
+
+/* Tabs */
+.nav-tabs {
+  border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-muted);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--neon-blue) !important;
+  background: rgba(0, 212, 255, 0.1) !important;
+  border-bottom: 2px solid var(--neon-blue);
+  box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+}
+
+/* Chatter/Activity */
+.o_ChatterTopbar,
+.o_Activity {
+  background: rgba(30, 33, 57, 0.6) !important;
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  margin-top: 20px;
+}
+
+/* Status Bar */
+.o_statusbar_status button {
+  background: rgba(10, 14, 39, 0.5);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: var(--text-muted);
+}
+
+.o_statusbar_status button.btn-primary {
+  background: linear-gradient(135deg, 
+    var(--electric-blue) 0%, 
+    var(--neon-blue) 100%);
+  border: none;
+  box-shadow: var(--glow-blue);
+  color: white;
+}
+
+/* Charts */
+.o_graph_renderer,
+.o_pivot_renderer {
+  background: rgba(30, 33, 57, 0.6) !important;
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* Brand-specific overrides */
+body.brand-greenmotive {
+  --neon-blue: #34D399;
+  --electric-blue: #10b981;
+  --bright-blue: #6ee7b7;
+}
+
+body.brand-techpro {
+  --neon-blue: #f59e0b;
+  --electric-blue: #d97706;
+  --bright-blue: #fbbf24;
+}

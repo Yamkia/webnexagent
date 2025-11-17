@@ -12,3 +12,4 @@ markdown
 html2text
 flask
 docker
+requests

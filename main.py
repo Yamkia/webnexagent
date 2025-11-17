@@ -8,30 +8,30 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 try:
-    # Import the executor directly from the agent module where it's created.
-    from agent import agent_executor 
     import config
-except (ValueError, ImportError) as e: # Catch both config and import errors
-    # IMPORTANT: Do not exit here when imported by the Flask app.
-    # Re-raise so the web UI can start with the agent disabled and show a helpful message.
+except (ValueError, ImportError) as e:
     print("\n--- CRITICAL STARTUP ERROR ---", file=sys.stderr)
     print(f"Error: {e}", file=sys.stderr)
     print("\nThis may be due to a missing dependency, a problem in the agent/tool files, or an invalid .env configuration.", file=sys.stderr)
     raise
 
+# Lazy-load the agent to avoid heavy imports at startup
+_agent_executor = None
+
 from google.auth.exceptions import DefaultCredentialsError
 from google.api_core.exceptions import ResourceExhausted
-try:
-    # Import provider-specific exceptions with aliases to avoid name conflicts.
-    from openai import AuthenticationError as OpenAIAuthError, RateLimitError as OpenAIRateLimitError
-    from anthropic import AuthenticationError as AnthropicAuthError, RateLimitError as AnthropicRateLimitError
-except ImportError:
-    # Define dummy exceptions if packages are not installed. This allows the program
-    # to run with a single provider without requiring all packages.
-    class OpenAIAuthError(Exception): pass
-    class OpenAIRateLimitError(Exception): pass
-    class AnthropicAuthError(Exception): pass
-    class AnthropicRateLimitError(Exception): pass
+# Avoid importing heavyweight SDKs (openai/anthropic) at startup; we'll detect by name at runtime.
+class OpenAIAuthError(Exception):
+    pass
+
+class OpenAIRateLimitError(Exception):
+    pass
+
+class AnthropicAuthError(Exception):
+    pass
+
+class AnthropicRateLimitError(Exception):
+    pass
 
 from langchain_core.messages import HumanMessage, AIMessage
 
@@ -42,6 +42,10 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
     """
     verbose_log = None
     try:
+        global _agent_executor
+        if _agent_executor is None:
+            from agent import agent_executor as _ae
+            _agent_executor = _ae
         if config.AGENT_VERBOSE:
             # Redirect stdout and stderr to capture verbose output
             old_stdout = sys.stdout
@@ -50,7 +54,7 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
             sys.stdout = redirected_output
             sys.stderr = redirected_output
 
-        result = agent_executor.invoke({
+        result = _agent_executor.invoke({
             "input": prompt,
             "chat_history": chat_history
         })
@@ -70,26 +74,33 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
         elif "Authentication failed" in output or "invalid credentials" in output:
             return False, output, verbose_log
         return True, output, verbose_log
-    except (OpenAIAuthError, AnthropicAuthError):
-        # This error occurs if the API key is invalid for OpenAI or Anthropic.
-        provider_name = config.LLM_PROVIDER.capitalize()
-        error_message = (
-            f"\n--- {provider_name} Authentication Error ---\n"
-            f"The API key is invalid, expired, or not authorized. "
-            f"Please check your {provider_name.upper()}_API_KEY in the .env file."
-        )
-        print(error_message, file=sys.stderr) # Still print to server console
-        return False, error_message, verbose_log
-    except (OpenAIRateLimitError, AnthropicRateLimitError):
-        # This is a specific error for hitting API rate limits for OpenAI or Anthropic.
-        provider_name = config.LLM_PROVIDER.capitalize()
-        error_message = (
-            f"\n--- {provider_name} API Quota Exceeded ---\n"
-            f"You have exceeded your current quota for the {provider_name} API. "
-            f"Please check your plan and billing details on their website."
-        )
-        print(error_message, file=sys.stderr) # Still print to server console
-        return False, error_message, verbose_log
+    except Exception as e:
+        # Map provider-specific errors without importing heavy SDKs at startup
+        ename = e.__class__.__name__
+        emod = getattr(e.__class__, "__module__", "")
+        if ("openai" in emod and ename in ("AuthenticationError",)) or (
+            "anthropic" in emod and ename in ("AuthenticationError",)
+        ):
+            provider_name = config.LLM_PROVIDER.capitalize()
+            error_message = (
+                f"\n--- {provider_name} Authentication Error ---\n"
+                f"The API key is invalid, expired, or not authorized. "
+                f"Please check your {provider_name.upper()}_API_KEY in the .env file."
+            )
+            print(error_message, file=sys.stderr)
+            return False, error_message, verbose_log
+        if ("openai" in emod and ename in ("RateLimitError",)) or (
+            "anthropic" in emod and ename in ("RateLimitError",)
+        ):
+            provider_name = config.LLM_PROVIDER.capitalize()
+            error_message = (
+                f"\n--- {provider_name} API Quota Exceeded ---\n"
+                f"You have exceeded your current quota for the {provider_name} API. "
+                f"Please check your plan and billing details on their website."
+            )
+            print(error_message, file=sys.stderr)
+            return False, error_message, verbose_log
+        raise
     except DefaultCredentialsError:
         # This error occurs if the API key is present but invalid or not authorized.
         error_message = (
