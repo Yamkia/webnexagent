@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_custom_css_manager_tree" model="ir.ui.view">
+        <field name="name">custom.css.manager.tree</field>
+        <field name="model">custom.css.manager</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_custom_css_manager_form" model="ir.ui.view">
+        <field name="name">custom.css.manager.form</field>
+        <field name="model">custom.css.manager</field>
+        <field name="arch" type="xml">
+            <form string="Custom CSS">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                    <group>
+                        <field name="notes" nolabel="1" placeholder="Notes"/>
+                        <field name="css_rules" nolabel="1" placeholder="Paste CSS overrides here" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_custom_css_manager" model="ir.actions.act_window">
+        <field name="name">Custom CSS</field>
+        <field name="res_model">custom.css.manager</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>Store and track custom CSS overrides for the themed backend.</p>
+        </field>
+    </record>
+</odoo>

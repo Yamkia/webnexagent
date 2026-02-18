@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_custom_modules_root" name="Custom Modules" sequence="10"/>
+
+    <menuitem id="menu_custom_css_manager" name="CSS Manager" parent="menu_custom_modules_root"
+              action="action_custom_css_manager" sequence="1"/>
+</odoo>

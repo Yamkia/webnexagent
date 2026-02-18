@@ -14,6 +14,9 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Google Gemini models
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") # For Anthropic Claude models
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY") # For Deepgram voice transcription
 
+# Debug: Print loaded OpenAI API key (for troubleshooting only)
+print(f"[DEBUG] Loaded OPENAI_API_KEY: {OPENAI_API_KEY}")
+
 # --- Model Settings ---
 # Provider can be: "openai", "google", "anthropic", or "auto" (auto-detect based on available keys)
 LLM_PROVIDER_RAW = os.getenv("LLM_PROVIDER", "auto").lower()
@@ -24,7 +27,7 @@ if GEMINI_MODEL_NAME.endswith("-latest"):
     GEMINI_MODEL_NAME = GEMINI_MODEL_NAME.replace("-latest", "")
 ANTHROPIC_MODEL_NAME = os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-5-sonnet-20240620")
 
-# Auto-detect provider if requested
+# Auto-detect provider if requested. Allow explicitly disabling the agent by setting LLM_PROVIDER to 'none' or 'disabled'.
 if LLM_PROVIDER_RAW in ("", "auto"):
     if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower() and (OPENAI_API_KEY or OPENROUTER_API_KEY):
         LLM_PROVIDER = "openai"
@@ -35,20 +38,28 @@ if LLM_PROVIDER_RAW in ("", "auto"):
     elif ANTHROPIC_API_KEY:
         LLM_PROVIDER = "anthropic"
     else:
-        LLM_PROVIDER = "google"  # default fallback
+        # No provider keys found: do not force a provider. Agent will be disabled.
+        LLM_PROVIDER = None
+elif LLM_PROVIDER_RAW in ("none", "disabled"):
+    LLM_PROVIDER = None
 else:
     LLM_PROVIDER = LLM_PROVIDER_RAW
 
 # --- Agent Settings ---
 AGENT_VERBOSE = os.getenv("AGENT_VERBOSE", "False").lower() in ('true', '1', 't')
 
+# Convenience flag for app code to check whether an LLM provider is configured
+AGENT_ENABLED = LLM_PROVIDER is not None
+
+
 # --- App Visibility Settings ---
 # Control which applications are enabled and visible in the UI.
 ENABLE_EMAIL_APP = os.getenv("ENABLE_EMAIL_APP", "True").lower() in ('true', '1', 't')
 ENABLE_ODOO_APP = os.getenv("ENABLE_ODOO_APP", "True").lower() in ('true', '1', 't')
-ENABLE_SOCIAL_MEDIA_APP = os.getenv("ENABLE_SOCIAL_MEDIA_APP", "True").lower() in ('true', '1', 't')
+ENABLE_SOCIAL_MEDIA_APP = os.getenv("ENABLE_SOCIAL_MEDIA_APP", "False").lower() in ('true', '1', 't')
 ENABLE_TRAFFIC_APP = os.getenv("ENABLE_TRAFFIC_APP", "True").lower() in ('true', '1', 't')
 ENABLE_BRAND_MANAGER_APP = os.getenv("ENABLE_BRAND_MANAGER_APP", "True").lower() in ('true', '1', 't')
+ENABLE_WEBSITE_HELPER_APP = os.getenv("ENABLE_WEBSITE_HELPER_APP", "True").lower() in ('true', '1', 't')
 
 # --- Input Settings ---
 ENABLE_VOICE_INPUT = os.getenv("ENABLE_VOICE_INPUT", "False").lower() in ('true', '1', 't')
@@ -65,10 +76,14 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # If user is using OpenRouter via the OpenAI-compatible API, allow OPENROUTER_API_KEY as a fallback
 if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower():
-    if not OPENAI_API_KEY and OPENROUTER_API_KEY:
+    # Treat placeholder OPENAI_API_KEY as unset so OPENROUTER_API_KEY can be used as a fallback
+    if (not OPENAI_API_KEY or (isinstance(OPENAI_API_KEY, str) and 'your-openai-api-key-here' in OPENAI_API_KEY)) and OPENROUTER_API_KEY:
         OPENAI_API_KEY = OPENROUTER_API_KEY
 
-if LLM_PROVIDER == "openai":
+if LLM_PROVIDER is None:
+    # Agent explicitly disabled or no provider keys found; skip provider validation.
+    pass
+elif LLM_PROVIDER == "openai":
     if OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower():
         if not OPENAI_API_KEY:
             raise ValueError(
@@ -120,3 +135,10 @@ try:
     SMTP_PORT = int(SMTP_PORT)
 except ValueError:
     raise ValueError("SMTP_PORT in .env file must be a valid number.")
+
+# --- Optional Odoo/Postgres Settings (for local environments) ---
+# These are used by the Odoo helper routes to create/run local Odoo databases.
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+ODOO_DB_USER = os.getenv("ODOO_DB_USER", "odoo")
+ODOO_DB_PASSWORD = os.getenv("ODOO_DB_PASSWORD", "odoo")

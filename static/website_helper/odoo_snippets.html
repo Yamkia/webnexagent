@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Odoo Pasteable Page Templates</title>
+  <style>
+    /* Paste these styles once per page in an Odoo HTML block. All class names are prefixed to avoid conflicts. */
+    :root {
+      --wa-accent: #22c55e;
+      --wa-surface: #0b1021;
+      --wa-surface-2: #0f172a;
+      --wa-text: #e5e7eb;
+      --wa-muted: #9ca3af;
+      --wa-border: rgba(255, 255, 255, 0.12);
+      --wa-radius: 18px;
+    }
+
+    body { margin: 0; background: #050814; font-family: "Inter", "Segoe UI", sans-serif; }
+
+    .wa-page { color: var(--wa-text); background: radial-gradient(circle at 16% 18%, rgba(255,255,255,0.05), transparent 32%),
+               radial-gradient(circle at 80% 0%, rgba(255,255,255,0.06), transparent 30%),
+               linear-gradient(135deg, var(--wa-surface) 0%, var(--wa-surface-2) 50%, var(--wa-surface) 100%);
+               border: 1px solid var(--wa-border); border-radius: 22px; padding: 32px; max-width: 1240px; margin: 32px auto;
+               box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+    }
+
+    .wa-grid { display: grid; gap: 20px; }
+    .wa-two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .wa-three { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    .wa-tag { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+              background: rgba(255,255,255,0.06); border: 1px solid var(--wa-border); color: var(--wa-muted); font-size: 13px; }
+
+    .wa-h1 { font-size: 44px; line-height: 1.1; margin: 12px 0; }
+    .wa-h2 { font-size: 28px; margin: 0 0 12px 0; }
+    .wa-h3 { font-size: 18px; margin: 0 0 8px 0; }
+    .wa-p { color: var(--wa-muted); margin: 0 0 12px 0; }
+
+    .wa-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .wa-btn { border-radius: var(--wa-radius); padding: 11px 18px; font-weight: 700; border: 1px solid var(--wa-border);
+              background: rgba(255,255,255,0.04); color: var(--wa-text); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .wa-btn.primary { background: linear-gradient(135deg, var(--wa-accent) 0%, rgba(255,255,255,0.14) 100%); color: #0b1021; border-color: transparent; box-shadow: 0 12px 32px rgba(0,0,0,0.2); }
+
+    .wa-card { padding: 18px; border-radius: var(--wa-radius); border: 1px solid var(--wa-border); background: rgba(255,255,255,0.03); box-shadow: inset 0 1px rgba(255,255,255,0.03); }
+    .wa-badge { display: inline-block; background: rgba(255,255,255,0.07); color: var(--wa-muted); padding: 6px 10px; border-radius: 999px; font-size: 13px; margin-bottom: 8px; }
+    .wa-metric { display: flex; justify-content: space-between; align-items: baseline; color: var(--wa-muted); }
+
+    .wa-list { display: grid; gap: 8px; padding: 0; list-style: none; margin: 0; }
+    .wa-list li { display: flex; gap: 10px; align-items: flex-start; }
+    .wa-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--wa-accent); margin-top: 5px; }
+
+    .wa-footer { padding-top: 16px; border-top: 1px solid var(--wa-border); color: var(--wa-muted); font-size: 14px; margin-top: 20px; }
+
+    @media (max-width: 720px) {
+      .wa-page { padding: 22px; margin: 18px; }
+      .wa-h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- LANDING PAGE: hero + stats + feature grid -->
+  <section class="wa-page" id="landing-template">
+    <header class="wa-grid wa-two" style="align-items: center; margin-bottom: 12px;">
+      <div>
+        <span class="wa-tag">New launch · Odoo ready</span>
+        <h1 class="wa-h1">Launch premium pages fast.</h1>
+        <p class="wa-p">A clear hero, proof metrics, and a compact feature grid you can paste into an Odoo HTML snippet.</p>
+        <div class="wa-btns">
+          <a class="wa-btn primary" href="#">Start now</a>
+          <a class="wa-btn" href="#features">View features</a>
+        </div>
+      </div>
+      <div class="wa-grid" style="gap: 12px;">
+        <div class="wa-card wa-metric"><span>Delivery</span><strong>72h</strong></div>
+        <div class="wa-card wa-metric"><span>Uptime</span><strong>99.95%</strong></div>
+        <div class="wa-card wa-metric"><span>CSAT</span><strong>4.9/5</strong></div>
+      </div>
+    </header>
+
+    <div class="wa-grid wa-three" id="features">
+      <div class="wa-card"><div class="wa-badge">01</div><h3 class="wa-h3">Conversion first</h3><p class="wa-p">Straightforward hierarchy with strong CTA placement.</p></div>
+      <div class="wa-card"><div class="wa-badge">02</div><h3 class="wa-h3">Mobile tuned</h3><p class="wa-p">Grid auto-stacks and preserves spacing on small screens.</p></div>
+      <div class="wa-card"><div class="wa-badge">03</div><h3 class="wa-h3">No extras</h3><p class="wa-p">Self-contained styles; no external fonts or scripts.</p></div>
+    </div>
+
+    <div class="wa-card" style="margin-top: 18px; text-align: center;">
+      <h3 class="wa-h3" style="margin: 0 0 6px 0;">Ready to paste</h3>
+      <p class="wa-p" style="margin: 0 0 10px 0;">Copy this entire section into an Odoo HTML block. Swap text and numbers inline.</p>
+      <a class="wa-btn primary" href="#">Book a demo</a>
+    </div>
+    <div class="wa-footer">Landing · Hero, Stats, Features, CTA</div>
+  </section>
+
+  <!-- SERVICES / SOLUTIONS PAGE: feature rows + process + CTA -->
+  <section class="wa-page" id="services-template">
+    <div class="wa-grid wa-two" style="align-items: center; gap: 24px;">
+      <div>
+        <span class="wa-tag">What we deliver</span>
+        <h2 class="wa-h2">Services that stay maintainable in Odoo.</h2>
+        <p class="wa-p">Each block is scoped with wa-* classes so it will not override your theme. Replace the copy and keep the structure.</p>
+        <div class="wa-list">
+          <li><span class="wa-dot"></span><span>Strategy workshops and roadmap definition.</span></li>
+          <li><span class="wa-dot"></span><span>UX redesign with component reuse.</span></li>
+          <li><span class="wa-dot"></span><span>Implementation, QA, and rollout support.</span></li>
+        </div>
+      </div>
+      <div class="wa-grid wa-three" style="gap: 12px;">
+        <div class="wa-card"><h3 class="wa-h3">Advisory</h3><p class="wa-p">Business and technical validation for each release.</p></div>
+        <div class="wa-card"><h3 class="wa-h3">Design</h3><p class="wa-p">Responsive, accessible components tuned for Odoo.</p></div>
+        <div class="wa-card"><h3 class="wa-h3">Delivery</h3><p class="wa-p">Iterative sprints with measurable outcomes.</p></div>
+      </div>
+    </div>
+
+    <div class="wa-card" style="margin-top: 18px;">
+      <div class="wa-badge">Process</div>
+      <div class="wa-grid wa-three">
+        <div><h3 class="wa-h3">01 Discover</h3><p class="wa-p">Audit, align metrics, and define success.</p></div>
+        <div><h3 class="wa-h3">02 Design</h3><p class="wa-p">Wireframes to polished UI with approvals.</p></div>
+        <div><h3 class="wa-h3">03 Ship</h3><p class="wa-p">Implement, test, and handoff with docs.</p></div>
+      </div>
+    </div>
+
+    <div class="wa-card" style="margin-top: 18px; text-align: center;">
+      <h3 class="wa-h3" style="margin: 0 0 6px 0;">Need something custom?</h3>
+      <p class="wa-p" style="margin: 0 0 10px 0;">Duplicate this CTA in any Odoo snippet. Buttons use standard anchor tags.</p>
+      <div class="wa-btns" style="justify-content: center;">
+        <a class="wa-btn primary" href="#contact">Talk to us</a>
+        <a class="wa-btn" href="#">Download deck</a>
+      </div>
+    </div>
+    <div class="wa-footer">Services · Overview, Offerings, Process, CTA</div>
+  </section>
+
+  <!-- PRICING PAGE: plan cards + FAQ style list -->
+  <section class="wa-page" id="pricing-template">
+    <div style="text-align: center; margin-bottom: 18px;">
+      <span class="wa-tag">Simple pricing</span>
+      <h2 class="wa-h2" style="margin-top: 10px;">Plans that fit your rollout.</h2>
+      <p class="wa-p" style="margin: 0 auto; max-width: 640px;">Keep the cards as static HTML or wire them to dynamic pricing in Odoo. Everything is flex/grid based, so it will not break when pasted.</p>
+    </div>
+
+    <div class="wa-grid wa-three">
+      <div class="wa-card">
+        <div class="wa-badge">Starter</div>
+        <h3 class="wa-h3" style="margin-top: 0;">$49/mo</h3>
+        <p class="wa-p">Perfect for pilots and MVPs.</p>
+        <ul class="wa-list">
+          <li><span class="wa-dot"></span><span>Up to 3 pages</span></li>
+          <li><span class="wa-dot"></span><span>Email support</span></li>
+          <li><span class="wa-dot"></span><span>Basic analytics</span></li>
+        </ul>
+        <a class="wa-btn primary" style="margin-top: 12px;" href="#">Choose Starter</a>
+      </div>
+
+      <div class="wa-card" style="border-color: rgba(34,197,94,0.6); box-shadow: 0 14px 36px rgba(34,197,94,0.14);">
+        <div class="wa-badge">Growth</div>
+        <h3 class="wa-h3" style="margin-top: 0;">$149/mo</h3>
+        <p class="wa-p">Best for teams shipping new releases monthly.</p>
+        <ul class="wa-list">
+          <li><span class="wa-dot"></span><span>Up to 8 pages</span></li>
+          <li><span class="wa-dot"></span><span>Priority chat & email</span></li>
+          <li><span class="wa-dot"></span><span>Conversion experiments</span></li>
+        </ul>
+        <a class="wa-btn primary" style="margin-top: 12px;" href="#">Choose Growth</a>
+      </div>
+
+      <div class="wa-card">
+        <div class="wa-badge">Enterprise</div>
+        <h3 class="wa-h3" style="margin-top: 0;">Let us scope</h3>
+        <p class="wa-p">Security reviews, SSO, and custom workflows.</p>
+        <ul class="wa-list">
+          <li><span class="wa-dot"></span><span>Unlimited pages</span></li>
+          <li><span class="wa-dot"></span><span>Dedicated PM</span></li>
+          <li><span class="wa-dot"></span><span>On-call support</span></li>
+        </ul>
+        <a class="wa-btn" style="margin-top: 12px;" href="#">Talk to sales</a>
+      </div>
+    </div>
+
+    <div class="wa-card" style="margin-top: 18px;">
+      <div class="wa-badge">FAQs</div>
+      <div class="wa-grid wa-two">
+        <div>
+          <h3 class="wa-h3">Can I edit copy?</h3>
+          <p class="wa-p">Yes. All text is inline and can be edited directly inside Odoo.</p>
+          <h3 class="wa-h3">Does it need extra assets?</h3>
+          <p class="wa-p">No external fonts, icons, or JS. Colors are defined in CSS variables.</p>
+        </div>
+        <div>
+          <h3 class="wa-h3">Is it responsive?</h3>
+          <p class="wa-p">The grid auto-stacks on narrow viewports; no breakage when columns wrap.</p>
+          <h3 class="wa-h3">How to reuse styles?</h3>
+          <p class="wa-p">Paste the <style> block once at the top of your page. Reuse the wa-* classes.</p>
+        </div>
+      </div>
+    </div>
+    <div class="wa-footer">Pricing · Plans, FAQs, CTA</div>
+  </section>
+
+  <!-- CONTACT PAGE: contact block + highlights -->
+  <section class="wa-page" id="contact-template">
+    <div class="wa-grid wa-two" style="align-items: center; gap: 24px;">
+      <div>
+        <span class="wa-tag">Contact</span>
+        <h2 class="wa-h2">Let's plan your revamp.</h2>
+        <p class="wa-p">Use this block for a contact form or booking link. Everything is div-based, so Odoo forms drop in cleanly.</p>
+        <div class="wa-btns">
+          <a class="wa-btn primary" href="mailto:team@example.com">Email us</a>
+          <a class="wa-btn" href="#">Book a call</a>
+        </div>
+      </div>
+      <div class="wa-card">
+        <div class="wa-badge">What to include</div>
+        <ul class="wa-list">
+          <li><span class="wa-dot"></span><span>Project goal and timeline.</span></li>
+          <li><span class="wa-dot"></span><span>Current stack (Odoo version, modules).</span></li>
+          <li><span class="wa-dot"></span><span>Brand assets or guidelines if available.</span></li>
+        </ul>
+        <p class="wa-p" style="margin-top: 12px;">Swap this list for a native Odoo form if needed.</p>
+      </div>
+    </div>
+
+    <div class="wa-card" style="margin-top: 18px;">
+      <div class="wa-badge">Locations</div>
+      <div class="wa-grid wa-three">
+        <div><h3 class="wa-h3">Remote</h3><p class="wa-p">Distributed team across timezones.</p></div>
+        <div><h3 class="wa-h3">On-site</h3><p class="wa-p">Available for workshops on request.</p></div>
+        <div><h3 class="wa-h3">Support</h3><p class="wa-p">Email, chat, and weekly office hours.</p></div>
+      </div>
+    </div>
+    <div class="wa-footer">Contact · Intro, Form-ready, Highlights</div>
+  </section>
+</body>
+</html>

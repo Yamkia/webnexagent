@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  odoo-odoo-4db5a407-db:
+    image: odoo:19.0
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    ports:
+      - "52333:8069"
+    volumes:
+      - ../../addons:/mnt/extra-addons
+      - ../../deployable_brand_theme:/mnt/brand_theme
+      - odoo_odoo-4db5a407-db_data:/var/lib/odoo
+    depends_on:
+      - db
+
+volumes:
+  odoo_odoo-4db5a407-db_data:

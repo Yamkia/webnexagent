@@ -14,7 +14,7 @@
                     </h2>
                     <div id="collapseCommunity" class="accordion-collapse collapse show" aria-labelledby="headingCommunity" data-bs-parent="#odoo-options-accordion">
                         <div class="accordion-body">
-                            <p>Create a local Odoo environment on your machine using Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
+                            <p>Create a local Odoo environment on your machine without Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
                             
                             <!-- Step 1: Planning -->
                             <div class="card shadow-sm mb-4 border-0">
@@ -46,33 +46,36 @@
                                         <ul id="module-list" class="list-group mb-3"></ul>
                                     </div>
                                     <!-- This new section will appear if the 'website' module is planned -->
-                                    <div id="website-design-selector" class="mb-3" style="display: none;">
-                                        <h6>Optional: Select a Website Design</h6>
-                                        <p class="text-muted small">Since you've included the 'website' module, you can choose a pre-built theme to install.</p>
-                                        <!-- Hidden input to store the selected theme's value -->
+                                    <div id="website-design-selector" class="mb-3" style="display: none;" data-theme-group="website-design">
+                                        <h6>Select a Website Theme (required)</h6>
+                                        <p class="text-muted small">If you include the 'website' module, you must pick which theme to inject. This project requires two themes to be present; they will be added to the modules list.</p>
                                         <input type="hidden" id="website-design-input" value="">
-
-                                        <!-- Visual Theme Selector -->
                                         <div class="row g-3 mt-2">
-                                            <div class="col-md-4">
-                                                <div class="card theme-card h-100" data-theme-value="">
-                                                    <div class="card-body text-center d-flex flex-column justify-content-center">
-                                                        <h5 class="card-title">Default Odoo Design</h5>
-                                                        <p class="card-text small text-muted">A clean, standard Odoo website.</p>
+                                            <div class="col-md-6 col-lg-4">
+                                                <label for="website-design-select" class="form-label">Theme</label>
+                                                <select class="form-select theme-select" id="website-design-select" data-target-input="website-design-input">
+                                                    <option value="" selected disabled>Choose a theme...</option>
+                                                    <option value="default">Default Odoo Design</option>
+                                                    <option value="deployable_brand_theme">Custom Brand Theme</option>
+                                                    <option value="bluewave_theme">BlueWave Theme</option>
+                                                    <option value="theme_anemone">Anemone</option>
+                                                    <option value="theme_autoflip">Autoflip</option>
+                                                </select>
+                                                <div id="website-design-input-error" class="text-danger small mt-2" style="display: none;"></div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-8">
+                                                <label class="form-label">Required Project Themes</label>
+                                                <div class="d-flex gap-3 align-items-center">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" value="deployable_brand_theme" id="req-theme-deployable" checked disabled>
+                                                        <label class="form-check-label small" for="req-theme-deployable">deployable_brand_theme (will be added)</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" value="bluewave_theme" id="req-theme-bluewave" checked disabled>
+                                                        <label class="form-check-label small" for="req-theme-bluewave">bluewave_theme (will be added)</label>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="card theme-card h-100" data-theme-value="theme_anemone">
-                    <img src="https://apps.odoo.com/apps/themes/17.0/theme_anemone/cover.png" class="card-img-top" alt="Anemone Theme Preview">
-                                                    <div class="card-body text-center"><h6 class="card-title mb-0">Anemone</h6></div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="card theme-card h-100" data-theme-value="theme_autoflip">
-                    <img src="https://apps.odoo.com/apps/themes/17.0/theme_autoflip/cover.png" class="card-img-top" alt="Autoflip Theme Preview">
-                                                    <div class="card-body text-center"><h6 class="card-title mb-0">Autoflip</h6></div>
-                                                </div>
+                                                <small class="text-muted d-block mt-2">You will be asked to confirm adding these themes when creating the environment.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -86,7 +89,46 @@
                                             <option value="17.0">Odoo 17.0</option>
                                         </select>
                                     </div>
-                                    <button id="execute-btn" class="btn btn-success" style="display: none;">Create Environment</button>
+                                    <div class="mb-3">
+                                        <h6>Database Name</h6>
+                                        <p class="text-muted small">Optional. If empty, a fresh name will be generated.</p>
+                                        <input type="text" id="odoo-dbname-input" class="form-control" placeholder="e.g. agency_crm_site">
+                                    </div>
+                                    <div class="mb-3 border rounded p-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <h6 class="mb-0">Brand &amp; Theming (optional)</h6>
+                                                <p class="text-muted small mb-0">Set brand info before the environment is created.</p>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Brand Name</label>
+                                                <input type="text" id="brand-name-input" class="form-control" placeholder="e.g. Navy Labs">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Brand Code</label>
+                                                <input type="text" id="brand-code-input" class="form-control" placeholder="e.g. navylabs">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Primary Color</label>
+                                                <input type="color" id="brand-primary-input" class="form-control form-control-color" value="#1f4f8a" title="Primary color">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Secondary Color</label>
+                                                <input type="color" id="brand-secondary-input" class="form-control form-control-color" value="#223047" title="Secondary color">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">Logo URL (optional)</label>
+                                                <input type="url" id="brand-logo-input" class="form-control" placeholder="https://.../logo.png">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <button id="execute-btn" class="btn btn-success" style="display:inline-block">Create Environment</button>
+                                        <button id="create-without-plan" class="btn btn-outline-secondary">Create Without Plan</button>
+                                        <small id="create-help" class="text-muted ms-3">Tip: if planning fails, use "Create Without Plan" to proceed with sensible defaults.</small>
+                                    </div>
                                 </div>
                             </div>
 
@@ -101,6 +143,31 @@
                                         <p class="fw-bold">Your new environment is ready!</p>
                                         <!-- The link to the standard Odoo backend -->
                                         <a id="environment-link" href="#" class="btn btn-lg btn-primary" target="_blank">🚀 Access Odoo Backend</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Environment History -->
+                            <div class="card shadow-sm border-0 mt-4" id="env-history-card">
+                                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Previously Opened Environments</h5>
+                                    <button class="btn btn-sm btn-outline-secondary" id="env-history-refresh">Refresh</button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="env-history-empty" class="text-muted p-3" style="display: none;">No environments recorded yet.</div>
+                                    <div class="table-responsive mb-0">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 18%">Opened</th>
+                                                    <th style="width: 22%">Database</th>
+                                                    <th style="width: 10%">Version</th>
+                                                    <th>Modules</th>
+                                                    <th style="width: 18%" class="text-end">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="env-history-body"></tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -199,3 +266,4 @@
         </div>
     </div>
 </div>
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true" style="z-index: 1100;"></div>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="res_config_settings_view_form_bluewave" model="ir.ui.view">
+    <field name="name">res.config.settings.view.form.bluewave</field>
+    <field name="model">res.config.settings</field>
+    <field name="inherit_id" ref="base.view_res_config_settings"/>
+    <field name="arch" type="xml">
+      <xpath expr="//div[hasclass('settings')]" position="inside">
+        <div class="app_settings_block" string="BlueWave Theme" data-key="bluewave_theme">
+          <h2>BlueWave Theme</h2>
+          <div class="row mt16">
+            <div class="col-6">
+              <label for="bw_header" class="o_form_label">Header</label>
+              <input name="bw_header" type="color" class="o_input"/>
+              <label for="bw_header_border" class="o_form_label mt8">Header border</label>
+              <input name="bw_header_border" type="color" class="o_input"/>
+              <label for="bw_accent" class="o_form_label mt8">Accent</label>
+              <input name="bw_accent" type="color" class="o_input"/>
+            </div>
+            <div class="col-6">
+              <label for="bw_bg" class="o_form_label">Background</label>
+              <input name="bw_bg" type="color" class="o_input"/>
+              <label for="bw_panel" class="o_form_label mt8">Panel</label>
+              <input name="bw_panel" type="color" class="o_input"/>
+              <label for="bw_text" class="o_form_label mt8">Text</label>
+              <input name="bw_text" type="color" class="o_input"/>
+              <label for="bw_muted" class="o_form_label mt8">Muted text</label>
+              <input name="bw_muted" type="color" class="o_input"/>
+            </div>
+          </div>
+          <div class="row mt16">
+            <div class="col-4">
+              <label for="bw_border_opacity" class="o_form_label">Border opacity (0-1)</label>
+              <field name="bw_border_opacity" class="o_input"/>
+            </div>
+          </div>
+        </div>
+      </xpath>
+    </field>
+  </record>
+</odoo>

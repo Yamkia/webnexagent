@@ -1,0 +1,37 @@
+[
+  {
+    "db_name": "odoo-4db5a407-db",
+    "port": 52333,
+    "odoo_version": "19.0",
+    "url": "http://localhost:52333",
+    "created_at": "2026-02-17T06:57:22Z"
+  },
+  {
+    "db_name": "odoo-3f843b48-db",
+    "port": 50066,
+    "odoo_version": "19.0",
+    "url": "http://localhost:50066",
+    "created_at": "2026-02-12T06:40:52Z"
+  },
+  {
+    "db_name": "odoo-ca057ed9-db",
+    "port": 63278,
+    "odoo_version": "19.0",
+    "url": "http://localhost:63278",
+    "created_at": "2026-02-10T11:18:44Z"
+  },
+  {
+    "db_name": "odoo-828dd1bd-db",
+    "port": 58123,
+    "odoo_version": "19.0",
+    "url": "http://localhost:58123",
+    "created_at": "2026-02-10T07:23:14Z"
+  },
+  {
+    "db_name": "odoo-78e02113-db",
+    "port": 60449,
+    "odoo_version": "19.0",
+    "url": "http://localhost:60449",
+    "created_at": "2026-02-10T07:06:00Z"
+  }
+]

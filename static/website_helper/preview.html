@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Website Helper - Layout Preview</title>
+  <style>
+  /* Website Helper: landing page shell for GreenMotive */
+  :root {
+      --wh-accent: #22c55e;
+      --wh-surface: #0b1021;
+      --wh-surface-2: #0f172a;
+      --wh-text: #e5e7eb;
+      --wh-muted: #9ca3af;
+      --wh-border: rgba(255, 255, 255, 0.08);
+      --wh-radius: 18px;
+      --wh-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: #050814;
+      padding: 24px;
+      font-family: 'Manrope', 'Inter', 'Segoe UI', sans-serif;
+  }
+
+  .wh-shell {
+      color: var(--wh-text);
+      max-width: 1180px;
+      margin: 0 auto 48px auto;
+      background: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.04), transparent 30%),
+                  radial-gradient(circle at 85% 0%, rgba(255,255,255,0.06), transparent 28%),
+                  linear-gradient(135deg, var(--wh-surface) 0%, var(--wh-surface-2) 50%, var(--wh-surface) 100%);
+      border: 1px solid var(--wh-border);
+      border-radius: calc(var(--wh-radius) + 6px);
+      box-shadow: var(--wh-shadow);
+      padding: 32px;
+  }
+
+  .wh-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+  }
+
+  .wh-logo {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-size: 20px;
+  }
+
+  .wh-nav-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+  }
+
+  .wh-link {
+      color: var(--wh-muted);
+      text-decoration: none;
+      font-weight: 600;
+  }
+
+  .wh-btn {
+      border-radius: var(--wh-radius);
+      padding: 10px 16px;
+      font-weight: 700;
+      border: 1px solid var(--wh-border);
+      background: transparent;
+      color: var(--wh-text);
+      cursor: pointer;
+  }
+
+  .wh-btn-primary {
+      background: linear-gradient(135deg, var(--wh-accent) 0%, rgba(255,255,255,0.12) 100%);
+      color: #0b1021;
+      border-color: transparent;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+  }
+
+  .wh-btn-ghost {
+      background: rgba(255,255,255,0.04);
+  }
+
+  .wh-hero {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 28px;
+  }
+
+  .wh-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--wh-border);
+      border-radius: 999px;
+      color: var(--wh-muted);
+      font-size: 13px;
+      letter-spacing: 0.03em;
+  }
+
+  .wh-hero h1 {
+      font-size: 42px;
+      line-height: 1.12;
+      margin: 12px 0;
+  }
+
+  .wh-hero p {
+      color: var(--wh-muted);
+      font-size: 16px;
+      margin: 0;
+  }
+
+  .wh-hero-panels {
+      display: grid;
+      gap: 12px;
+  }
+
+  .wh-panel {
+      padding: 16px;
+      border-radius: var(--wh-radius);
+      border: 1px solid var(--wh-border);
+      background: rgba(255,255,255,0.03);
+  }
+
+  .wh-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+  }
+
+  .wh-card {
+      padding: 18px;
+      border-radius: var(--wh-radius);
+      border: 1px solid var(--wh-border);
+      background: var(--wh-surface-2);
+      box-shadow: inset 0 1px rgba(255,255,255,0.03);
+  }
+
+  .wh-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+  }
+
+  .wh-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      color: var(--wh-muted);
+  }
+
+  .wh-cta {
+      margin-top: 12px;
+      padding: 20px;
+      border-radius: var(--wh-radius);
+      border: 1px dashed var(--wh-border);
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      text-align: center;
+  }
+
+  .wh-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.07);
+      color: var(--wh-muted);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+      .wh-shell { padding: 20px; margin: 0 auto 32px auto; }
+      .wh-hero h1 { font-size: 32px; }
+  }
+  </style>
+</head>
+<body>
+  <div class="wh-shell">
+    <header class="wh-nav">
+      <div class="wh-logo">GreenMotive</div>
+      <div class="wh-nav-actions">
+        <a class="wh-link" href="#">Solutions</a>
+        <a class="wh-link" href="#">Pricing</a>
+        <a class="wh-link" href="#">Docs</a>
+        <button class="wh-btn wh-btn-primary">Book a demo</button>
+      </div>
+    </header>
+
+    <section class="wh-hero">
+      <div>
+        <span class="wh-pill">Website Helper · Odoo ready</span>
+        <h1>GreenMotive launches pages that feel premium.</h1>
+        <p>dark gradient SaaS landing with rounded cards and calm motion</p>
+        <div class="wh-nav-actions" style="margin-top: 16px;">
+          <button class="wh-btn wh-btn-primary">Book a demo</button>
+          <button class="wh-btn wh-btn-ghost">View components</button>
+        </div>
+      </div>
+      <div class="wh-hero-panels">
+        <div class="wh-panel wh-metric"><span>Performance grade</span><strong>98/100</strong></div>
+        <div class="wh-panel">
+          <div class="wh-badge">Sections</div>
+          <div class="wh-grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 10px;">
+            <div class="wh-panel">Hero · Stats</div>
+            <div class="wh-panel">Features · Cards</div>
+            <div class="wh-panel">CTA · Footer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wh-grid">
+      <div class="wh-card">
+        <div class="wh-badge">01</div>
+        <h3>Dark</h3>
+        <p class="wh-text">Purpose-built blocks you can paste into an Odoo snippet without extra assets.</p>
+      </div>
+      <div class="wh-card">
+        <div class="wh-badge">02</div>
+        <h3>Gradient</h3>
+        <p class="wh-text">Spacing, radii, and typography are tuned for clarity on desktop and mobile.</p>
+      </div>
+      <div class="wh-card">
+        <div class="wh-badge">03</div>
+        <h3>Saas</h3>
+        <p class="wh-text">Accent color injects brand feel without needing multiple theme files.</p>
+      </div>
+    </section>
+
+    <section class="wh-cta">
+      <h3 style="margin: 0 0 8px 0;">Drop into a snippet block</h3>
+      <p style="color: var(--wh-muted); margin: 0 0 12px 0;">Copy the HTML and CSS below into your Odoo website builder. Adjust copy, icons, or columns as needed.</p>
+      <button class="wh-btn wh-btn-primary">Book a demo</button>
+    </section>
+  </div>
+</body>
+</html>

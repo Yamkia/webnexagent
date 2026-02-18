@@ -1,202 +1,287 @@
 /* ========================================
-   AGGRESSIVE ODOO BACKEND THEME OVERRIDE
-   Dark Mode with Purple Gradient Header
+   Balanced Brandable Backend Theme
+   Dark base with teal accent (tunable)
    ======================================== */
 
-/* Force Dark Background on EVERYTHING */
+:root {
+    --brand-bg: #0f1726;
+    --brand-panel: #151e2d;
+    --brand-contrast: #0b1120;
+    --brand-border: rgba(255, 255, 255, 0.08);
+    --brand-text: #f7f9ff;
+    --brand-muted: #ced6e6;
+    --brand-accent: #2dd4bf;
+    --brand-accent-strong: #14b8a6;
+    --brand-accent-contrast: #0f766e;
+    --brand-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    --nav-height: 64px;
+    --nav-pill-bg: rgba(255, 255, 255, 0.03);
+    --nav-pill-border: rgba(255, 255, 255, 0.08);
+}
+
 body,
 .o_web_client,
 .o_action_manager,
 .o_content,
 html {
-    background: #0f172a !important;
-    color: #f1f5f9 !important;
+    background: #0f1726 !important;
+    color: var(--brand-text) !important;
 }
 
-/* Top Navigation Bar - Purple Gradient */
 .o_navbar,
 .o_main_navbar,
 nav.o_main_navbar {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%) !important;
-    border: none !important;
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3) !important;
+    background: #121a2c !important;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: none !important;
 }
 
 .o_navbar *,
 .o_main_navbar * {
-    color: white !important;
+    color: var(--brand-text) !important;
 }
 
-/* Sidebar/Menu - Dark */
+.o_main_navbar .o_menu_brand .navbar-brand {
+    font-weight: 700 !important;
+    font-size: 16px !important;
+}
+
+.o_main_navbar .o_menu_brand img,
+.o_main_navbar .o_menu_brand .oe_topbar_name[title*="Odoo"],
+.o_main_navbar .o_menu_brand .navbar-brand[title*="Odoo"] {
+    display: none !important;
+}
+
 .o_menu_sections,
 .o_menu_brand,
 .o_main_sidebar {
-    background: #1e293b !important;
-    border-right: 1px solid #334155 !important;
+    background: var(--brand-panel) !important;
+    border-right: 1px solid var(--brand-border) !important;
 }
 
 .o_menu_sections .o_nav_entry,
-.o_menu_sections a {
-    color: #cbd5e1 !important;
+.o_menu_sections a,
+.o_menu_sections .dropdown-toggle {
+    color: var(--brand-muted) !important;
+    background: transparent !important;
 }
 
 .o_menu_sections .o_nav_entry:hover,
-.o_menu_sections a:hover {
-    background: #334155 !important;
-    color: white !important;
+.o_menu_sections a:hover,
+.o_menu_sections .dropdown-toggle:hover,
+.o_nav_entry.active {
+    background: rgba(52, 211, 153, 0.08) !important;
+    color: var(--brand-text) !important;
+    border-left: 3px solid var(--brand-accent);
 }
 
-/* Content Cards */
 .o_content,
 .o_form_view,
 .o_kanban_view,
 .o_list_view {
-    background: #0f172a !important;
+    background: var(--brand-bg) !important;
 }
 
 .o_form_sheet,
 .o_kanban_record,
 .o_data_row,
 table {
-    background: #1e293b !important;
-    color: #f1f5f9 !important;
-    border-color: #334155 !important;
+    background: #151e2d !important;
+    color: var(--brand-text) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+    border-radius: 12px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
-/* Buttons - Purple Theme */
+/* Settings layout polishing */
+.o_form_sheet_bg,
+.o_form_sheet_bg .o_form_sheet {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.o_setting_box,
+.o_setting_container,
+.o_settings_container,
+.o_settings .o_form_sheet,
+.o_settings .o_form_sheet_bg {
+    background: var(--brand-panel) !important;
+    border: 1px solid var(--brand-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--brand-shadow);
+}
+
+.o_setting_box .o_setting_left_pane,
+.o_setting_box .o_setting_right_pane,
+.o_setting_box .o_row,
+.o_setting_box .o_group,
+.o_setting_box label,
+.o_setting_box .text-muted,
+.o_setting_box .o_form_label {
+    color: var(--brand-text) !important;
+}
+
+.o_setting_box input,
+.o_setting_box textarea,
+.o_setting_box select {
+    background: rgba(17, 27, 45, 0.7) !important;
+    color: var(--brand-text) !important;
+    border: 1px solid var(--brand-border) !important;
+}
+
+.o_setting_box input::placeholder,
+.o_setting_box textarea::placeholder {
+    color: var(--brand-muted) !important;
+}
+
+.o_control_panel .breadcrumb,
+.o_control_panel .breadcrumb-item,
+.o_control_panel .o_cp_searchview {
+    color: var(--brand-text) !important;
+}
+
 .btn-primary,
-.o_form_button_save {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1) !important;
-    border: none !important;
-    color: white !important;
+.o_form_button_save,
+.o_button_edit,
+.o_button_create {
+    background: linear-gradient(135deg, #8a63ff 0%, #ff4fd8 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(138, 99, 255, 0.3) !important;
+    font-weight: 700 !important;
 }
 
 .btn-primary:hover,
-.o_form_button_save:hover {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
-    transform: translateY(-2px) !important;
+.o_form_button_save:hover,
+.o_button_edit:hover,
+.o_button_create:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(255, 79, 216, 0.35) !important;
 }
 
-.btn-secondary {
-    background: #334155 !important;
-    border-color: #475569 !important;
-    color: #f1f5f9 !important;
+.btn-secondary,
+.o_form_button_cancel {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: var(--brand-border) !important;
+    color: var(--brand-muted) !important;
 }
 
-/* Input Fields */
 input,
 textarea,
 select,
 .o_input {
-    background: #1e293b !important;
-    border: 1px solid #334155 !important;
-    color: #f1f5f9 !important;
+    background: rgba(17, 27, 45, 0.5) !important;
+    border: 1px solid var(--brand-border) !important;
+    color: var(--brand-text) !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-    border-color: #8b5cf6 !important;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+    border-color: var(--brand-accent) !important;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.28) !important;
 }
 
-/* Dropdown Menus */
 .dropdown-menu,
 .o_dropdown_menu {
-    background: #1e293b !important;
-    border-color: #334155 !important;
+    background: var(--brand-panel) !important;
+    border-color: var(--brand-border) !important;
+    box-shadow: var(--brand-shadow);
 }
 
 .dropdown-item,
 .o_dropdown_item {
-    color: #cbd5e1 !important;
+    color: var(--brand-text) !important;
 }
 
 .dropdown-item:hover,
 .o_dropdown_item:hover {
-    background: #334155 !important;
-    color: white !important;
+    background: rgba(52, 211, 153, 0.12) !important;
+    color: var(--brand-text) !important;
 }
 
-/* Search Bar */
 .o_searchview,
 .o_searchview_input {
-    background: #1e293b !important;
-    border-color: #334155 !important;
-    color: #f1f5f9 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--brand-border) !important;
+    color: var(--brand-text) !important;
+    border-radius: 10px !important;
 }
 
-/* Kanban Cards */
 .o_kanban_record {
-    background: #1e293b !important;
-    border: 1px solid #334155 !important;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid var(--brand-border) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.28) !important;
 }
 
 .o_kanban_record:hover {
-    border-color: #8b5cf6 !important;
-    box-shadow: 0 8px 15px rgba(139, 92, 246, 0.3) !important;
+    border-color: var(--brand-accent) !important;
+    box-shadow: 0 10px 18px rgba(52, 211, 153, 0.25) !important;
 }
 
-/* List/Table View */
 .o_list_table thead {
-    background: #334155 !important;
-    color: white !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--brand-text) !important;
 }
 
 .o_list_table tbody tr {
-    background: #1e293b !important;
-    border-bottom: 1px solid #334155 !important;
+    background: var(--brand-panel) !important;
+    border-bottom: 1px solid var(--brand-border) !important;
 }
 
 .o_list_table tbody tr:hover {
-    background: #334155 !important;
+    background: rgba(255, 255, 255, 0.03) !important;
 }
 
-/* Control Panel */
 .o_control_panel {
-    background: #1e293b !important;
-    border-bottom: 1px solid #334155 !important;
+    background: rgba(17, 27, 45, 0.5) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--brand-border) !important;
+    border-radius: 12px;
 }
 
-/* Modals */
 .modal-content {
-    background: #1e293b !important;
-    border-color: #334155 !important;
+    background: var(--brand-panel) !important;
+    border-color: var(--brand-border) !important;
 }
 
 .modal-header,
 .modal-footer {
-    background: #0f172a !important;
-    border-color: #334155 !important;
+    background: var(--brand-bg) !important;
+    border-color: var(--brand-border) !important;
 }
 
-/* Chatter/Activity */
 .o_chatter,
 .o_activity {
-    background: #1e293b !important;
+    background: var(--brand-panel) !important;
+    border: 1px solid var(--brand-border) !important;
 }
 
-/* Status Tags */
 .badge,
 .o_tag {
-    background: #8b5cf6 !important;
-    color: white !important;
+    background: rgba(52, 211, 153, 0.16) !important;
+    color: var(--brand-text) !important;
+    border: 1px solid var(--brand-accent) !important;
 }
 
-/* Tabs */
 .nav-tabs .nav-link {
-    color: #cbd5e1 !important;
-    border-color: #334155 !important;
+    color: var(--brand-muted) !important;
+    border-color: transparent !important;
 }
 
 .nav-tabs .nav-link.active {
-    background: #1e293b !important;
-    color: white !important;
-    border-color: #8b5cf6 !important;
+    background: rgba(52, 211, 153, 0.12) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-accent) !important;
 }
 
-/* Breadcrumbs */
 .breadcrumb,
 .o_breadcrumb {
     background: transparent !important;
@@ -204,36 +289,672 @@ select:focus {
 
 .breadcrumb-item,
 .o_breadcrumb_item {
-    color: #cbd5e1 !important;
+    color: var(--brand-muted) !important;
 }
 
-/* Scrollbars */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #0f172a;
+    background: var(--brand-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: var(--brand-border);
     border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: var(--brand-accent-contrast);
 }
 
-/* Force text color everywhere */
+.o_main_navbar,
+nav.o_main_navbar {
+    height: var(--nav-height) !important;
+    padding: 10px 18px !important;
+}
+
+.o_main_navbar .navbar-nav,
+.o_main_navbar .o_menu_brand,
+.o_main_navbar .o_menu_sections,
+.o_main_navbar .o_menu_sections .dropdown-toggle {
+    align-items: center !important;
+}
+
+.o_main_navbar .o_menu_sections {
+    gap: 6px;
+    display: flex;
+    height: 100%;
+}
+
+.o_main_navbar .o_menu_sections .nav-link,
+.o_main_navbar .o_menu_apps .dropdown-toggle {
+    border-radius: 28px !important;
+    padding: 9px 16px !important;
+    margin: 0 2px;
+    border: 1px solid var(--nav-pill-border) !important;
+    background: var(--nav-pill-bg) !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    height: calc(var(--nav-height) - 20px);
+}
+
+.o_main_navbar .o_menu_sections .nav-link:hover,
+.o_main_navbar .o_menu_sections .nav-link:focus,
+.o_main_navbar .o_menu_sections .show > .nav-link,
+.o_main_navbar .o_menu_sections .nav-link.active {
+    background: rgba(52, 211, 153, 0.14) !important;
+    border-color: rgba(52, 211, 153, 0.4) !important;
+    color: #e8f5ff !important;
+    box-shadow: none !important;
+}
+
+.o_main_navbar .o_menu_brand .o_app_switcher {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid var(--nav-pill-border) !important;
+    border-radius: 16px !important;
+    height: calc(var(--nav-height) - 18px) !important;
+    width: calc(var(--nav-height) - 18px) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.24) !important;
+}
+
+.o_main_navbar .o_menu_brand .fa-th,
+.o_main_navbar .o_menu_brand .fa-bars {
+    font-size: 18px !important;
+}
+
+.o_main_navbar .o_menu_brand,
+.o_main_navbar .o_menu_toggle {
+    min-width: 48px;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100%;
+}
+
+.o_menu_systray {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+
+.o_menu_systray .dropdown-toggle,
+.o_menu_systray .btn,
+.o_menu_systray .o_switch_company_menu_toggle {
+    border-radius: 10px !important;
+    padding: 7px 9px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(var(--nav-height) - 24px);
+    box-shadow: none !important;
+}
+
+/* Tone down global glow and focus */
+.o_web_client a,
+.o_web_client button,
+.o_web_client .btn,
+.o_web_client input,
+.o_web_client select,
+.o_web_client textarea {
+    border-radius: 10px !important;
+}
+
+.o_web_client .o_searchview,
+.o_web_client .o_searchview_input,
+.o_web_client .o_cp_searchview {
+    box-shadow: none !important;
+    background: #111a2a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--brand-text) !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.o_control_panel .o_cp_pager {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.o_web_client .o_kanban_view,
+.o_web_client .o_list_view,
+.o_web_client .o_form_view {
+    background: transparent !important;
+}
+
+/* UX fixes: pagination, sidebar, glow, search, cards */
+.pagination, .app-card-container, .o_pager_counter {
+    background: none !important;
+    border: none !important;
+}
+
+.sidebar, .o_search_panel {
+    background-color: #1a1f2c !important;
+    color: #e0e0e0 !important;
+}
+
+.sidebar a, .o_search_panel_section_list_item {
+    color: #b0b0b0 !important;
+    padding: 8px 12px !important;
+}
+
+.main-container, .navbar {
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2) !important;
+    border: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    background: #0d1117;
+    border-radius: 8px;
+}
+
+input.search-input {
+    border: 1px solid #30363d !important;
+    color: #ffffff !important;
+}
+
+.app-card {
+    padding: 20px !important;
+    border-radius: 12px !important;
+    background: #21262d !important;
+}
+
+/* Additional polish for Apps view */
+.o_app, .o_apps .o_app {
+    background: #1b2334 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25) !important;
+    color: var(--brand-text) !important;
+}
+
+.o_app .o_app_icon, .o_app .o_image {
+    margin-bottom: 10px;
+}
+
+.o_app .o_app_name, .o_app .o_app_desc {
+    color: var(--brand-text) !important;
+}
+
+.o_apps .o_app .btn,
+.o_apps .o_app a {
+    margin-top: 8px;
+}
+
+/* Remove white artifacts in pager/cards */
+.o_pager, .o_pager_counter, .o_pager_value, .o_pager_limit,
+.o_apps .o_app, .o_apps .o_app .o_app_content,
+.o_content > .o_view_controller .o_renderer {
+    background: transparent !important;
+}
+
+/* Sidebar readability and width */
+.o_search_panel {
+    min-width: 220px;
+    padding: 12px 10px !important;
+}
+
+.o_search_panel .o_search_panel_label, .o_search_panel_section_list_item, .o_search_panel_category_value, .o_search_panel_section_header {
+    color: #e5e9f5 !important;
+}
+
+.o_search_panel a, .o_search_panel_section_list_item a {
+    color: #c9d2e3 !important;
+}
+
+/* Tone down glow */
+.main-container, .navbar, .o_content, .o_control_panel, .o_action {
+    box-shadow: none !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Align search bar and pager controls */
+.o_control_panel .o_cp_searchview, .o_control_panel .o_cp_left, .o_control_panel .o_cp_right {
+    align-items: center !important;
+}
+
+.o_control_panel .o_cp_searchview .o_searchview {
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.o_control_panel .o_cp_pager {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* App list sidebar padding */
+.o_apps .o_search_panel {
+    padding-right: 14px !important;
+}
+
+.o_menu_systray .dropdown-toggle:hover,
+.o_menu_systray .btn:hover,
+.o_menu_systray .o_switch_company_menu_toggle:hover {
+    background: rgba(52, 211, 153, 0.16) !important;
+    border-color: var(--brand-accent) !important;
+}
+
+/* Tighten icon badges in systray (messages/activities) */
+.o_menu_systray .dropdown-toggle .fa,
+.o_menu_systray .o_switch_company_menu_toggle .fa,
+.o_menu_systray .o_switch_company_menu_toggle .navbar-toggler-icon {
+    font-size: 15px;
+}
+
+/* Keep bell/chat counters centered */
+.o_menu_systray .dropdown-toggle .badge {
+    transform: translate(40%, -40%);
+}
+
+.o_menu_systray {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+}
+
+.o_menu_sections {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.o_menu_sections .o_nav_entry,
+.o_menu_sections a {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+.o_menu_sections .dropdown-menu {
+    margin-top: 0 !important;
+}
+
+.o_searchview_input_container,
+.o_searchview {
+    display: flex !important;
+    align-items: center !important;
+}
+
 div, span, p, label, h1, h2, h3, h4, h5, h6 {
     color: inherit !important;
 }
 
-/* Make sure all panels are dark */
 .panel,
 .panel-default {
-    background: #1e293b !important;
-    border-color: #334155 !important;
+    background: var(--brand-panel) !important;
+    border-color: var(--brand-border) !important;
+}
+
+/* Control panel + search bar (kill white input backgrounds) */
+.o_control_panel,
+.o_control_panel_main,
+.o_control_panel_navbar,
+.o_control_panel_actions,
+.o_control_panel_breadcrumb,
+.o_control_panel_search,
+.o_control_panel_breadcrumb,
+.o_control_panel .breadcrumb,
+.o_control_panel .breadcrumb-item {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+.o_searchview,
+.o_searchview_input_container,
+.o_searchview_input,
+.o_searchview .o_facet_values,
+.o_facet,
+.o_facet_label,
+.o_facet_value,
+.o_facet_remove,
+.o_searchview .o_dropdown_menu,
+.o_searchview .dropdown-menu,
+.o_searchview .o_searchview_facet {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+    box-shadow: none !important;
+}
+
+.o_searchview .o_facet_value,
+.o_searchview .o_facet_label {
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.o_searchview .o_searchview_facet .o_facet_remove {
+    color: var(--brand-muted) !important;
+}
+
+/* Generic inputs/buttons default to dark */
+button,
+.btn,
+.btn-default,
+.btn-light,
+.btn-outline-secondary,
+/* Control panel action buttons (Update Apps List, Apply Scheduled Upgrades, Import Module) */
+.o_control_panel .o_cp_buttons .btn,
+.o_control_panel .o_cp_buttons .btn-secondary,
+.o_control_panel .o_cp_buttons .btn-light,
+.o_control_panel .o_cp_buttons .btn-outline-secondary,
+input[type="text"],
+input[type="search"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+textarea,
+select {
+    background: var(--brand-contrast) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+button:hover,
+.btn:hover,
+.btn-default:hover,
+.btn-light:hover,
+.btn-outline-secondary:hover,
+.o_control_panel .o_cp_buttons .btn:hover,
+.o_control_panel .o_cp_buttons .btn:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    background: rgba(52, 211, 153, 0.12) !important;
+    border-color: var(--brand-accent) !important;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.2) !important;
+}
+
+/* Full navbar strip (remove residual white) */
+.o_main_navbar,
+.o_main_navbar .navbar,
+.o_main_navbar .o_menu_brand,
+.o_main_navbar .o_menu_sections,
+.o_main_navbar .o_menu_toggle,
+.o_main_navbar .o_menu_apps,
+.o_main_navbar .o_menu_sections .nav-item,
+.o_main_navbar .o_menu_sections .nav-link,
+.o_main_navbar .o_menu_apps .dropdown-menu,
+.o_main_navbar .o_menu_apps .dropdown-item,
+.o_main_navbar .o_menu_brand .navbar-brand {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+    box-shadow: none !important;
+}
+
+.o_main_navbar .o_menu_sections .nav-link:hover,
+.o_main_navbar .o_menu_sections .nav-link:focus,
+.o_main_navbar .o_menu_sections .show > .nav-link {
+    background: rgba(52, 211, 153, 0.14) !important;
+    color: var(--brand-text) !important;
+}
+
+/* Pill-shaped nav links */
+.o_main_navbar .o_menu_sections .nav-link,
+.o_main_navbar .o_menu_apps .dropdown-toggle {
+    border-radius: 30px !important;
+    padding: 8px 14px !important;
+    margin: 0 4px;
+    border: 1px solid var(--brand-border) !important;
+}
+
+/* App icons – kill white tiles */
+.o_kanban_view.o_app .o_kanban_record .o_app_icon,
+.o_kanban_view.o_app .o_kanban_record .o_app_icon .o_app_icon_background,
+.o_kanban_view.o_app .o_kanban_record .o_app_icon img,
+.o_kanban_view.o_app .o_kanban_record .o_app_icon svg,
+.o_app_icon,
+.o_app_icon .o_app_icon_background,
+.o_app_icon img,
+.o_app_icon svg {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.02) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+/* Subtle dark mask to suppress white PNG backgrounds */
+.o_kanban_view.o_app .o_kanban_record .o_app_icon,
+.o_app_icon {
+    position: relative;
+    overflow: hidden;
+    background: rgba(8, 12, 20, 0.75) !important;
+}
+
+.o_kanban_view.o_app .o_kanban_record .o_app_icon::after,
+.o_app_icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 12, 20, 0.72);
+    mix-blend-mode: darken;
+    pointer-events: none;
+}
+
+.o_kanban_view.o_app .o_kanban_record .o_app_icon img,
+.o_app_icon img {
+    padding: 6px;
+    border-radius: 12px;
+    background: transparent !important;
+    mix-blend-mode: darken;
+    box-shadow: none !important;
+    filter: brightness(0.78) contrast(1.05) saturate(1);
+    display: block;
+}
+
+.o_kanban_view.o_app .o_kanban_record .o_app_icon svg,
+.o_app_icon svg {
+    mix-blend-mode: darken;
+    filter: brightness(0.78) contrast(1.05) saturate(1);
+}
+
+/* App kanban smoothing: remove harsh boxes & gaps */
+.o_kanban_view.o_app,
+.o_kanban_view.o_app .o_kanban_renderer,
+.o_kanban_view.o_app .o_kanban_group {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.o_kanban_view.o_app .o_kanban_group {
+    padding: 4px 6px;
+    gap: 10px;
+}
+
+.o_kanban_view.o_app .o_kanban_record {
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+    background: rgba(17, 27, 45, 0.32) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 14px 16px;
+}
+
+.o_kanban_view.o_app .o_kanban_record:hover {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32) !important;
+    background: rgba(52, 211, 153, 0.08) !important;
+}
+
+/* Placeholders for empty slots */
+.o_kanban_view.o_app .o_column_placeholder,
+.o_kanban_view.o_app .o_column_quick_create {
+    background: transparent !important;
+    border: 1px dashed rgba(255, 255, 255, 0.06) !important;
+    border-radius: 12px;
+    opacity: 0.25;
+}
+
+/* Apps grid + control panel whiteness fixes */
+.o_control_panel_main,
+.o_cp_left,
+.o_cp_bottom,
+.o_cp_bottom_left,
+.o_cp_bottom_right,
+.o_cp_buttons,
+.o_cp_pager,
+.o_cp_switch_buttons,
+.o_action_manager .breadcrumb,
+.o_breadcrumb,
+.o_breadcrumb_item {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+.o_search_panel .o_search_panel_section_header,
+.o_search_panel .o_search_panel_section_title,
+.o_search_panel .o_facet_values,
+.o_search_panel .list-group-item {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+/* App tiles */
+.o_kanban_view.o_app .o_kanban_renderer,
+.o_kanban_view.o_app .o_kanban_group,
+.o_kanban_view.o_app .o_kanban_record,
+.o_kanban_view.o_app .o_kanban_card,
+.o_kanban_view.o_app .o_kanban_record .o_dropdown_kanban .dropdown-menu,
+.o_kanban_view.o_app .o_kanban_quick_create {
+    background: rgba(17, 27, 45, 0.32) !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
+    color: var(--brand-text) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+.o_kanban_view.o_app .o_kanban_record:hover {
+    border-color: var(--brand-accent) !important;
+}
+
+/* Buttons in control panels & app cards */
+.btn-link,
+.btn-default,
+.o_cp_switch_buttons .btn,
+.o_kanban_view.o_app .btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+.btn-link:hover,
+.btn-default:hover,
+.o_cp_switch_buttons .btn:hover,
+.o_kanban_view.o_app .btn:hover,
+.btn-link:focus,
+.btn-default:focus,
+.o_cp_switch_buttons .btn:focus,
+.o_kanban_view.o_app .btn:focus {
+    background: rgba(52, 211, 153, 0.12) !important;
+    border-color: var(--brand-accent) !important;
+    color: var(--brand-text) !important;
+}
+
+/* Navbar dropdowns and systray popovers */
+.o_menu_systray .dropdown-menu,
+.o_action_manager .dropdown-menu,
+.o_action_manager .popover {
+    background: var(--brand-panel) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+    box-shadow: var(--brand-shadow);
+}
+
+/* Gutters and canvas fixes: kill stray white zones */
+.o_action,
+.o_view_controller,
+.o_component_with_search_panel,
+.o_controller_with_searchpanel,
+.o_main_content,
+.o_content > div,
+.o_kanban_view,
+.o_kanban_renderer,
+.o_kanban_group,
+.o_kanban_column,
+.o_kanban_header,
+.o_kanban_quick_create,
+.o_cp_switch_buttons,
+.o_cp_pager,
+.o_view_nocontent,
+.o_view_nocontent_smiling_face,
+.o_dashboard,
+.o_content .o_kanban_view {
+    background: var(--brand-bg) !important;
+    border-color: var(--brand-border) !important;
+}
+
+/* Discuss: kill white canvas in thread and content panes */
+.o_mail_discuss,
+.o_mail_discuss .o_action,
+.o_mail_discuss .o_main_content,
+.o_mail_discuss .o_content,
+.o_mail_discuss .o_mail_thread,
+.o_mail_discuss .o_mail_thread_content,
+.o_mail_discuss .o_thread_message,
+.o_mail_discuss .o_thread_message_core,
+.o_mail_discuss .o_message,
+.o_mail_discuss .o_mail_activity,
+.o_mail_discuss .o_mail_activity_cell,
+.o_mail_discuss .o_mail_activity .o_view_nocontent,
+.o_mail_discuss .o_mail_preview,
+.o_mail_discuss .o_mail_preview * {
+    background: var(--brand-bg) !important;
+    color: var(--brand-text) !important;
+    border-color: var(--brand-border) !important;
+}
+
+.o_mail_discuss .o_mail_preview,
+.o_mail_discuss .o_mail_preview * {
+    box-shadow: none !important;
+}
+
+.o_search_panel,
+.o_search_panel .o_search_panel_section,
+.o_search_panel .o_search_panel_category,
+.o_search_panel .o_search_panel_filter,
+.o_search_panel .list-group-item {
+    background: var(--brand-panel) !important;
+    border-color: var(--brand-border) !important;
+    color: var(--brand-text) !important;
+}
+
+.o_kanban_column,
+.o_kanban_group,
+.o_kanban_header {
+    border-radius: 10px;
+    box-shadow: var(--brand-shadow);
+}
+
+.o_cp_switch_buttons .btn {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--brand-border) !important;
+    color: var(--brand-text) !important;
+}
+
+.o_cp_switch_buttons .btn.active {
+    background: rgba(52, 211, 153, 0.18) !important;
+    border-color: var(--brand-accent) !important;
+    color: var(--brand-text) !important;
 }

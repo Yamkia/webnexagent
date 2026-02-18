@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- Insert a link to the dev overrides CSS so local edits are picked up immediately -->
+    <template id="dev_css_include" inherit_id="website.layout" name="Deployable Brand Dev CSS Include">
+      <xpath expr="//head" position="inside">
+        <link rel="stylesheet" type="text/css" href="/deployable_brand_theme/dev_css.css" />
+      </xpath>
+    </template>
+  </data>
+</odoo>

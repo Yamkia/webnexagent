@@ -31,28 +31,50 @@
     <main id="app-content-area" class="hero-container">
         <h1 class="site-title">GreenMotive</h1>
 
+        <div class="hero-lede text-center">
+            <p class="lead mb-3">Need a fresh website? Launch the Website Helper to redesign or build from scratch with ready-to-apply layouts.</p>
+            <div class="hero-actions">
+                <button class="btn hero-cta-btn" id="cta-website-redesign" type="button">Redesign / Build Website</button>
+            </div>
+        </div>
+
         <!-- Card Grid -->
         <div class="card-grid">
+            {% if enabled_apps.odoo %}
             <!-- Card 1: Odoo Environments -->
             <div class="glass-card" id="load-odoo-app" role="button" aria-label="Open Odoo Environments">
                 <div class="label">Odoo</div>
                 <div class="icon" style="color: var(--accent-green);">⚙️</div>
                 <h3 class="title">Odoo Environments</h3>
             </div>
-            
+            {% endif %}
+
+            {% if enabled_apps.social_media %}
             <!-- Card 2: Social Media Suite -->
             <div class="glass-card" id="load-social-media-app" role="button" aria-label="Open Social Media Suite">
                 <div class="label">Social Media</div>
                 <div class="icon" style="color: var(--accent-blue);">📣</div>
                 <h3 class="title">Social Media Suite</h3>
             </div>
-            
+            {% endif %}
+
+            {% if enabled_apps.email %}
             <!-- Card 3: Email Assistant -->
             <div class="glass-card" id="load-email-app" role="button" aria-label="Open Email Assistant">
                 <div class="label">Email</div>
                 <div class="icon" style="color: var(--accent-indigo);">✉️</div>
                 <h3 class="title">Email Assistant</h3>
             </div>
+            {% endif %}
+
+            {% if enabled_apps.website_helper %}
+            <!-- Card 4: Website Helper -->
+            <div class="glass-card" id="load-website-helper-app" role="button" aria-label="Open Website Helper">
+                <div class="label">Web</div>
+                <div class="icon" style="color: var(--accent-blue);">🎨</div>
+                <h3 class="title">Website Helper</h3>
+            </div>
+            {% endif %}
         </div>
     </main>
 
@@ -94,22 +116,29 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="/">Dashboard</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="load-odoo-app-menu">Odoo Environments</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="load-social-media-app-menu">Social Media Suite</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="load-email-app-menu">Email Assistant</a>
-                </li>
+                {% if enabled_apps.odoo %}
+                <li class="nav-item"><a class="nav-link" href="#" id="load-odoo-app-menu">Odoo Environments</a></li>
+                {% endif %}
+                {% if enabled_apps.social_media %}
+                <li class="nav-item"><a class="nav-link" href="#" id="load-social-media-app-menu">Social Media Suite</a></li>
+                {% endif %}
+                {% if enabled_apps.email %}
+                <li class="nav-item"><a class="nav-link" href="#" id="load-email-app-menu">Email Assistant</a></li>
+                {% endif %}
+                {% if enabled_apps.website_helper %}
+                <li class="nav-item"><a class="nav-link" href="#" id="load-website-helper-app-menu">Website Helper</a></li>
+                {% endif %}
+                <li class="nav-item"><a class="nav-link" href="#" id="load-admin-app-menu">Admin</a></li>
             </ul>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/draggable.js"></script>
+    {% if enabled_apps.social_media %}
     <script src="/static/js/instagram_manager.js"></script>
+    <script src="/static/js/instagram_suite.js"></script>
+    {% endif %}
     <script src="/static/js/app.js"></script>
 </body>
 </html>

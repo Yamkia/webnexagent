@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="bluewave_backend_css" model="ir.asset">
+      <field name="name">BlueWave Backend CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">bluewave_theme/static/src/css/backend_theme.css</field>
+    </record>
+  </data>
+</odoo>

@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  web:
+    # remove local source bind-mounts for production — the image contains the app
+    volumes: []
+
+volumes:
+  # named volumes (db / odoo) continue to be managed by compose
+  db_data: {}
+  odoo17_data: {}
+  odoo18_data: {}
+  odoo19_data: {}

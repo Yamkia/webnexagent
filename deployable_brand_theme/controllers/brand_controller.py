@@ -58,3 +58,20 @@ class BrandPreviewController(http.Controller):
             'brand_code': brand.code,
             'brand_name': brand.name
         }
+
+    @http.route('/deployable_brand_theme/dev_css.css', type='http', auth='public', website=True, csrf=False)
+    def dev_css(self, **kwargs):
+        """Serve a development override CSS file so local edits take effect immediately."""
+        import os
+        css_file = os.path.join(os.path.dirname(__file__), '..', 'static', 'src', 'css', 'dev_overrides.css')
+        css_file = os.path.normpath(css_file)
+        if os.path.exists(css_file):
+            try:
+                with open(css_file, 'r', encoding='utf-8') as f:
+                    css = f.read()
+            except Exception:
+                css = '/* Error reading dev_overrides.css */'
+        else:
+            css = '/* deployable_brand_theme dev_overrides.css not found */'
+        headers = [('Content-Type', 'text/css; charset=utf-8'), ('Cache-Control', 'no-cache, no-store, must-revalidate')]
+        return request.make_response(css, headers)

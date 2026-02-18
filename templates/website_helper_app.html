@@ -1,0 +1,123 @@
+<div class="container py-4">
+  <div class="d-flex align-items-center mb-4 gap-3">
+    <div class="rounded-circle bg-primary bg-opacity-25 text-primary d-flex align-items-center justify-content-center" style="width:48px; height:48px;">
+      <span class="fw-bold">WH</span>
+    </div>
+    <div>
+      <h3 class="mb-1">Website Helper</h3>
+      <p class="text-muted mb-0">Generate themes and paste-ready snippets for your Odoo pages.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-xl-6 col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-1">Generate Theme</h5>
+              <small class="text-muted">Describe the look; get a themed CSS block with nav/pill tokens.</small>
+            </div>
+          </div>
+          <form id="website-helper-generate-form" class="d-grid gap-3">
+            <div>
+              <label class="form-label" for="design-prompt-input">Design prompt</label>
+              <textarea id="design-prompt-input" name="prompt" class="form-control" rows="3" placeholder="e.g., dark glassmorphism with teal accent"></textarea>
+            </div>
+            <div>
+              <label class="form-label" for="output-path-input">Save to (optional)</label>
+              <input id="output-path-input" name="output_path" class="form-control" value="static/website_helper/generated_theme.css" />
+              <div class="form-text">If left as-is, a generated CSS file will be written under static/website_helper/ when you toggle apply.</div>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="1" id="apply-toggle" name="apply">
+              <label class="form-check-label" for="apply-toggle">Write the generated CSS to disk</label>
+            </div>
+            <button class="btn btn-success" type="submit">Generate CSS</button>
+          </form>
+          <div id="website-helper-generate-result" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-6 col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-1">Inject Custom Theme</h5>
+              <small class="text-muted">Paste CSS and write it into a target file inside the repo.</small>
+            </div>
+          </div>
+          <form id="website-helper-inject-form" class="d-grid gap-3">
+            <div>
+              <label class="form-label" for="inject-target-input">Target CSS file</label>
+              <input id="inject-target-input" name="target_path" class="form-control" value="deployable_brand_theme/static/src/css/backend_theme.css" />
+              <div class="form-text">Path is relative to the repo. Use append mode to keep existing styles.</div>
+            </div>
+            <div>
+              <label class="form-label" for="inject-css-input">CSS to inject</label>
+              <textarea id="inject-css-input" name="css" rows="6" class="form-control" placeholder=":root { --brand-accent: #8b5cf6; }"></textarea>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="inject-replace-toggle" />
+              <label class="form-check-label" for="inject-replace-toggle">Replace file instead of append</label>
+            </div>
+            <button class="btn btn-warning" type="submit">Inject CSS</button>
+          </form>
+          <div id="website-helper-inject-result" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="mb-1">Generate Website Layout</h5>
+              <small class="text-muted">Creates a copy/paste HTML + CSS block you can drop into an Odoo snippet.</small>
+            </div>
+          </div>
+          <form id="website-helper-site-form" class="d-grid gap-3" action="javascript:void(0);">
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label" for="site-brand-input">Brand name</label>
+                <input id="site-brand-input" name="brand" class="form-control" value="GreenMotive" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="site-cta-input">Primary CTA label</label>
+                <input id="site-cta-input" name="cta" class="form-control" value="Book a demo" />
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="site-design-prompt-input">Design brief</label>
+              <textarea id="site-design-prompt-input" name="prompt" class="form-control" rows="3" placeholder="e.g., dark gradient SaaS landing with rounded cards and calm motion"></textarea>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label class="form-label" for="site-accent-input">Accent color (optional)</label>
+                <input id="site-accent-input" name="accent" class="form-control" placeholder="#22c55e" />
+                <div class="form-text">Leave blank to auto-pick from your brief (teal/blue/purple/etc.).</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="site-bg-input">Background image URL (optional)</label>
+                <input id="site-bg-input" name="background_image" class="form-control" placeholder="https://example.com/hero.jpg" />
+                <div class="form-text">Adds a cover image blended behind the layout.</div>
+              </div>
+            </div>
+            <div>
+              <label class="form-label" for="site-source-html">Paste existing HTML to restyle (optional)</label>
+              <textarea id="site-source-html" name="source_html" class="form-control" rows="4" placeholder="Paste a section from an existing site to wrap in the new theme."></textarea>
+              <div class="form-text">Scripts are stripped. If empty, a default layout is generated.</div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-primary" type="submit">Generate Layout</button>
+            </div>
+          </form>
+          <div id="website-helper-site-result" class="mt-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

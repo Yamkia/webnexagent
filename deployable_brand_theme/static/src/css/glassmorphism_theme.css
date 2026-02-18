@@ -377,3 +377,143 @@ label {
   animation: none !important;
   transition-duration: 0.2s !important;
 }
+
+/* Dark readability overrides */
+:root {
+  --content-bg: #0c1024;
+  --sidebar-bg: #0f193a;
+  --panel-bg: #121c3f;
+  --card-bg: #16234a;
+  --text-dark: #e6edff;
+  --text-muted: #9fb3d9;
+  --border-light: #24335a;
+  --hover-bg: #1d2b55;
+  --selected-bg: #25356b;
+}
+
+body {
+  background: radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(129, 140, 248, 0.12) 0%, transparent 45%),
+    #0b1024 !important;
+  color: var(--text-dark) !important;
+}
+
+.o_web_client,
+.o_action_manager,
+.o_content {
+  background: var(--content-bg) !important;
+}
+
+.o_menu_sections,
+.o_action_manager > .o_xxl,
+aside {
+  background: var(--sidebar-bg) !important;
+  border-right: 1px solid var(--border-light) !important;
+}
+
+.o_form_sheet_bg,
+.o_form_sheet,
+.o_list_view,
+.o_kanban_view,
+.o_kanban_record {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+  color: var(--text-dark) !important;
+}
+
+.o_kanban_record:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+.o_control_panel,
+.o_form_statusbar,
+.o_statusbar_status,
+.o_searchview_input_container,
+.o_searchview,
+.modal-content,
+.dropdown-menu,
+.o_list_table,
+.o_list_table thead,
+.o_list_table tbody tr,
+.o_statusbar_status button,
+.o_statusbar_status button.btn-primary,
+.o_statusbar_status button.disabled,
+.o_notification {
+  background: var(--panel-bg) !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-dark) !important;
+}
+
+.o_searchview_input,
+.o_searchview input,
+.o_input,
+.o_field_widget input,
+.o_field_widget textarea,
+.o_field_widget select,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea,
+select {
+  background: #1b2745 !important;
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-dark) !important;
+}
+
+.o_input:focus,
+.o_field_widget input:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35) !important;
+}
+
+.o_list_table thead th,
+.dropdown-item,
+.modal-title,
+label,
+.o_form_label,
+h1, h2, h3, h4, h5, h6,
+body,
+.o_web_client {
+  color: var(--text-dark) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus,
+.o_list_table tbody tr:hover,
+.o_menu_sections .dropdown-item:hover,
+.o_menu_sections a:hover {
+  background: var(--hover-bg) !important;
+  color: var(--text-dark) !important;
+}
+
+.o_menu_sections .dropdown-toggle.show,
+.o_menu_sections .dropdown-item.active,
+.o_nav_entry.active {
+  background: var(--selected-bg) !important;
+  color: var(--text-dark) !important;
+  border-left: 3px solid var(--accent-blue) !important;
+}
+
+.btn-secondary,
+.btn.btn-primary,
+.o_form_button_save,
+.o_form_button_create,
+.o_form_button_cancel,
+.o_statusbar_status button {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
+}
+
+.btn-secondary,
+.o_form_button_cancel {
+  background: #1b2745 !important;
+  color: var(--text-dark) !important;
+}
+
+.o_notification {
+  border-left: 4px solid var(--accent-indigo) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
