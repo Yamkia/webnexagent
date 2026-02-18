@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- White-labeled login layout: inject neutral product branding block on the login page -->
+    <template id="whitelabel_login_layout" inherit_id="web.login_layout" priority="20">
+        <!-- In Odoo 19, some older branding containers were removed; target <body> to avoid brittle xpaths. -->
+        <xpath expr="//body" position="inside">
+            <div class="wl-login-brand">
+                <span class="wl-login-logo-circle"></span>
+                <span class="wl-login-title">Your Platform</span>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Small CSS block for login branding -->
+    <template id="whitelabel_login_assets" inherit_id="web.assets_frontend" priority="20">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                .wl-login-brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    justify-content: center;
+                    margin-bottom: 8px;
+                }
+
+                .wl-login-logo-circle {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, var(--brand-primary, #6366f1), var(--brand-secondary, #8b5cf6));
+                    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+                }
+
+                .wl-login-title {
+                    font-weight: 600;
+                    font-size: 18px;
+                    color: #0f172a;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

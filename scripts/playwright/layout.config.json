@@ -1,0 +1,38 @@
+{
+  "baseUrl": "http://localhost:8069",
+  "auth": {
+    "type": "none",
+    "loginUrl": "",
+    "username": "",
+    "password": ""
+  },
+  "pages": [
+    {
+      "name": "backend_apps",
+      "url": "/web",
+      "selectors": [
+        ".o_main_navbar",
+        ".o_action_manager",
+        ".o_app",
+        ".o_app .o_app_icon",
+        ".o_control_panel",
+        ".o_kanban_record",
+        ".o_list_view"
+      ]
+    },
+    {
+      "name": "website_home",
+      "url": "/",
+      "selectors": [
+        "header",
+        "main",
+        "section",
+        "footer",
+        "h1",
+        "button"
+      ]
+    }
+  ],
+  "outputDir": "playwright-output",
+  "viewport": { "width": 1440, "height": 900 }
+}

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hero Landing Page Template (QWeb) -->
+    <template id="hero_landing_page" name="Nexus Hero Landing" page="True">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'hero_landing'"/>
+            <body class="hero-landing-enabled">
+                <div class="hero-shell">
+                    <div class="hero-nav">
+                        <div class="hero-nav-left">
+                            <div class="hero-logo-pill">
+                                <span class="hero-logo-dot"></span>
+                                <span class="hero-logo-text">NEXUS ENGINE</span>
+                            </div>
+                            <div class="hero-nav-links">
+                                <a href="#">Overview</a>
+                                <a href="#">Playbooks</a>
+                                <a href="#">Signals</a>
+                                <a href="#">Collections</a>
+                            </div>
+                        </div>
+                        <div class="hero-nav-right">
+                            <div class="hero-lang-pill">
+                                <span>EN</span>
+                            </div>
+                            <a href="#" class="hero-cta-pill">
+                                <span>Launch Workspace</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="hero-main">
+                        <!-- Left panel: copy and controls -->
+                        <section class="hero-panel">
+                            <div class="hero-panel-inner">
+                                <div class="hero-tag-row">
+                                    <span class="hero-tag">SET 01 • PLAYBOOK</span>
+                                    <span class="hero-tag-chip">Growth Orbit</span>
+                                </div>
+                                <h1 class="hero-title">Design your next customer orbit.</h1>
+                                <p class="hero-subtitle">
+                                    Spin up branded customer workspaces, orchestrate campaigns, and watch every signal inside a single glass-smooth command center.
+                                </p>
+
+                                <div class="hero-metrics">
+                                    <div class="hero-metric">
+                                        <span class="hero-metric-label">Active brands</span>
+                                        <span class="hero-metric-value">02</span>
+                                    </div>
+                                    <div class="hero-metric">
+                                        <span class="hero-metric-label">Live automations</span>
+                                        <span class="hero-metric-value">19</span>
+                                    </div>
+                                    <div class="hero-metric">
+                                        <span class="hero-metric-label">Signal latency</span>
+                                        <span class="hero-metric-value">&lt; 120ms</span>
+                                    </div>
+                                </div>
+
+                                <div class="hero-actions">
+                                    <a href="/web" class="hero-pill-primary">
+                                        <span>Enter Control Room</span>
+                                    </a>
+                                    <a href="#" class="hero-pill-secondary">
+                                        <span>Preview Brand Space</span>
+                                    </a>
+                                </div>
+
+                                <div class="hero-mini-card">
+                                    <div>
+                                        <div class="hero-mini-label">Current set</div>
+                                        <div class="hero-mini-value">Cosmic commerce • 23.1</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Right panel: product orbit visual -->
+                        <section class="hero-panel">
+                            <div class="hero-panel-inner hero-orbit-wrapper">
+                                <div class="hero-orbit-sphere">
+                                    <div class="hero-orbit-inner"></div>
+                                    <div class="hero-orbit-product">
+                                        <div class="hero-orbit-product-placeholder">
+                                            <span>Drop your hero visual</span>
+                                        </div>
+                                    </div>
+                                    <div class="hero-orbit-chip">Set 02 • Orbital catalog</div>
+                                    <div class="hero-orbit-badge">Live sync · Odoo 19</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="hero-footer-strip">
+                        <div class="hero-footer-left">
+                            <span class="hero-footer-pill">Multi-brand white‑label hub</span>
+                            <span>Provision customer-ready workspaces in minutes.</span>
+                        </div>
+                        <div class="hero-footer-right">SCROLL TO ENTER ORBIT</div>
+                    </div>
+                </div>
+            </body>
+        </t>
+    </template>
+</odoo>

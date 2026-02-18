@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="bluewave_dynamic_vars" name="BlueWave Dynamic Variables">
+    <t t-set="bw_header" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_header', '#111c3d')"/>
+    <t t-set="bw_header_border" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_header_border', '#0b1329')"/>
+    <t t-set="bw_bg" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_bg', '#0b1326')"/>
+    <t t-set="bw_panel" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_panel', '#0f1f46')"/>
+    <t t-set="bw_text" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_text', '#e9f1ff')"/>
+    <t t-set="bw_muted" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_muted', '#aab7d4')"/>
+    <t t-set="bw_accent" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_accent', '#4a7bff')"/>
+    <t t-set="bw_border_opacity" t-value="env['ir.config_parameter'].sudo().get_param('bluewave_tuner.bw_border_opacity', '0.06')"/>
+    <style id="bluewave_dynamic_vars_style">
+      :root {
+        --bw-header: <t t-esc="bw_header"/>;
+        --bw-header-border: <t t-esc="bw_header_border"/>;
+        --bw-bg: <t t-esc="bw_bg"/>;
+        --bw-panel: <t t-esc="bw_panel"/>;
+        --bw-text: <t t-esc="bw_text"/>;
+        --bw-muted: <t t-esc="bw_muted"/>;
+        --bw-accent: <t t-esc="bw_accent"/>;
+        --bw-border: rgba(255, 255, 255, <t t-esc="bw_border_opacity"/>);
+      }
+    </style>
+  </template>
+
+  <record id="bluewave_dynamic_vars_asset" model="ir.asset">
+    <field name="name">BlueWave Dynamic Variables</field>
+    <field name="bundle">web.assets_backend</field>
+    <field name="template" ref="bluewave_dynamic_vars"/>
+  </record>
+</odoo>

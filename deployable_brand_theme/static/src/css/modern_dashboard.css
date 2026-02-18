@@ -5,16 +5,78 @@
   --brand-primary: #6366f1;
   --brand-secondary: #8b5cf6;
   --brand-accent: #ec4899;
-  --dark-bg: #0f172a;
-  --darker-bg: #020617;
-  --card-bg: #1e293b;
-  --sidebar-bg: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --border-subtle: #334155;
+  --dark-bg: #121a28; /* soften overall background */
+  --darker-bg: #0c1422; /* reduce harsh contrast */
+  --card-bg: #1a2434; /* gentler panels */
+  --sidebar-bg: #1a2434;
+  --text-primary: #e6e9ee;
+  --text-secondary: #c7ced8;
+  --border-subtle: #2c3645;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
+}
+
+/* NAV & CONTROL PANEL CLEAN-UP */
+.o_main_navbar,
+nav.o_main_navbar,
+.o_navbar_apps_menu {
+  height: 56px !important;
+  padding: 8px 16px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45) !important;
+}
+
+.o_main_navbar .navbar-nav,
+.o_main_navbar .o_menu_sections,
+.o_main_navbar .o_menu_brand {
+  align-items: center !important;
+}
+
+.o_menu_systray {
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.o_menu_sections {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.o_menu_sections .dropdown-toggle,
+.o_menu_sections .o_nav_entry,
+.o_menu_sections a {
+  padding: 9px 14px !important;
+  margin: 0 6px !important;
+  border-radius: 10px !important;
+  line-height: 1.2 !important;
+  background: transparent !important;
+}
+
+.o_menu_sections .dropdown-menu {
+  margin-top: 0 !important;
+}
+
+.o_control_panel {
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  margin-bottom: 18px !important;
+}
+
+.o_searchview_input_container,
+.o_searchview {
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.o_cp_buttons .btn,
+.o_control_panel .btn {
+  border-radius: 10px !important;
+  padding: 8px 14px !important;
 }
 
 /* COMPLETE BODY OVERRIDE */
@@ -30,9 +92,9 @@ html,
 .o_main_navbar,
 nav.o_main_navbar,
 .o_navbar_apps_menu {
-  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 50%, var(--brand-accent) 100%) !important;
-  border: none !important;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3) !important;
+  background: #121a28 !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.35) !important;
   padding: 12px 24px !important;
   height: 64px !important;
 }
@@ -45,8 +107,8 @@ nav.o_main_navbar,
 .o_menu_sections,
 aside,
 .o_action_manager > .o_xxl > aside {
-  background: var(--sidebar-bg) !important;
-  border-right: 1px solid var(--border-subtle) !important;
+  background: #131b29 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
   padding: 20px 12px !important;
 }
 
@@ -54,21 +116,22 @@ aside,
 .o_menu_sections .dropdown-item,
 .o_menu_sections a,
 .o_nav_entry {
-  color: var(--text-secondary) !important;
+  color: #374151 !important;
   padding: 12px 16px !important;
   border-radius: 8px !important;
   margin: 4px 0 !important;
   transition: all 0.3s ease !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
+  background: transparent !important;
 }
 
 .o_menu_sections .dropdown-item:hover,
 .o_menu_sections a:hover {
-  background: var(--card-bg) !important;
-  color: var(--text-primary) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #111827 !important;
   transform: translateX(4px) !important;
 }
 
@@ -102,6 +165,52 @@ aside,
 .o_kanban_record:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Apps grid refinements */
+.o_kanban_view.o_app_kanban .o_kanban_record {
+  background: #111827 !important;
+  border: 1px solid #1f2937 !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35) !important;
+  border-radius: 14px !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record:hover {
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record .btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #6366f1) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45) !important;
+  border: none !important;
+  border-radius: 10px !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record .btn-primary:hover {
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record .btn,
+.o_kanban_view.o_app_kanban .o_kanban_record .btn-secondary {
+  border-radius: 10px !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record .o_app_name,
+.o_kanban_view.o_app_kanban .o_kanban_record h3,
+.o_kanban_view.o_app_kanban .o_kanban_record h4 {
+  color: #e5e7eb !important;
+}
+
+.o_kanban_view.o_app_kanban .o_kanban_record .o_app_subtitle,
+.o_kanban_view.o_app_kanban .o_kanban_record .text-muted {
+  color: #cbd5e1 !important;
+}
+
+/* Soften technical/slug labels in app kanban */
+.o_kanban_view.o_app_kanban .text-danger {
+  color: #6b7280 !important;
 }
 
 /* LIST VIEW */
@@ -151,34 +260,33 @@ aside,
 .btn.btn-primary {
   background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary)) !important;
   border: none !important;
-  border-radius: 8px !important;
-  padding: 10px 24px !important;
+  border-radius: 10px !important;
+  padding: 10px 22px !important;
   font-weight: 600 !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4) !important;
-  transition: all 0.3s ease !important;
-  text-transform: uppercase !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35) !important;
+  transition: all 0.25s ease !important;
   font-size: 13px !important;
-  letter-spacing: 0.5px !important;
+  letter-spacing: 0.3px !important;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 .btn-secondary {
-  background: var(--card-bg) !important;
-  border: 1px solid var(--border-subtle) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--text-primary) !important;
-  border-radius: 8px !important;
-  padding: 10px 24px !important;
+  border-radius: 10px !important;
+  padding: 10px 22px !important;
   font-weight: 500 !important;
 }
 
 .btn-secondary:hover {
-  border-color: var(--brand-primary) !important;
-  background: var(--darker-bg) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* INPUTS */
@@ -211,26 +319,28 @@ select:focus {
 
 /* CONTROL PANEL */
 .o_control_panel {
-  background: var(--card-bg) !important;
-  border: 1px solid var(--border-subtle) !important;
-  border-radius: 12px !important;
-  padding: 16px 24px !important;
-  margin-bottom: 24px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  background: #121a28 !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22) !important;
 }
 
 /* SEARCH BAR */
 .o_searchview_input_container,
 .o_searchview {
-  background: var(--darker-bg) !important;
-  border: 1px solid var(--border-subtle) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 8px !important;
-  padding: 8px 16px !important;
+  padding: 6px 12px !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
 .o_searchview_input,
 .o_searchview input {
-  color: var(--text-primary) !important;
+  color: #dfe4ec !important;
   background: transparent !important;
 }
 
@@ -414,20 +524,21 @@ label {
 /* APP ICONS CUSTOM STYLING */
 .o_app {
   background: var(--card-bg) !important;
-  border: 1px solid var(--border-subtle) !important;
-  border-radius: 16px !important;
-  padding: 24px !important;
-  transition: all 0.3s ease !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 14px !important;
+  padding: 22px !important;
+  transition: all 0.25s ease !important;
 }
 
 .o_app:hover {
-  transform: translateY(-8px) !important;
-  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35) !important;
 }
 
 .o_app .o_app_icon {
-  font-size: 48px !important;
+  font-size: 46px !important;
   background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent)) !important;
+  background-clip: text !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }

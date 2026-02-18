@@ -6,6 +6,9 @@ __pycache__/
 
 # Virtual env
 .venv/
+.venv-17.0/
+.venv-18.0/
+.venv-19.0/
 venv/
 ENV/
 
@@ -16,6 +19,7 @@ ENV/
 
 # Logs
 *.log
+logs/
 
 # Node/Frontend
 node_modules/

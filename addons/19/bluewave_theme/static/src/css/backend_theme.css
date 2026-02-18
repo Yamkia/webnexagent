@@ -1,0 +1,460 @@
+:root {
+    --bw-header: #111c3d;
+    --bw-header-2: #0b1329;
+    --bw-bg: #0b1326;
+    --bw-bg-2: #0c1d3b;
+    --bw-panel: #0f1f46;
+    --bw-panel-2: #0b1633;
+    --bw-text: #e9f1ff;
+    --bw-muted: #aab7d4;
+    --bw-accent: #4a7bff;
+    --bw-accent-2: #4dd0ff;
+    --bw-border: rgba(255, 255, 255, 0.06);
+    --bw-shadow: 0 12px 30px rgba(7, 14, 35, 0.6);
+    --bw-radius: 14px;
+    --bw-font: "Poppins", "Segoe UI", system-ui, sans-serif;
+}
+
+body, html, .o_web_client {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    font-family: var(--bw-font) !important;
+}
+
+/* Kill white canvas backgrounds across Odoo views */
+.o_action_manager,
+.o_content,
+.o_action,
+.o_main_content,
+.o_view_controller,
+.o_component_with_search_panel,
+.o_controller_with_searchpanel,
+.o_view_nocontent,
+.o_view_nocontent_smiling_face,
+.o_kanban_view,
+.o_list_view,
+.o_form_view,
+.o_cp_switch_buttons,
+.o_cp_pager,
+.o_cp_buttons {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+}
+
+.o_main_navbar, nav.o_main_navbar, .o_navbar {
+    background: linear-gradient(135deg, var(--bw-header), var(--bw-header-2)) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+.o_web_client .o_main_navbar,
+.o_web_client nav.o_main_navbar,
+.o_web_client .o_navbar {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important; /* enforce deep blue, kill purple overrides */
+}
+
+/* Kill purple menu pills in top bar */
+.o_web_client .o_main_navbar .nav-link,
+.o_web_client .o_main_navbar .dropdown-toggle,
+.o_web_client .o_main_navbar .show > .nav-link,
+.o_web_client .o_main_navbar .nav-link.active,
+.o_web_client .o_main_navbar .o_menu_sections .nav-link,
+.o_web_client .o_main_navbar .o_menu_sections .nav-link.active,
+.o_web_client .o_main_navbar .o_menu_sections .nav-link:focus,
+.o_web_client .o_main_navbar .o_menu_sections .nav-link:hover {
+    background: #0d1b3b !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #e9f1ff !important;
+    box-shadow: none !important;
+}
+
+/* Kill purple strip behind menu sections container */
+.o_web_client .o_main_navbar .o_menu_sections {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Kill purple menu dropdown items */
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item.dropdown-item.o-navigable.o_nav_entry,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item.dropdown-item.o-navigable.o_nav_entry:hover,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item.dropdown-item.o-navigable.o_nav_entry:focus,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item.dropdown-item.o-navigable.o_nav_entry.active,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-menu .dropdown-item,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-menu .dropdown-item:hover,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-menu .dropdown-item:focus,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-menu .dropdown-item.active {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+}
+
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item.dropdown-item.o-navigable.o_nav_entry:hover,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-menu .dropdown-item:hover {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+}
+
+/* Kill purple on dropdown items in menu sections */
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item:hover,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item:hover,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry:hover,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item:focus,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item:focus,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry:focus,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry.active,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item.active {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+}
+
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item:hover,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item:hover,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry:hover,
+.o_web_client .o_main_navbar .o_menu_sections .o-dropdown-item:focus,
+.o_web_client .o_main_navbar .o_menu_sections .dropdown-item:focus,
+.o_web_client .o_main_navbar .o_menu_sections .o_nav_entry:focus {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+}
+
+/* Darken popovers/dropdown menus */
+.o_web_client .o_popover.popover.mw-100.bs-popover-auto.o-dropdown--menu.dropdown-menu.mx-0,
+.o_web_client .popover.o-dropdown--menu.dropdown-menu,
+.o_web_client .dropdown-menu.o-dropdown--menu,
+.o_web_client .popover,
+.o_web_client .popover .popover-body,
+.o_web_client .popover .popover-header {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+.o_web_client .popover .popover-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.o_web_client .popover .popover-body a,
+.o_web_client .popover .popover-body .dropdown-item,
+.o_web_client .popover .popover-body .o-dropdown-item,
+.o_web_client .popover .popover-body .o_nav_entry {
+    color: #e9f1ff !important;
+}
+
+.o_web_client .popover .popover-body .dropdown-item:hover,
+.o_web_client .popover .popover-body .o-dropdown-item:hover,
+.o_web_client .popover .popover-body .o_nav_entry:hover {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+}
+
+/* Darken Discuss sidebar */
+.o_web_client .o-mail-DiscussSidebar,
+.o_web_client .o-mail-DiscussSidebar.o-mail-discussSidebarBgColor {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.o_web_client .o-mail-DiscussSidebar .list-group-item,
+.o_web_client .o-mail-DiscussSidebar .list-group-item * {
+    background: transparent !important;
+    color: #e9f1ff !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.o_web_client .o-mail-DiscussSidebar .list-group-item.active,
+.o_web_client .o-mail-DiscussSidebar .list-group-item:hover {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+}
+
+/* Darken generic centered flex placeholders (empty state containers) */
+.o_web_client .d-flex.flex-grow-1.align-items-center.justify-content-center.w-100 {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+}
+
+.o_web_client .o_main_navbar .nav-link:hover,
+.o_web_client .o_main_navbar .dropdown-toggle:hover,
+.o_web_client .o_main_navbar .nav-link:focus {
+    background: #122750 !important;
+    color: #4dd0ff !important;
+}
+.o_main_navbar *, .o_menu_sections, .o_menu_sections .dropdown-toggle { color: #f0f4ff !important; }
+.o_menu_sections .dropdown-toggle:hover { color: var(--bw-accent-2) !important; }
+.o_main_navbar .dropdown-menu { background: #0f1831 !important; border: 1px solid rgba(255,255,255,0.04) !important; }
+.o_main_navbar .dropdown-item { color: var(--bw-text) !important; }
+.o_main_navbar .dropdown-item:hover { background: #1a2547 !important; color: var(--bw-accent-2) !important; }
+
+.o_content, .o_action, .o_control_panel, .o_app, .o_apps { box-shadow: none !important; border-color: transparent !important; }
+
+/* Force dark canvas on Discuss and message threads */
+.o_mail_discuss,
+.o_mail_discuss .o_action,
+.o_mail_discuss .o_main_content,
+.o_mail_discuss .o_content,
+.o_mail_discuss .o_mail_thread,
+.o_mail_discuss .o_mail_thread_content,
+.o_mail_discuss .o_thread_message,
+.o_mail_discuss .o_thread_message_core,
+.o_mail_discuss .o_message,
+.o_mail_discuss .o_mail_activity,
+.o_mail_discuss .o_mail_activity_cell,
+.o_mail_discuss .o_mail_activity .o_view_nocontent,
+.o_mail_discuss .o_mail_preview,
+.o_mail_discuss .o_mail_preview * {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+    box-shadow: none !important;
+}
+
+/* Sidebar search panel (apps/categories) */
+.o_search_panel,
+.o_search_panel .o_search_panel_section,
+.o_search_panel .o_search_panel_category,
+.o_search_panel .o_search_panel_filter,
+.o_search_panel .list-group-item,
+.o_search_panel a,
+.o_search_panel_section_list_item {
+    background: linear-gradient(135deg, #0d1a36, #0b1227) !important;
+    color: var(--bw-text) !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.o_search_panel .o_search_panel_label_title,
+.o_search_panel .o_search_panel_section_header,
+.o_search_panel .o_search_panel_section_title,
+.o_search_panel .o_search_panel_filter_value,
+.o_search_panel .o_search_panel_category_value {
+    color: #cbe3ff !important;
+}
+
+.o_search_panel a:hover,
+.o_search_panel_section_list_item:hover,
+.o_search_panel .o_search_panel_category_value:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Control panel bar, pager, search bar strip */
+.o_web_client .o_control_panel,
+.o_web_client .o_control_panel_main,
+.o_web_client .o_control_panel_navbar,
+.o_web_client .o_cp_top,
+.o_web_client .o_cp_bottom,
+.o_web_client .o_cp_bottom_left,
+.o_web_client .o_cp_bottom_right,
+.o_web_client .o_cp_left,
+.o_web_client .o_cp_right,
+.o_web_client .o_cp_switch_buttons,
+.o_web_client .o_cp_pager,
+.o_web_client .o_cp_switch_buttons .btn,
+.o_web_client .o_cp_pager .btn,
+.o_web_client .o_control_panel .breadcrumb,
+.o_web_client .o_control_panel .breadcrumb-item {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+}
+
+.o_web_client .o_searchview,
+.o_web_client .o_searchview_input_container,
+.o_web_client .o_searchview_input,
+.o_web_client .o_searchview .o_facet_values,
+.o_web_client .o_searchview .o_searchview_facet,
+.o_web_client .o_searchview .o_searchview_facet * {
+    background: #0e1a33 !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+    box-shadow: none !important;
+}
+
+.o_web_client .o_searchview_input::placeholder {
+    color: var(--bw-muted) !important;
+}
+
+/* Control panel action buttons (Update Apps List, Apply Scheduled Upgrades, Import Module) */
+.o_web_client .o_control_panel .o_cp_buttons .btn,
+.o_web_client .o_control_panel .o_cp_buttons .o_dropdown_toggler_btn,
+.o_web_client .o_control_panel .o_cp_switch_buttons .btn,
+.o_web_client .o_control_panel .o_cp_switch_buttons .btn.active,
+.o_web_client .o_control_panel .o_cp_buttons .btn:active,
+.o_web_client .o_control_panel .o_cp_buttons .btn:focus,
+.o_web_client .o_control_panel .o_cp_buttons .btn:hover {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+}
+
+/* Nuclear: force CP top action buttons (apps: Update/Apply/Import) */
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .o_dropdown > .btn,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn.btn-primary,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn.btn-secondary,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn.btn-light,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn.btn-outline-secondary {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: none !important;
+}
+
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn:hover,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .o_dropdown > .btn:hover,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .btn:focus,
+.o_web_client .o_control_panel .o_cp_top .o_cp_buttons > .o_dropdown > .btn:focus {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+    border-color: rgba(77, 208, 255, 0.45) !important;
+}
+
+.o_web_client .o_control_panel .o_cp_buttons .btn:hover,
+.o_web_client .o_control_panel .o_cp_buttons .btn:focus {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+}
+
+/* Extra force: CP action buttons (purple killers) */
+.o_web_client .o_control_panel .o_cp_buttons .btn-secondary,
+.o_web_client .o_control_panel .o_cp_buttons .btn-light,
+.o_web_client .o_control_panel .o_cp_buttons .btn-outline-secondary,
+.o_web_client .o_control_panel .o_cp_buttons .btn,
+.o_web_client .o_control_panel .o_cp_buttons .o_dropdown_toggler_btn {
+    background: linear-gradient(135deg, #0d1b3b, #0a1530) !important;
+    color: #e9f1ff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+}
+
+.o_web_client .o_control_panel .o_cp_buttons .btn-secondary:hover,
+.o_web_client .o_control_panel .o_cp_buttons .btn-light:hover,
+.o_web_client .o_control_panel .o_cp_buttons .btn-outline-secondary:hover,
+.o_web_client .o_control_panel .o_cp_buttons .btn:hover,
+.o_web_client .o_control_panel .o_cp_buttons .o_dropdown_toggler_btn:hover,
+.o_web_client .o_control_panel .o_cp_buttons .btn-secondary:focus,
+.o_web_client .o_control_panel .o_cp_buttons .btn-light:focus,
+.o_web_client .o_control_panel .o_cp_buttons .btn-outline-secondary:focus,
+.o_web_client .o_control_panel .o_cp_buttons .btn:focus,
+.o_web_client .o_control_panel .o_cp_buttons .o_dropdown_toggler_btn:focus {
+    background: linear-gradient(135deg, #122750, #0d1b3b) !important;
+    color: #4dd0ff !important;
+    border-color: rgba(77, 208, 255, 0.45) !important;
+}
+
+/* Nuclear override for stray white canvases (apps grid, renderers, empty states) */
+.o_web_client .o_action_manager,
+.o_web_client .o_content,
+.o_web_client .o_action,
+.o_web_client .o_main_content,
+.o_web_client .o_view_controller,
+.o_web_client .o_controller_with_searchpanel,
+.o_web_client .o_component_with_search_panel,
+.o_web_client .o_view_nocontent,
+.o_web_client .o_view_nocontent_smiling_face,
+.o_web_client .o_kanban_view,
+.o_web_client .o_kanban_renderer,
+.o_web_client .o_kanban_group,
+.o_web_client .o_list_view,
+.o_web_client .o_form_view,
+.o_web_client .o_cp_switch_buttons,
+.o_web_client .o_cp_pager,
+.o_web_client .o_cp_buttons,
+.o_web_client .o_control_panel_main,
+.o_web_client .o_cp_left,
+.o_web_client .o_cp_right,
+.o_web_client .o_cp_bottom,
+.o_web_client .o_cp_bottom_left,
+.o_web_client .o_cp_bottom_right,
+.o_web_client .o_cp_switch_buttons .btn,
+.o_web_client .o_cp_pager .btn,
+.o_web_client .o_control_panel .breadcrumb,
+.o_web_client .o_control_panel .breadcrumb-item {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+}
+
+/* Renderer and canvas containers inherit dark gradient */
+.o_web_client .o_content > .o_view_controller > .o_renderer,
+.o_web_client .o_content > .o_view_controller > .o_renderer > div,
+.o_web_client .o_content .o_view_renderer,
+.o_web_client .o_content .o_view_manager_content,
+.o_web_client .o_content .o_kanban_view .o_kanban_renderer,
+.o_web_client .o_content .o_list_view .table-responsive,
+.o_web_client .o_content .o_form_sheet_bg,
+.o_web_client .o_content .o_form_sheet_bg > .o_form_sheet {
+    background: linear-gradient(135deg, var(--bw-bg), var(--bw-bg-2)) !important;
+    color: var(--bw-text) !important;
+    border-color: var(--bw-border) !important;
+}
+
+.o_form_sheet, .o_kanban_record, .o_data_row, table, .o_list_view, .o_kanban_renderer .o_kanban_record {
+    background: linear-gradient(145deg, var(--bw-panel), var(--bw-panel-2)) !important;
+    color: var(--bw-text) !important;
+    border: 1px solid var(--bw-border) !important;
+    box-shadow: var(--bw-shadow) !important;
+    border-radius: var(--bw-radius);
+}
+
+.o_search_panel, .o_mail_discussSidebar, .o_mail_discussSidebar .list-group-item {
+    background: linear-gradient(160deg, #0d1a36, #0b1227) !important;
+    color: var(--bw-text) !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+}
+.o_search_panel a, .o_search_panel_section_list_item { color: var(--bw-muted) !important; }
+.o_search_panel_section_header, .o_search_panel_filter_value { color: var(--bw-accent-2) !important; }
+.o_search_panel .o_search_panel_label_title { color: var(--bw-text) !important; }
+.o_search_panel .o_search_panel_category_value:hover { color: #ffffff !important; }
+.o_search_panel_current { color: #ffffff !important; }
+.o_mail_discussSidebar .list-group-item.active, .o_search_panel_current .list-group-item {
+    background: linear-gradient(135deg, #1a2e60, #14274f) !important;
+    color: #fff !important;
+}
+
+.btn-primary, .o_form_button_save, .o_form_button_create {
+    background: linear-gradient(135deg, #4a7bff, #2f5fd8) !important;
+    border: 1px solid #2f5fd8 !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px rgba(74, 123, 255, 0.35) !important;
+    border-radius: 12px !important;
+    font-weight: 600;
+}
+
+input, select, textarea, .o_input {
+    background: #0e1a33 !important;
+    border: 1px solid var(--bw-border) !important;
+    color: var(--bw-text) !important;
+    border-radius: 10px !important;
+}
+input::placeholder, textarea::placeholder { color: var(--bw-muted) !important; }
+
+.o_cp_pager, .o_cp_searchview { align-items: center !important; }
+
+a, .text-muted { color: var(--bw-accent-2) !important; }
+label, .o_form_label { color: var(--bw-muted) !important; }
+
+.o_mail_discuss { background: transparent !important; }
+.o_mail_discuss .o_mail_thread { background: transparent !important; }
+.o_thread_message { background: rgba(255, 255, 255, 0.03) !important; border-radius: 12px !important; }
+.o_mail_discussSidebar .list-group-item { border: none !important; }
+
+.o_kanban_renderer .o_kanban_record .o_kanban_card_content, .o_kanban_renderer .o_kanban_record .oe_kanban_details {
+    color: var(--bw-text) !important;
+}
+
+.o_statusbar_status, .o_statusbar_buttons { background: transparent !important; }
+
+/* Remove heavy glow */
+.o_content, .o_action, .o_control_panel, .o_app, .o_apps {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}

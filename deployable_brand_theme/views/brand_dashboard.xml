@@ -59,7 +59,10 @@
                   <field name="is_active" widget="boolean_toggle"/>
                 </div>
                 <div class="oe_kanban_bottom_right">
-                  <a type="object" name="action_preview_brand" class="btn btn-sm btn-primary">Preview</a>
+                  <a type="object"
+                     name="action_preview_brand"
+                     class="btn btn-sm btn-primary"
+                     role="button">Preview</a>
                 </div>
               </div>
             </div>
@@ -71,6 +74,6 @@
 
   <!-- Update action to include kanban view -->
   <record id="action_deployable_brand" model="ir.actions.act_window">
-    <field name="view_mode">kanban,tree,form</field>
+    <field name="view_mode">kanban,list,form</field>
   </record>
 </odoo>

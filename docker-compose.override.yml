@@ -1,0 +1,10 @@
+services:
+  web:
+    environment:
+      FLASK_ENV: development
+    volumes:
+      - ./:/srv/app
+    command: ["python", "-u", "app.py"]
+
+# Override is applied automatically by docker-compose in many environments.
+# Use this for dev-specific mounts or commands.

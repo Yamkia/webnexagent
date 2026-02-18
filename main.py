@@ -18,8 +18,15 @@ except (ValueError, ImportError) as e:
 # Lazy-load the agent to avoid heavy imports at startup
 _agent_executor = None
 
-from google.auth.exceptions import DefaultCredentialsError
-from google.api_core.exceptions import ResourceExhausted
+try:
+    from google.auth.exceptions import DefaultCredentialsError
+    from google.api_core.exceptions import ResourceExhausted
+except Exception:
+    # Google libraries are optional; if not installed, define fallback exception classes
+    class DefaultCredentialsError(Exception):
+        pass
+    class ResourceExhausted(Exception):
+        pass
 # Avoid importing heavyweight SDKs (openai/anthropic) at startup; we'll detect by name at runtime.
 class OpenAIAuthError(Exception):
     pass

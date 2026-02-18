@@ -22,6 +22,7 @@ services:
       - HOST=db
       - USER=odoo
       - PASSWORD=odoo
+      - ODOO_DB_NAME=${ODOO_DB_NAME:-odoo_greenmotive_local}
       - ODOO_BRAND_CODE=${ODOO_BRAND_CODE:-greenmotive}
     volumes:
       - odoo-web-data:/var/lib/odoo
@@ -29,6 +30,21 @@ services:
       - ./odoo.conf:/etc/odoo/odoo.conf
     networks:
       - odoo-network
+    command: >
+      bash -c "
+        DB_NAME=$${ODOO_DB_NAME:-odoo_$${ODOO_BRAND_CODE:-greenmotive}};
+        export PGPASSWORD=$${PASSWORD:-odoo};
+
+        if ! psql -h $${HOST:-db} -U $${USER:-odoo} -tc \"SELECT 1 FROM pg_database WHERE datname='$${DB_NAME}'\" | grep -q 1; then
+          createdb -h $${HOST:-db} -U $${USER:-odoo} $${DB_NAME};
+        fi;
+
+        if ! psql -h $${HOST:-db} -U $${USER:-odoo} -d $${DB_NAME} -tc \"SELECT 1 FROM pg_tables WHERE schemaname='public' AND tablename='ir_module_module'\" | grep -q 1; then
+          odoo -c /etc/odoo/odoo.conf -d $${DB_NAME} -i base,deployable_brand_theme --without-demo=all --stop-after-init --db-filter=$${DB_NAME};
+        fi;
+
+        exec odoo -c /etc/odoo/odoo.conf -d $${DB_NAME} --db-filter=$${DB_NAME}
+      "
 
   # Optional: Separate brand environments
   odoo-techpro:

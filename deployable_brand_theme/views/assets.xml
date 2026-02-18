@@ -32,5 +32,31 @@
       <field name="bundle">web.assets_backend</field>
       <field name="path">deployable_brand_theme/static/src/js/brand_switcher.js</field>
     </record>
+
+    <!-- Frontend CSS (direct assets) -->
+    <record id="brand_assets_frontend_css" model="ir.asset">
+      <field name="name">Brand Frontend CSS</field>
+      <field name="bundle">web.assets_frontend</field>
+      <field name="path">deployable_brand_theme/static/src/css/hero_landing.css</field>
+    </record>
+
+    <record id="brand_assets_frontend_site_css" model="ir.asset">
+      <field name="name">Brand Website CSS</field>
+      <field name="bundle">web.assets_frontend</field>
+      <field name="path">deployable_brand_theme/static/src/css/website_brand.css</field>
+    </record>
+
+    <!-- Backend CSS (direct assets) -->
+    <record id="brand_assets_backend_css" model="ir.asset">
+      <field name="name">Brand Backend CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/css/backend_theme.css</field>
+    </record>
+
+    <record id="brand_assets_backend_modern_css" model="ir.asset">
+      <field name="name">Brand Backend Modern CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">deployable_brand_theme/static/src/css/modern_dashboard.css</field>
+    </record>
   </data>
 </odoo>

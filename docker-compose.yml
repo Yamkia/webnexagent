@@ -1,0 +1,96 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./:/srv/app    # bind-mount for immediate code changes (dev-friendly)
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  odoo-17:
+    image: odoo:17.0
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./addons/17:/mnt/extra-addons
+      - ./bluewave_theme:/mnt/extra-addons/bluewave_theme
+      - ./deployable_brand_theme:/mnt/brand_theme
+      - odoo17_data:/var/lib/odoo
+    depends_on:
+      - db
+
+  odoo-18:
+    build: ./docker/odoo-18-provision
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      AUTO_INIT: ${AUTO_INIT:-false}
+      INIT_DB_NAME: ${INIT_DB_NAME:-}
+      INIT_MODULES: ${INIT_MODULES:-}
+      INIT_MODULE_GITS: ${INIT_MODULE_GITS:-}
+    ports:
+      - "8070:8069"
+    volumes:
+      - ./addons/18:/mnt/extra-addons
+      - ./bluewave_theme:/mnt/extra-addons/bluewave_theme
+      - ./deployable_brand_theme:/mnt/brand_theme
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo18_data:/var/lib/odoo
+    depends_on:
+      - db
+
+  odoo-19:
+    build: ./docker/odoo-19-provision
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      AUTO_INIT: ${AUTO_INIT:-false}
+      INIT_DB_NAME: ${INIT_DB_NAME:-}
+      INIT_MODULES: ${INIT_MODULES:-}
+      INIT_MODULE_GITS: ${INIT_MODULE_GITS:-}
+    ports:
+      - "8071:8069"
+    volumes:
+      - ./addons/19:/mnt/extra-addons
+      - ./bluewave_theme:/mnt/extra-addons/bluewave_theme
+      - ./deployable_brand_theme:/mnt/brand_theme
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo19_data:/var/lib/odoo
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  odoo17_data:
+  odoo18_data:
+  odoo19_data:

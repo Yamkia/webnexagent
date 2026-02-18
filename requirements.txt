@@ -7,9 +7,10 @@ langchain-anthropic>=0.1.0
 python-dotenv
 beautifulsoup4
 deepgram-sdk
-pyaudio
+# pyaudio moved to requirements-audio.txt. Build image with audio deps to enable it.
 markdown
 html2text
 flask
 docker
 requests
+gunicorn

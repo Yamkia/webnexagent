@@ -230,3 +230,66 @@ def send_email(to: str, subject: str, body: str) -> str:
         return f"An unexpected error occurred while sending the email: {e}"
 
 tools = [check_new_emails, read_email_content, draft_reply, send_email]
+
+# --- Helper for UI endpoints (not LangChain tools) ---
+def list_emails_for_ui(limit: int = 20, page: int = 1, unread_only: bool = True, query: str | None = None):
+    """
+    Return a dict with emails and has_more for UI consumption.
+    Supports unread-only toggle, free-text query (subject/from), and pagination.
+    """
+    try:
+        with _get_imap_connection() as mail:
+            # Base search: UNSEEN or ALL
+            base_criteria = '(UNSEEN)' if unread_only else '(ALL)'
+
+            def _do_search(criteria_parts):
+                status, data = mail.search(None, *criteria_parts)
+                if status != 'OK':
+                    return []
+                return [eid for eid in data[0].split() if eid]
+
+            if query:
+                # Try SUBJECT and FROM, union them, then intersect with base
+                q = query.strip()
+                base_ids = set(_do_search([base_criteria]))
+                ids_subject = set(_do_search([base_criteria, 'SUBJECT', f'"{q}"']))
+                ids_from = set(_do_search([base_criteria, 'FROM', f'"{q}"']))
+                email_ids = list(base_ids.intersection(ids_subject.union(ids_from)))
+            else:
+                email_ids = _do_search([base_criteria])
+
+            # Order newest first
+            email_ids = list(reversed(email_ids))
+            total = len(email_ids)
+            # Pagination
+            page = max(1, int(page or 1))
+            limit = max(1, int(limit or 20))
+            start = (page - 1) * limit
+            end = start + limit
+            slice_ids = email_ids[start:end]
+            has_more = end < total
+
+            emails = []
+            for email_id in slice_ids:
+                status, msg_data = mail.fetch(email_id, '(RFC822)')
+                if status != 'OK':
+                    continue
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject = _decode_header(msg.get('subject', ''))
+                        from_ = _decode_header(msg.get('from', ''))
+                        body = _get_body_from_msg(msg)
+                        snippet = (body[:120] + '...') if len(body) > 120 else body
+                        emails.append({
+                            'id': email_id.decode(),
+                            'from': from_,
+                            'subject': subject,
+                            'snippet': (snippet or '').strip().replace('\r\n', ' ')
+                        })
+                        break
+            return {'emails': emails, 'has_more': has_more, 'page': page}
+    except imaplib.IMAP4.error as e:
+        return {'error': f'IMAP error: {e}'}
+    except Exception as e:
+        return {'error': f'Unexpected error: {e}'}

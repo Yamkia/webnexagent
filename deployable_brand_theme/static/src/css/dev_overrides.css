@@ -1,0 +1,18 @@
+/* Deployable Brand Theme - Development Overrides
+ * Edit this file directly during development. Changes are served immediately
+ * at /deployable_brand_theme/dev_css.css (no asset bundling required).
+ */
+
+/* Example quick fixes for .o_search_panel */
+.o_search_panel {
+  min-height: calc(100vh - 70px);
+  box-sizing: border-box;
+  padding-bottom: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tweak examples - adjust to taste */
+.o_search_panel .o_menu_section {
+  padding-right: 0.5rem;
+}

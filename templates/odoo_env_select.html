@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Odoo Environment</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7fa; margin: 0; padding: 0; }
+        .container { max-width: 480px; margin: 60px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 32px; }
+        h2 { margin-top: 0; }
+        select, button { width: 100%; padding: 10px; margin: 12px 0; border-radius: 6px; border: 1px solid #ccc; font-size: 16px; }
+        .msg { margin: 16px 0; color: #0a7a0a; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Select Odoo Environment to Start</h2>
+    {% if message %}<div class="msg">{{ message }}</div>{% endif %}
+    <div>
+        <label for="env_name">Create / Start Environment:</label>
+        <form id="create-form" method="post">
+            <select name="env_name" id="env_name" required>
+                <option value="">-- Select --</option>
+                {% for env in choices %}
+                <option value="{{ env.db_name }}" data-port="{{ env.port }}" data-version="{{ env.odoo_version }}">
+                    {{ env.db_name }} (Port: {{ env.port }}, Version: {{ env.odoo_version }})
+                </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="port" id="port" value="">
+            <input type="hidden" name="odoo_version" id="odoo_version" value="">
+            <label><input type="checkbox" name="auto_start" id="auto_start"> Auto-start after creation</label>
+            <button type="submit">Create Environment</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <h3>Managed Environments</h3>
+    <div id="env-list">
+        {% for env in choices %}
+        <div class="env-item" data-name="{{ env.db_name }}" data-running="{{ 'true' if env.running else 'false' }}">
+            <strong>{{ env.db_name }}</strong> — Port: {{ env.port }} — Version: {{ env.odoo_version }} — Status: <span class="status">{{ 'running' if env.running else 'stopped' }}</span>
+            <div style="margin-top:8px">
+                <button class="start-btn">Start</button>
+                <button class="stop-btn">Stop</button>
+                <button class="logs-btn">Logs</button>
+            </div>
+            <pre class="logs" style="display:none; background:#111; color:#eee; padding:8px; border-radius:6px; margin-top:8px; max-height:240px; overflow:auto"></pre>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+    document.getElementById('create-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+        const json = Object.fromEntries(formData.entries());
+        json.auto_start = formData.get('auto_start') ? 'true' : 'false';
+        try {
+            const res = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                body: JSON.stringify(json)
+            });
+            const data = await res.json();
+            alert(data.message || 'Done');
+            refreshEnvList();
+        } catch (err) {
+            alert('Error: ' + err);
+        }
+    });
+
+    // Function to refresh env list statuses
+    async function refreshEnvList() {
+        try {
+            const res = await fetch(window.location.pathname.replace('/start_odoo_env','/envs'), { headers: { 'Accept': 'application/json' } });
+            const data = await res.json();
+            const list = document.getElementById('env-list');
+            list.innerHTML = '';
+            data.forEach(env => {
+                const div = document.createElement('div');
+                div.className = 'env-item';
+                div.dataset.name = env.db_name;
+                div.dataset.running = env.running ? 'true' : 'false';
+                div.innerHTML = `<strong>${env.db_name}</strong> — Port: ${env.port} — Version: ${env.odoo_version} — Status: <span class="status">${env.running ? 'running' : 'stopped'}</span>
+                    <div style="margin-top:8px">
+                        <button class="start-btn">Start</button>
+                        <button class="stop-btn">Stop</button>
+                        <button class="logs-btn">Logs</button>
+                    </div>
+                    <pre class="logs" style="display:none; background:#111; color:#eee; padding:8px; border-radius:6px; margin-top:8px; max-height:240px; overflow:auto"></pre>`;
+                list.appendChild(div);
+            });
+            attachEnvButtons();
+        } catch (err) {
+            console.error('Failed to refresh env list', err);
+        }
+    }
+
+    function attachEnvButtons() {
+        document.querySelectorAll('.start-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const env = this.closest('.env-item').dataset.name;
+                try {
+                    const res = await fetch(`/envs/${env}/start`, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    alert(data.message || 'Started');
+                    refreshEnvList();
+                } catch (e) { alert('Start failed: ' + e); }
+            }
+        });
+        document.querySelectorAll('.stop-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const env = this.closest('.env-item').dataset.name;
+                try {
+                    const res = await fetch(`/envs/${env}/stop`, { method: 'POST', headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    const data = await res.json();
+                    alert(data.message || 'Stopped');
+                    refreshEnvList();
+                } catch (e) { alert('Stop failed: ' + e); }
+            }
+        });
+        document.querySelectorAll('.logs-btn').forEach(btn => {
+            btn.onclick = async function() {
+                const env = this.closest('.env-item').dataset.name;
+                const pre = this.closest('.env-item').querySelector('.logs');
+                try {
+                    const res = await fetch(`/envs/${env}/logs`, { headers: { 'Accept': 'application/json' } });
+                    const data = await res.json();
+                    pre.style.display = 'block';
+                    pre.textContent = data.logs || data.message || '';
+                } catch (e) { pre.style.display = 'block'; pre.textContent = 'Failed to fetch logs: ' + e; }
+            }
+        });
+    }
+
+    // wire the select to fill hidden fields
+    const select = document.getElementById('env_name');
+    const portInput = document.getElementById('port');
+    const versionInput = document.getElementById('odoo_version');
+    select.addEventListener('change', function() {
+        const selected = select.options[select.selectedIndex];
+        portInput.value = selected.getAttribute('data-port') || '';
+        versionInput.value = selected.getAttribute('data-version') || '';
+    });
+
+    // initial attach and periodic refresh
+    attachEnvButtons();
+    setInterval(refreshEnvList, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[options]
+# Copy to odoo.conf for local use. Do not commit secrets.
+db_host = localhost
+db_port = 5432
+db_user = odoo
+db_password = CHANGE_ME
+dbfilter = ^odoo_local$
+# db_name = odoo_local
+addons_path = odoo-community-17/odoo/addons,addons
+logfile = odoo.log
+http_port = 8069
+admin_passwd = admin
+# workers = 0
+# limit_time_cpu = 60
+# limit_time_real = 120

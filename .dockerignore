@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv
+.venv-*
+
+# Git
+.git
+
+# Editor
+.vscode
+
+# Local runtime artifacts
+env_history.json
+logs/
+odoo_data_*/
+
+# Exclude Odoo source trees and large environment folders from build context
+odoo-*
+odoo_source
+odoo-source
+odoo-community-*
+environments/
+

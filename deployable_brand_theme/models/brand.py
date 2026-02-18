@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 class DeployableBrand(models.Model):
     _name = 'deployable.brand'
@@ -23,3 +23,20 @@ class DeployableBrand(models.Model):
             'url': f'/brand/preview/{self.id}',
             'target': 'new',
         }
+
+    @api.model
+    def apply_theme(self, website_id=None):
+        """Public helper to apply this module's theme to one or all websites.
+        Can be called remotely via XML-RPC (models.execute_kw) by our env-creator.
+        """
+        Module = self.env['ir.module.module'].search([('name', '=', 'deployable_brand_theme')], limit=1)
+        websites = self.env['website'].browse(website_id) if website_id else self.env['website'].search([])
+        if Module:
+            for w in websites:
+                try:
+                    Module._theme_load(w)
+                    w.write({'theme_id': Module.id})
+                except Exception:
+                    # best-effort only
+                    pass
+        return True
