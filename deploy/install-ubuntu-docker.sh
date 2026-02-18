@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Usage: ./install-ubuntu-docker.sh -r <git-repo-url> [-b branch] [-d /opt/webnexagent] [-D domain] [--no-certbot]
+# Example: sudo ./install-ubuntu-docker.sh -r git@github.com:yourorg/webnexagent.git -d /opt/webnexagent -D example.com
+
+REPO_URL=""
+BRANCH="main"
+INSTALL_DIR="/opt/webnexagent"
+DOMAIN=""
+SKIP_CERTBOT=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -r|--repo) REPO_URL="$2"; shift 2 ;;
+    -b|--branch) BRANCH="$2"; shift 2 ;;
+    -d|--dir) INSTALL_DIR="$2"; shift 2 ;;
+    -D|--domain) DOMAIN="$2"; shift 2 ;;
+    --no-certbot) SKIP_CERTBOT=1; shift 1 ;;
+    -h|--help) echo "Usage: $0 -r <git-repo-url> [-b branch] [-d /opt/webnexagent] [-D domain] [--no-certbot]"; exit 0 ;;
+    *) echo "Unknown arg: $1"; exit 1 ;;
+  esac
+done
+
+if [[ -z "$REPO_URL" ]]; then
+  echo "ERROR: --repo is required (git clone URL)" >&2
+  exit 2
+fi
+
+echo "==> Installing OS packages (apt) and Docker engine..."
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release git nginx certbot python3-certbot-nginx || true
+
+# Install Docker (official repo)
+if ! command -v docker >/dev/null 2>&1; then
+  echo "==> Installing Docker Engine and Docker Compose plugin"
+  sudo install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  echo 
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt update
+  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+fi
+
+# Create system user
+if ! id -u webnex >/dev/null 2>&1; then
+  echo "==> Creating system user 'webnex'"
+  sudo adduser --system --group --no-create-home webnex
+fi
+
+# Add webnex user to docker group so systemd service can use docker if desired
+if ! getent group docker >/dev/null 2>&1; then
+  sudo groupadd docker || true
+fi
+sudo usermod -aG docker webnex || true
+
+# Clone or update repository
+if [[ -d "$INSTALL_DIR/.git" ]]; then
+  echo "==> Repo already exists at $INSTALL_DIR — pulling changes"
+  sudo git -C "$INSTALL_DIR" fetch --all --prune
+  sudo git -C "$INSTALL_DIR" checkout "$BRANCH" || true
+  sudo git -C "$INSTALL_DIR" pull --rebase origin "$BRANCH"
+else
+  echo "==> Cloning $REPO_URL -> $INSTALL_DIR"
+  sudo mkdir -p "$INSTALL_DIR"
+  sudo chown "$USER":"$USER" "$INSTALL_DIR"
+  git clone --branch "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
+fi
+
+# Ensure correct ownership
+sudo chown -R webnex:webnex "$INSTALL_DIR"
+
+# Start containers with docker compose (use prod override if present)
+echo "==> Starting application with Docker Compose"
+cd "$INSTALL_DIR"
+if [[ -f docker-compose.prod.yml ]]; then
+  sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml pull --quiet || true
+  sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+else
+  sudo docker compose pull --quiet || true
+  sudo docker compose up -d --build
+fi
+
+# Install systemd unit to manage the compose stack
+echo "==> Installing systemd unit: webnex-docker.service"
+cat <<'EOF' | sudo tee /etc/systemd/system/webnex-docker.service >/dev/null
+[Unit]
+Description=Webnex (Docker Compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/webnexagent
+RemainAfterExit=yes
+ExecStart=/usr/bin/docker compose -f /opt/webnexagent/docker-compose.yml -f /opt/webnexagent/docker-compose.prod.yml up -d --build
+ExecStop=/usr/bin/docker compose -f /opt/webnexagent/docker-compose.yml -f /opt/webnexagent/docker-compose.prod.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now webnex-docker || true
+
+# Install nginx config (reuse existing nginx site)
+echo "==> Installing nginx config"
+sudo cp "$INSTALL_DIR/deploy/nginx/webnex.conf" /etc/nginx/sites-available/webnex
+if [[ ! -e /etc/nginx/sites-enabled/webnex ]]; then
+  sudo ln -s /etc/nginx/sites-available/webnex /etc/nginx/sites-enabled/webnex
+fi
+sudo nginx -t && sudo systemctl reload nginx
+
+# Optional: obtain TLS certificate
+if [[ -n "$DOMAIN" && "$SKIP_CERTBOT" -eq 0 ]]; then
+  echo "==> Obtaining TLS certificate for $DOMAIN (certbot)"
+  sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m admin@$DOMAIN || true
+fi
+
+cat <<'EOF'
+
+==> DONE (Docker Compose)
+- App installed at: $INSTALL_DIR
+- Service: sudo systemctl status webnex-docker
+- Logs: sudo journalctl -u webnex-docker -f
+
+Next steps:
+1) Edit the .env file at $INSTALL_DIR/.env and fill in your API keys (or set LLM_PROVIDER="none").
+2) Manage containers with: sudo docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+3) Restart: sudo systemctl restart webnex-docker
+4) Check: curl http://127.0.0.1:5001/health
+EOF

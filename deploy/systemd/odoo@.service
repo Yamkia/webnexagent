@@ -1,0 +1,28 @@
+[Unit]
+Description=Odoo Environment %i
+Requires=postgresql.service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+SyslogIdentifier=odoo-%i
+User=odoo
+Group=odoo
+Environment=ODOO_ENV=%i
+
+# The config path is based on the instance name pattern: odoo-<version>-<env_name>
+# e.g., odoo-18.0-myenv  ---> /etc/odoo/envs/odoo-18.0-myenv.conf
+ExecStart=/bin/bash -c 'source /opt/odoo/odoo-$(echo %i | cut -d- -f1-2)/.venv/bin/activate && exec python /opt/odoo/odoo-$(echo %i | cut -d- -f1-2)/odoo-bin -c /etc/odoo/envs/%i.conf'
+
+StandardOutput=journal+console
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=60
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=2G
+CPUQuota=100%
+
+[Install]
+WantedBy=multi-user.target
