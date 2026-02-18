@@ -1,0 +1,15 @@
+[Unit]
+Description=Webnex (Docker Compose)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/webnexagent
+RemainAfterExit=yes
+ExecStart=/usr/bin/docker compose -f /opt/webnexagent/docker-compose.yml -f /opt/webnexagent/docker-compose.prod.yml up -d --build
+ExecStop=/usr/bin/docker compose -f /opt/webnexagent/docker-compose.yml -f /opt/webnexagent/docker-compose.prod.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
