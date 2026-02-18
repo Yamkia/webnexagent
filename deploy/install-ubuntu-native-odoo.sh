@@ -49,18 +49,18 @@ echo "Data dir:    $DATA_DIR"
 echo "Venv:        $VENV_DIR"
 echo "=============================================="
 
-# Determine Python version based on Odoo version
-case "$ODOO_VERSION" in
-  16.0|17.0)
-    PYTHON_VERSION="python3.10"
-    ;;
-  18.0|19.0)
-    PYTHON_VERSION="python3.11"
-    ;;
-  *)
-    PYTHON_VERSION="python3.11"
-    ;;
-esac
+# Determine Python version - Ubuntu 24.04 uses Python 3.12
+# Detect what's available on the system
+if command -v python3.12 &>/dev/null || apt-cache show python3.12 &>/dev/null; then
+  PYTHON_VERSION="python3.12"
+elif command -v python3.11 &>/dev/null || apt-cache show python3.11 &>/dev/null; then
+  PYTHON_VERSION="python3.11"
+elif command -v python3.10 &>/dev/null || apt-cache show python3.10 &>/dev/null; then
+  PYTHON_VERSION="python3.10"
+else
+  PYTHON_VERSION="python3"
+fi
+echo "Using Python: $PYTHON_VERSION"
 
 echo "==> Installing system dependencies..."
 sudo apt update
