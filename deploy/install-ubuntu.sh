@@ -30,7 +30,7 @@ fi
 
 echo "==> Installing OS packages (apt)..."
 sudo apt update
-sudo apt install -y git python3.11-venv python3.11-dev python3-pip build-essential libpq-dev nginx curl
+sudo apt install -y git python3.12-venv python3.12-dev python3-pip build-essential libpq-dev nginx curl
 
 if [[ "$SKIP_CERTBOT" -eq 0 ]]; then
   sudo apt install -y certbot python3-certbot-nginx || true
@@ -57,7 +57,7 @@ fi
 
 # Create virtualenv and install requirements
 echo "==> Setting up Python virtualenv"
-python3.11 -m venv "$INSTALL_DIR/.venv"
+python3.12 -m venv "$INSTALL_DIR/.venv"
 source "$INSTALL_DIR/.venv/bin/activate"
 python -m pip install --upgrade pip wheel
 pip install -r "$INSTALL_DIR/requirements.txt"
