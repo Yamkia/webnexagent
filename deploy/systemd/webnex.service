@@ -1,0 +1,15 @@
+[Unit]
+Description=Web-Nexus Agent (Flask + Gunicorn)
+After=network.target
+
+[Service]
+User=webnex
+Group=webnex
+WorkingDirectory=/opt/webnexagent
+Environment=PATH=/opt/webnexagent/.venv/bin
+ExecStart=/opt/webnexagent/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:5001 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
