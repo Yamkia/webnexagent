@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from the same directory as this config file
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # --- API Keys ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # For OpenAI models
@@ -14,8 +17,11 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Google Gemini models
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") # For Anthropic Claude models
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY") # For Deepgram voice transcription
 
-# Debug: Print loaded OpenAI API key (for troubleshooting only)
+# Debug: Print loaded API keys (for troubleshooting only)
+print(f"[DEBUG] .env path: {env_path} (exists={env_path.exists()})")
 print(f"[DEBUG] Loaded OPENAI_API_KEY: {OPENAI_API_KEY}")
+print(f"[DEBUG] Loaded GOOGLE_API_KEY: {GOOGLE_API_KEY}")
+print(f"[DEBUG] Loaded LLM_PROVIDER: {os.getenv('LLM_PROVIDER')}")
 
 # --- Model Settings ---
 # Provider can be: "openai", "google", "anthropic", or "auto" (auto-detect based on available keys)
