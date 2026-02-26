@@ -7,13 +7,14 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # By default Postgres is kept internal to the compose network for security.
+    # If you need to expose it for debugging, add an explicit port mapping here.
 
   web:
     build: .
     restart: unless-stopped
     env_file: .env
+    container_name: zisanda
     ports:
       - "5001:5001"
     volumes:
@@ -88,6 +89,17 @@ services:
       - odoo19_data:/var/lib/odoo
     depends_on:
       - db
+
+  proxy:
+    image: nginx:stable
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - odoo-19
 
 volumes:
   db_data:

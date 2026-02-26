@@ -1,0 +1,620 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="mb-3">Choose Your Odoo Edition</h1>
+            <p class="lead mb-4">Select the Odoo hosting option that best fits your needs. You can plan and create a local Community instance, or get guidance on Odoo's cloud solutions.</p>
+
+            <div class="accordion" id="odoo-options-accordion">
+                <!-- Option 1: Odoo Community (Self-Hosted) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingCommunity">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCommunity" aria-expanded="true" aria-controls="collapseCommunity">
+                            <strong>Odoo Community Edition (Self-Hosted)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseCommunity" class="accordion-collapse collapse show" aria-labelledby="headingCommunity" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Create a local Odoo environment on your machine without Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
+                            
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Environment</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a simple CRM to track leads and a website to sell products.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="community" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Plan Modules
+                                    </button>
+                                    <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Review and Execute -->
+                            <div id="plan-display" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Review and Execute Plan</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="plan-summary" class="plan-summary" aria-live="polite"></div>
+                                    <div class="mt-2"><button id="plan-summary-toggle" class="btn btn-sm btn-link" style="display:none;padding-left:0;">Show more</button></div>
+                                    <div id="module-container" style="display: none;">
+                                        <h6>Modules to be installed:</h6>
+                                        <ul id="module-list" class="list-group mb-3"></ul>
+                                    </div>
+                                    <!-- This new section will appear if the 'website' module is planned -->
+                                    <div id="website-design-selector" class="mb-3" style="display: none;" data-theme-group="website-design">
+                                        <h6>Select a Website Theme (required)</h6>
+                                        <p class="text-muted small">If you include the 'website' module, you must pick which theme to inject. This project requires two themes to be present; they will be added to the modules list.</p>
+                                        <input type="hidden" id="website-design-input" value="">
+                                        <div class="row g-3 mt-2">
+                                            <div class="col-md-6 col-lg-4">
+                                                <label for="website-design-select" class="form-label">Theme</label>
+                                                <select class="form-select theme-select" id="website-design-select" data-target-input="website-design-input">
+                                                    <option value="" selected disabled>Choose a theme...</option>
+                                                    <option value="default">Default Odoo Design</option>
+                                                    <option value="deployable_brand_theme">Custom Brand Theme</option>
+                                                    <option value="bluewave_theme">BlueWave Theme</option>
+                                                    <option value="theme_anemone">Anemone</option>
+                                                    <option value="theme_autoflip">Autoflip</option>
+                                                </select>
+                                                <div id="website-design-input-error" class="text-danger small mt-2" style="display: none;"></div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-8">
+                                                <label class="form-label">Required Project Themes</label>
+                                                <div class="d-flex gap-3 align-items-center">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" value="deployable_brand_theme" id="req-theme-deployable" checked disabled>
+                                                        <label class="form-check-label small" for="req-theme-deployable">deployable_brand_theme (will be added)</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" value="bluewave_theme" id="req-theme-bluewave" checked disabled>
+                                                        <label class="form-check-label small" for="req-theme-bluewave">bluewave_theme (will be added)</label>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted d-block mt-2">You will be asked to confirm adding these themes when creating the environment.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- This new section allows selecting the Odoo version -->
+                                    <div class="mb-3">
+                                        <h6>Select Odoo Version</h6>
+                                        <p class="text-muted small">Choose the version for your self-hosted Odoo environment.</p>
+                                        <select class="form-select" id="odoo-version-input">
+                                            <option value="19.0">Odoo 19.0 (Latest)</option>
+                                            <option value="18.0">Odoo 18.0</option>
+                                            <option value="17.0">Odoo 17.0</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Database Name</h6>
+                                        <p class="text-muted small">Optional. If empty, a fresh name will be generated.</p>
+                                        <input type="text" id="odoo-dbname-input" class="form-control" placeholder="e.g. agency_crm_site">
+                                    </div>
+                                    <!-- Brand & Theming removed per user request -->
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <button id="execute-btn" class="btn btn-success" style="display:inline-block">Create Environment</button>
+                                        <button id="create-without-plan" class="btn btn-outline-secondary">Create Without Plan</button>
+                                        <small id="create-help" class="text-muted ms-3">Tip: if planning fails, use "Create Without Plan" to proceed with sensible defaults.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Creation Status -->
+                            <div id="creation-status" class="card shadow-sm border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 3: Environment Creation Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
+                                    <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
+                                        <p class="fw-bold">Your new environment is ready!</p>
+                                        <!-- The link to the standard Odoo backend -->
+                                        <a id="environment-link" href="#" class="btn btn-lg btn-primary" target="_blank">🚀 Access Odoo Backend</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Environment History -->
+                            <div class="card shadow-sm border-0 mt-4" id="env-history-card">
+                                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Previously Opened Environments</h5>
+                                    <button class="btn btn-sm btn-outline-secondary" id="env-history-refresh">Refresh</button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="env-history-empty" class="text-muted p-3" style="display: none;">No environments recorded yet.</div>
+                                    <div class="table-responsive mb-0">
+                                        <table class="table table-sm align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="width: 18%">Opened</th>
+                                                    <th style="width: 22%">Database</th>
+                                                    <th style="width: 10%">Version</th>
+                                                    <th style="width: 8%">Mode</th>
+                                                    <th>Modules</th>
+                                                    <th style="width: 18%" class="text-end">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="env-history-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 2: Odoo Online (SaaS) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOnline">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOnline" aria-expanded="false" aria-controls="collapseOnline">
+                            <strong>Odoo Online (SaaS)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseOnline" class="accordion-collapse collapse" aria-labelledby="headingOnline" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Odoo Online is a SaaS platform managed by Odoo. Use the planner below to get a customized link that pre-selects the right apps for you on the Odoo trial page.</p>
+                            
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Odoo Online Instance</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need-online" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need-online" rows="3" placeholder="e.g., 'I want to manage customer relationships and send them marketing emails.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="online" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Generate Trial Link
+                                    </button>
+                                    <div id="plan-error-online" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Launch -->
+                            <div id="plan-display-online" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Launch on Odoo.com</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The agent recommends the following setup. Click the button to open the Odoo trial page with these apps pre-selected.</p>
+                                    <div id="plan-summary-online" class="alert alert-info"></div>
+                                    <a id="execute-btn-online" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success" style="display: none;">Create Free Trial on Odoo.com</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 3: Odoo.sh (PaaS) -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingSh">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSh" aria-expanded="false" aria-controls="collapseSh">
+                            <strong>Odoo.sh (PaaS)</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseSh" class="accordion-collapse collapse" aria-labelledby="headingSh" data-bs-parent="#odoo-options-accordion">
+                        <div class="accordion-body">
+                            <p>Odoo.sh is a PaaS for hosting custom projects. It integrates with GitHub for development and deployment. Use the planner to generate a custom deployment guide based on your needs.</p>
+    
+                            <!-- Step 1: Planning -->
+                            <div class="card shadow-sm mb-4 border-0">
+                                <div class="card-header bg-transparent pt-3">
+                                    <h5>Step 1: Plan Your Odoo.sh Project</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="business-need-sh" class="form-label">Describe your business need:</label>
+                                        <textarea class="form-control" id="business-need-sh" rows="3" placeholder="e.g., 'I need a full ERP with custom modules for manufacturing.'"></textarea>
+                                    </div>
+                                    <button data-plan-type="sh" class="btn btn-primary plan-btn">
+                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                                        Generate Deployment Guide
+                                    </button>
+                                    <div id="plan-error-sh" class="alert alert-danger mt-3" style="display: none;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Follow Guide -->
+                            <div id="plan-display-sh" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <div class="card-header bg-transparent">
+                                    <h5>Step 2: Follow Your Custom Guide</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The agent has generated the following guide to help you set up your project on Odoo.sh.</p>
+                                    <div id="plan-summary-sh" class="bg-light p-3 rounded border" style="white-space: pre-wrap;"></div>
+                                    <a href="https://www.odoo.sh" target="_blank" rel="noopener noreferrer" class="btn btn-info mt-3">Go to Odoo.sh to Get Started</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true" style="z-index: 1100;"></div>
+
+<!-- Environment Details Modal -->
+<div class="modal fade" id="envDetailsModal" tabindex="-1" aria-labelledby="envDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="envDetailsModalLabel">Environment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="env-details-content" style="white-space:pre-wrap;font-family:Menlo,Monaco,monospace;background:#f8f9fa;padding:12px;border-radius:6px;">No details</pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+.plan-summary{max-height:260px;overflow:auto;background:#f8f9fa;padding:12px;border:1px solid #e9ecef;border-radius:6px;font-family:Menlo,Monaco,monospace;white-space:pre-wrap;color:#212529}
+.plan-summary pre{background:#0d1117;color:#e6edf3;padding:10px;border-radius:6px;overflow:auto}
+#plan-summary-toggle{font-size:0.9rem}
+</style>
+<script>
+function _escapeHtml(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderPlanSummary(text, targetId){
+    const el = document.getElementById(targetId);
+    if(!el) return;
+    text = text || '';
+    // Split by fenced code blocks ```
+    const parts = text.split(/```/g);
+    let html = '';
+    for(let i=0;i<parts.length;i++){
+        const part = parts[i];
+        if(i%2===1){ // code block
+            html += '<pre><code>'+_escapeHtml(part)+'</code></pre>';
+        } else {
+            // Process markdown-like formatting for non-code sections
+            let s = part;
+            // Handle Markdown tables: lines that start with | or contain | separators
+            const lines = s.split(/\n/);
+            // detect table block(s)
+            const blocks = [];
+            let cur = [];
+            const flush = ()=>{ if(cur.length) { blocks.push({type: 'table', lines: cur.slice()}); cur = []; } };
+            for(let ln of lines){
+                if(/\|/.test(ln) && ln.trim().startsWith('|')){
+                    cur.push(ln);
+                } else {
+                    flush();
+                    blocks.push({type: 'text', line: ln});
+                }
+            }
+            flush();
+            // Build HTML from blocks
+            let out = '';
+            for(const b of blocks){
+                if(b.type === 'text'){
+                    let line = b.line || '';
+                    // simple heading ###
+                    if(/^\s*#{1,6}\s+/.test(line)){
+                        const lvl = Math.min(6, (line.match(/^\s*#+/)||[''])[0].length);
+                        line = _escapeHtml(line.replace(/^\s*#{1,6}\s+/, ''));
+                        out += `<h${lvl}>${line}</h${lvl}>`;
+                        continue;
+                    }
+                    // bold **text**
+                    line = _escapeHtml(line).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // inline code `code`
+                    line = line.replace(/`([^`]+)`/g, '<code>$1</code>');
+                    // bulleted lists
+                    if(/^\s*[-*+]\s+/.test(line)){
+                        // convert following consecutive bullets into a ul
+                        out += '<ul>' + line.replace(/^\s*[-*+]\s+/, '<li>') + '</li>';
+                        out += '</ul>';
+                    } else {
+                        out += line.replace(/\n/g,'<br>');
+                    }
+                } else if(b.type === 'table'){
+                    const tlines = b.lines.map(x=>x.trim()).filter(x=>x.length>0);
+                    if(tlines.length){
+                        // parse rows
+                        const rows = tlines.map(r=>{
+                            let inner = r.replace(/^\|/, '').replace(/\|$/, '');
+                            return inner.split('|').map(c=>c.trim());
+                        });
+                        // if second row is a separator like ---, skip it
+                        let hasSeparator = false;
+                        if(rows.length>1 && rows[1].every(c=>/^:?-{3,}:?$/.test(c))) { hasSeparator = true; }
+                        out += '<div class="table-responsive"><table class="table table-sm table-striped">';
+                        // header
+                        const header = rows[0];
+                        out += '<thead class="table-light"><tr>' + header.map(h=>'<th>'+_escapeHtml(h)+'</th>').join('') + '</tr></thead>';
+                        out += '<tbody>';
+                        for(let ri=1; ri<rows.length; ri++){
+                            if(ri===1 && hasSeparator) continue;
+                            const r = rows[ri];
+                            out += '<tr>' + r.map(c=>'<td>'+_escapeHtml(c)+'</td>').join('') + '</tr>';
+                        }
+                        out += '</tbody></table></div>';
+                    }
+                }
+            }
+            html += out;
+        }
+    }
+    el.innerHTML = html;
+    // Collapse long content
+    const toggle = document.getElementById('plan-summary-toggle');
+    if(text.length>1200){
+        // initially collapsed
+        el.style.maxHeight = '160px';
+        toggle.style.display = 'inline-block';
+        toggle.textContent = 'Show more';
+        toggle.onclick = ()=>{
+            if(el.style.maxHeight==='160px'){ el.style.maxHeight='none'; toggle.textContent='Show less'; } else { el.style.maxHeight='160px'; toggle.textContent='Show more'; }
+        };
+    } else {
+        el.style.maxHeight = '';
+        toggle.style.display = 'none';
+    }
+}
+// Minimal frontend glue: plan -> show modules/summary -> execute -> monitor job
+async function refreshEnvHistory(){
+    try{
+        const res = await fetch('/envs', {headers:{'Accept':'application/json'}});
+        const choices = await res.json();
+        const tbody = document.getElementById('env-history-body');
+        tbody.innerHTML = '';
+        if(!choices || choices.length===0){
+            document.getElementById('env-history-empty').style.display = 'block';
+            return;
+        }
+        document.getElementById('env-history-empty').style.display = 'none';
+        for(const env of choices){
+            const tr = document.createElement('tr');
+            const openedTd = document.createElement('td'); openedTd.textContent = env.created_at || ''; 
+            const dbTd = document.createElement('td'); dbTd.textContent = env.db_name || '';
+            const verTd = document.createElement('td'); verTd.textContent = env.odoo_version || '';
+            const modeTd = document.createElement('td'); modeTd.textContent = env.mode || 'dev';
+            const modsTd = document.createElement('td'); modsTd.textContent = env.modules || '';
+            const actionsTd = document.createElement('td'); actionsTd.className = 'text-end';
+
+            // Always show an Open button. If the env has a URL, open it; otherwise try to start the env first.
+            const openBtn = document.createElement('button');
+            openBtn.className = 'btn btn-sm btn-outline-primary me-2';
+            openBtn.textContent = 'Open';
+            openBtn.onclick = async ()=>{
+                try{
+                    if(env.url){
+                        window.open(env.url, '_blank');
+                        return;
+                    }
+                    // No URL recorded — attempt to start the environment via the server API
+                    openBtn.disabled = true; openBtn.textContent = 'Starting...';
+                    const r = await fetch('/odoo/local_env/start', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({db_name: env.db_name})});
+                    const j = await r.json();
+                    if(r.ok && (j.url || j.status==='started' || j.status==='ok')){
+                        const url = j.url || j.message && (j.message.match(/http[^\s]+/)||[])[0] || ('http://localhost:' + (j.port || env.port || 8069));
+                        if(url) window.open(url, '_blank');
+                        showToast('Environment started','Success');
+                        refreshEnvHistory();
+                    } else {
+                        alert('Failed to start environment: '+(j.message||j.error||JSON.stringify(j)));
+                    }
+                }catch(err){
+                    console.error('Failed to open/start env',err);
+                    alert('Failed to open/start environment: '+err);
+                } finally { openBtn.disabled = false; openBtn.textContent = 'Open'; }
+            };
+            actionsTd.appendChild(openBtn);
+
+            // Details button — show JSON in modal
+            const detailsBtn = document.createElement('button');
+            detailsBtn.className = 'btn btn-sm btn-outline-info me-2';
+            detailsBtn.textContent = 'Details';
+            detailsBtn.onclick = ()=>{
+                const pre = document.getElementById('env-details-content');
+                pre.textContent = JSON.stringify(env, null, 2);
+                try{ const m = new bootstrap.Modal(document.getElementById('envDetailsModal')); m.show(); }catch(e){ alert(pre.textContent); }
+            };
+            actionsTd.appendChild(detailsBtn);
+
+            const bk = document.createElement('button'); bk.className='btn btn-sm btn-outline-secondary me-2'; bk.textContent='Backup';
+            bk.onclick = async ()=>{ if(!confirm('Create backup for '+env.db_name+'?')) return; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/backup',{method:'POST'}); const j = await r.json(); if(r.ok) alert('Backup created:\n'+JSON.stringify(j)); else alert('Backup failed:\n'+(j.message||JSON.stringify(j))); };
+            actionsTd.appendChild(bk);
+
+            const up = document.createElement('button'); up.className='btn btn-sm btn-outline-success me-2'; up.textContent='Upgrade';
+            up.onclick = async ()=>{ const mods = prompt('Enter comma-separated modules to upgrade, or leave blank to upgrade all:',''); if(mods===null) return; const payload = mods ? {modules: mods} : {}; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/upgrade', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)}); const j = await r.json(); if(r.ok) alert('Upgrade output:\n'+(j.output||j.message||JSON.stringify(j))); else alert('Upgrade failed:\n'+(j.message||JSON.stringify(j))); };
+            actionsTd.appendChild(up);
+
+            const ss = document.createElement('button'); ss.className='btn btn-sm btn-outline-warning'; ss.textContent = env.running ? 'Stop' : 'Start';
+            ss.onclick = async ()=>{ const url = '/envs/'+encodeURIComponent(env.db_name)+'/'+(env.running?'stop':'start'); const r = await fetch(url,{method:'POST'}); const j = await r.json(); alert((j.status==='ok'? 'Success: ':'Error: ')+ (j.message||JSON.stringify(j))); refreshEnvHistory(); };
+            actionsTd.appendChild(ss);
+
+            tr.appendChild(openedTd); tr.appendChild(dbTd); tr.appendChild(verTd); tr.appendChild(modeTd); tr.appendChild(modsTd); tr.appendChild(actionsTd);
+            tbody.appendChild(tr);
+        }
+    }catch(e){ console.error('Failed to refresh env history',e); }
+}
+
+function showToast(message, title){
+    const container = document.getElementById('toast-container');
+    const id = 't'+Math.random().toString(36).slice(2,8);
+    const div = document.createElement('div');
+    div.className = 'toast align-items-center text-bg-dark border-0 show';
+    div.role = 'alert'; div.ariaLive = 'assertive'; div.ariaAtomic = 'true';
+    div.id = id;
+    div.innerHTML = `<div class="d-flex"><div class="toast-body">${title?('<strong>'+title+'</strong>: '):''}${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+    container.appendChild(div);
+    setTimeout(()=>{ try{ div.remove(); }catch(e){} }, 8000);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    refreshEnvHistory();
+    const refreshBtn = document.getElementById('env-history-refresh');
+    if(refreshBtn) refreshBtn.addEventListener('click', (e)=>{ e.preventDefault(); refreshEnvHistory(); });
+
+    // Planning buttons
+    document.querySelectorAll('.plan-btn').forEach(btn=>{
+        btn.addEventListener('click', async (e)=>{
+            e.preventDefault();
+            const planType = btn.getAttribute('data-plan-type') || 'community';
+            const areaId = planType === 'online' ? 'business-need-online' : planType === 'sh' ? 'business-need-sh' : 'business-need';
+            const text = document.getElementById(areaId).value.trim();
+            const errorEl = document.getElementById(planType==='online' ? 'plan-error-online' : planType==='sh' ? 'plan-error-sh' : 'plan-error');
+            if(!text){ if(errorEl){ errorEl.style.display='block'; errorEl.textContent='Please describe your business need.'; } return; }
+            if(errorEl){ errorEl.style.display='none'; }
+
+            // show spinner
+            const spinner = btn.querySelector('.spinner-border'); if(spinner) spinner.style.display='inline-block';
+            btn.disabled = true;
+            try{
+                const res = await fetch('/odoo/plan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({business_need: text, plan_type: planType})});
+                const j = await res.json();
+                if(!res.ok || j.error){
+                    if(errorEl){ errorEl.style.display='block'; errorEl.textContent = j.message || j.error || 'Planning failed'; }
+                    else showToast(j.message||j.error||'Planning failed','Error');
+                } else {
+                    // Community plan => show plan-display and modules
+                    if(planType === 'community'){
+                        document.getElementById('plan-display').style.display = 'block';
+                        renderPlanSummary(j.summary || '', 'plan-summary');
+                        const mods = j.modules || [];
+                        const list = document.getElementById('module-list'); list.innerHTML = '';
+                        if(mods.length){
+                            document.getElementById('module-container').style.display = 'block';
+                            for(const m of mods){ const li = document.createElement('li'); li.className='list-group-item'; li.textContent = m; list.appendChild(li); }
+                        } else {
+                            document.getElementById('module-container').style.display = 'none';
+                        }
+                        // Show website selector if website module present
+                        const hasWebsite = mods.includes('website') || mods.includes('website_builder') || mods.includes('website_theme');
+                        document.getElementById('website-design-selector').style.display = hasWebsite ? 'block' : 'none';
+                        // enable create button (robustly) and log plan response for debugging
+                        try{
+                            console.log('[odoo_app] plan response:', j);
+                            const execBtnEl = document.getElementById('execute-btn');
+                            if(execBtnEl){
+                                execBtnEl.style.display = 'inline-block';
+                                execBtnEl.hidden = false;
+                                execBtnEl.classList.remove('d-none');
+                            } else {
+                                console.warn('[odoo_app] execute-btn element not found in DOM');
+                            }
+                        }catch(e){ console.error('Failed to show execute button', e); }
+                    } else if(planType === 'online'){
+                        document.getElementById('plan-display-online').style.display='block';
+                        const summaryEl = document.getElementById('plan-summary-online');
+                        renderPlanSummary(j.summary || '', 'plan-summary-online');
+                        const a = document.getElementById('execute-btn-online');
+                        if(j.url){ a.href = j.url; a.style.display = 'inline-block'; }
+                        else a.style.display='none';
+                    } else if(planType === 'sh'){
+                        document.getElementById('plan-display-sh').style.display='block';
+                        // guide_html may already be HTML; render plain text safely if not provided
+                        if(j.guide_html){
+                            document.getElementById('plan-summary-sh').innerHTML = j.guide_html;
+                        } else {
+                            renderPlanSummary(j.summary || '', 'plan-summary-sh');
+                        }
+                    }
+                }
+            }catch(err){
+                console.error('Plan request failed',err);
+                if(errorEl){ errorEl.style.display='block'; errorEl.textContent = String(err); }
+            } finally {
+                if(spinner) spinner.style.display='none';
+                btn.disabled = false;
+            }
+        });
+    });
+
+    // Website theme select wiring
+    const themeSelect = document.getElementById('website-design-select');
+    if(themeSelect){
+        themeSelect.addEventListener('change', ()=>{
+            const target = themeSelect.getAttribute('data-target-input');
+            if(target){ document.getElementById(target).value = themeSelect.value; }
+        });
+    }
+
+    // Execute plan -> start creation job
+    const execBtn = document.getElementById('execute-btn');
+    if(execBtn){
+        execBtn.addEventListener('click', async (e)=>{
+            e.preventDefault();
+            const dbName = document.getElementById('odoo-dbname-input').value.trim();
+            if(!dbName){ alert('Please provide a Database Name before creating the environment.'); return; }
+            // collect modules from list
+            const mods = Array.from(document.getElementById('module-list').children).map(li=>li.textContent.trim()).filter(Boolean);
+            if(mods.length===0){ if(!confirm('No modules were detected from the plan. Create environment anyway?')) return; }
+            const website_design = document.getElementById('website-design-input').value || null;
+            const odoo_version = document.getElementById('odoo-version-input').value || '19.0';
+            const branding_modules = [];
+            // Send execute request
+            execBtn.disabled = true;
+            execBtn.textContent = 'Creating...';
+            try{
+                const payload = { modules: mods, website_design, odoo_version, db_name: dbName, branding_modules };
+                const r = await fetch('/odoo/execute', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+                const j = await r.json();
+                if(r.ok && j.job_id){
+                    document.getElementById('plan-display').style.display='none';
+                    document.getElementById('creation-status').style.display='block';
+                    pollJob(j.job_id);
+                } else {
+                    alert('Failed to start creation: '+(j.message||j.error||JSON.stringify(j)));
+                }
+            }catch(err){ console.error('Execute failed',err); alert('Execute request failed: '+err); }
+            finally{ execBtn.disabled=false; execBtn.textContent='Create Environment'; }
+        });
+    }
+
+    // Create without plan -> call /envs/create with defaults
+    const cw = document.getElementById('create-without-plan');
+    if(cw){
+        cw.addEventListener('click', async (e)=>{
+            e.preventDefault();
+            const dbName = document.getElementById('odoo-dbname-input').value.trim();
+            if(!dbName){ alert('Please provide a Database Name for the new environment.'); return; }
+            const version = document.getElementById('odoo-version-input').value || '19.0';
+            try{
+                const r = await fetch('/envs/create', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: dbName, db_name: dbName, version, type: 'docker'})});
+                const j = await r.json();
+                if(r.ok && j.status==='ok'){
+                    showToast('Environment created: '+(j.message||dbName),'Success');
+                    refreshEnvHistory();
+                } else {
+                    alert('Create failed: '+(j.message||j.error||JSON.stringify(j)));
+                }
+            }catch(err){ console.error('Create without plan failed',err); alert('Request failed: '+err); }
+        });
+    }
+});
+
+async function pollJob(jobId){
+    const logEl = document.getElementById('creation-log');
+    const linkContainer = document.getElementById('environment-link-container');
+    logEl.textContent = '';
+    try{
+        while(true){
+            const r = await fetch('/odoo/job_status/'+encodeURIComponent(jobId));
+            const j = await r.json();
+            if(j && j.log){ logEl.textContent = (j.log||[]).join('\n\n'); logEl.scrollTop = logEl.scrollHeight; }
+            if(!j || j.status==='not_found'){ showToast('Job not found','Error'); break; }
+            if(j.status==='done' || j.status==='error' || j.status==='failed'){
+                if(j.url){ document.getElementById('environment-link').href = j.url; linkContainer.style.display='block'; }
+                showToast('Creation finished: '+(j.status),'Info');
+                break;
+            }
+            await new Promise(r=>setTimeout(r,1500));
+        }
+    }catch(e){ console.error('Polling job failed',e); showToast('Failed to monitor job: '+e,'Error'); }
+}
+</script>

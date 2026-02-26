@@ -3,6 +3,8 @@ version: "3.8"
 services:
   web:
     # remove local source bind-mounts for production — the image contains the app
+    # Use production env file for container env variables
+    env_file: .env.production
     volumes: []
 
 volumes:

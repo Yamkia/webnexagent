@@ -10,7 +10,7 @@ WORKDIR /srv/app
 # To include audio support (pyaudio/ffmpeg), build with: --build-arg INSTALL_AUDIO_DEPS=true
 ARG INSTALL_AUDIO_DEPS=false
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential git curl docker.io docker-compose-plugin \
+    && apt-get install -y --no-install-recommends build-essential git curl docker.io \
     && if [ "$INSTALL_AUDIO_DEPS" = "true" ]; then apt-get install -y --no-install-recommends libasound2-dev ffmpeg portaudio19-dev; fi \
     && rm -rf /var/lib/apt/lists/*
 

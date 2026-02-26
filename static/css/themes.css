@@ -1,0 +1,72 @@
+/* Theme brand variables for Zisanda-hub */
+:root{
+  /* Default brand (light mode variables) */
+  --agent-accent: #22c55e;
+  --agent-accent-2: #06b6d4;
+  --agent-glow: rgba(34,197,94,0.18);
+
+  /* general system colors used by other styles (light mode defaults) */
+  --bg: #f7fafc;
+  --panel: #ffffff;
+  --muted: #64748b;
+  --text: #071233;
+
+  /* card / glass vars */
+  --card-bg: rgba(255,255,255,0.55);
+  --card-border: rgba(255,255,255,0.6);
+  --card-shadow: 0 6px 30px rgba(2,6,23,0.08);
+  --card-shadow-hover: 0 18px 40px rgba(2,6,23,0.12);
+  --avatar-border: rgba(255,255,255,0.6);
+  --badge-gradient: linear-gradient(90deg,var(--agent-accent),var(--agent-accent-2));
+  --fab-shadow: 0 12px 30px rgba(6,182,212,0.18);
+  --hero-bg: radial-gradient(closest-side at 10% 20%, rgba(6,182,212,0.05), transparent), radial-gradient(closest-side at 90% 80%, rgba(34,197,94,0.03), transparent);
+}
+
+/* Neon brand (light mode) */
+:root[data-brand='neon']{
+  --agent-accent: #00f5d4; /* neon mint */
+  --agent-accent-2: #06b6d4; /* cyan */
+  --agent-glow: rgba(0,245,212,0.14);
+
+  --bg: #f3f7f6;
+  --panel: rgba(255,255,255,0.03);
+  --muted: #9ca3af;
+  --text: #071e1c;
+  --card-bg: rgba(255,255,255,0.65);
+  --card-border: rgba(0,0,0,0.04);
+}
+
+/* Dark-mode overrides for the default brand */
+:root[data-theme='dark']{
+  --bg: #030409;
+  --panel: #071018;
+  --muted: #94a3b8;
+  --text: #e6eef6;
+
+  --card-bg: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  --card-border: rgba(255,255,255,0.04);
+  --card-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  --card-shadow-hover: 0 20px 60px rgba(2,6,23,0.7);
+  --avatar-border: rgba(255,255,255,0.06);
+  --fab-shadow: 0 20px 60px rgba(6,182,212,0.12);
+}
+
+/* Dark-mode + Neon brand tweaks */
+:root[data-theme='dark'][data-brand='neon']{
+  --agent-accent: #00ffd1;
+  --agent-accent-2: #22ffb0;
+  --agent-glow: rgba(0,255,209,0.14);
+
+  --bg: #020406;
+  --panel: #071018;
+  --muted: #9fb7b0;
+  --text: #eafbf9;
+}
+
+/* small selector styles to match app nav */
+#theme-select{
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+#theme-select option{ color: inherit; }

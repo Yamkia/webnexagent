@@ -1,0 +1,71 @@
+version: '3.8'
+
+#########################
+# Hardened per-customer compose
+#########################
+# Notes:
+# - Do NOT map Postgres to the host (no "5432:5432").
+# - Use a project-specific name with `-p` when running (e.g. `-p acme`).
+# - Use a reverse proxy (Traefik / Nginx Proxy Manager) to route by hostname.
+# - Prefer Docker secrets for sensitive values in production.
+
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      # Prefer secrets: POSTGRES_PASSWORD_FILE -> /run/secrets/postgres_password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - odoo_net
+
+  odoo:
+    image: ${ODOO_IMAGE:-odoo:17.0}
+    restart: unless-stopped
+    environment:
+      HOST: db
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Do not enable sensitive debug envs in production
+      # AUTO_INIT: "false"
+    volumes:
+      - addons:/mnt/extra-addons:ro
+      - odoo_data:/var/lib/odoo
+    depends_on:
+      - db
+    networks:
+      - odoo_net
+    # Reverse-proxy labels: adjust for Traefik or Nginx Proxy Manager.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PROJECT_NAME}.rule=Host(`${PROJECT_HOST}`)"
+      - "traefik.http.routers.${PROJECT_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${PROJECT_NAME}.tls=true"
+
+  backup:
+    image: alpine:3.18
+    restart: "no"
+    entrypoint: ["/bin/sh","-c"]
+    # A tiny helper container you can invoke to perform backups using mounted Docker volumes.
+    volumes:
+      - db_data:/var/lib/postgresql/data:ro
+      - backup_out:/backup
+    networks:
+      - odoo_net
+
+volumes:
+  db_data:
+  odoo_data:
+  addons:
+  backup_out:
+
+networks:
+  odoo_net:
+    driver: bridge
+
+# Usage: docker compose -p ${PROJECT_NAME} --env-file .env -f docker-compose.yml up -d
+# Important: run one project per host with unique PROJECT_NAME and PROJECT_HOST.

@@ -32,12 +32,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const popoverTriggerList = appContentArea.querySelectorAll('[data-bs-toggle="popover"]');
         [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+            // Ensure Create buttons are visible and re-created if removed (robust helper)
+            function ensureCreateButtonsExists(){
+                try{
+                    let execBtn = document.getElementById('execute-btn');
+                    let createWithoutBtn = document.getElementById('create-without-plan');
+                    const candidateSelectors = ['#plan-display .plan-actions', '.plan-actions', '#plan-display', '.card-body', appContentArea && '#app-content-area'].filter(Boolean);
+                    let btnContainer = null;
+                    for (const sel of candidateSelectors){
+                        try{ btnContainer = appContentArea.querySelector(sel); }catch(e){ btnContainer = null; }
+                        if(btnContainer) break;
+                    }
+                    if(!btnContainer) btnContainer = appContentArea || document.body;
 
-        // Ensure Create buttons are visible for the Odoo planner even if planning hasn't run yet
-        const execBtn = document.getElementById('execute-btn');
-        const createWithoutBtn = document.getElementById('create-without-plan');
-        if (execBtn) execBtn.style.display = 'inline-block';
-        if (createWithoutBtn) createWithoutBtn.style.display = 'inline-block';
+                    // create exec button if missing
+                    if(!execBtn){
+                        execBtn = document.createElement('button');
+                        execBtn.id = 'execute-btn';
+                        execBtn.className = 'btn btn-success';
+                        execBtn.style.display = 'inline-block';
+                        execBtn.style.zIndex = '1050';
+                        execBtn.style.minWidth = '160px';
+                        execBtn.textContent = 'Create Environment';
+                        // bind click to existing handler
+                        execBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); try{ handleOdooExecute(execBtn); }catch(e){ console.error('execute-btn bind error',e); } });
+                        // insert near top of container
+                        try{ btnContainer.insertBefore(execBtn, btnContainer.firstChild); }catch(e){ document.body.appendChild(execBtn); }
+                    } else {
+                        // ensure handler exists once
+                        if(!execBtn.dataset.bound){ execBtn.addEventListener('click', (ev)=>{ ev.preventDefault(); try{ handleOdooExecute(execBtn); }catch(e){ console.error('execute-btn bind error',e); } }); execBtn.dataset.bound='1'; }
+                        execBtn.style.display = 'inline-block';
+                    }
+
+                    // create-or-ensure create-without-plan
+                    if(!createWithoutBtn){
+                        createWithoutBtn = document.createElement('button');
+                        createWithoutBtn.id = 'create-without-plan';
+                        createWithoutBtn.className = 'btn btn-outline-secondary';
+                        createWithoutBtn.style.display = 'inline-block';
+                        createWithoutBtn.textContent = 'Create Without Plan';
+                        const cwHandler = async (ev)=>{
+                            try{ ev && ev.preventDefault();
+                                // emulate existing create-without-plan behavior
+                                odooPlannedModules = ['base','web','website'];
+                                const moduleList = document.getElementById('module-list'); if(moduleList) moduleList.innerHTML = odooPlannedModules.map(m=>`<li class="list-group-item">${m}</li>`).join('');
+                                const planSummary = document.getElementById('plan-summary'); if(planSummary) planSummary.textContent = 'Proceeding without a plan — using default modules.';
+                                const execBtnEl = document.getElementById('execute-btn'); if(execBtnEl) execBtnEl.style.display = 'inline-block';
+                                // call execute
+                                try{ handleOdooExecute(execBtnEl); }catch(e){ console.error('create-without-plan execute error',e); }
+                            }catch(e){ console.error('create-without-plan handler error',e); }
+                        };
+                        createWithoutBtn.addEventListener('click', cwHandler);
+                        if(execBtn.nextSibling) btnContainer.insertBefore(createWithoutBtn, execBtn.nextSibling); else btnContainer.appendChild(createWithoutBtn);
+                    } else {
+                        if(!createWithoutBtn.dataset.bound){ createWithoutBtn.addEventListener('click', async (ev)=>{ ev.preventDefault(); try{ odooPlannedModules = ['base','web','website']; const moduleList = document.getElementById('module-list'); if(moduleList) moduleList.innerHTML = odooPlannedModules.map(m=>`<li class="list-group-item">${m}</li>`).join(''); document.getElementById('plan-summary') && (document.getElementById('plan-summary').textContent='Proceeding without a plan — using default modules.'); const execBtnEl = document.getElementById('execute-btn'); if(execBtnEl) execBtnEl.style.display = 'inline-block'; handleOdooExecute(execBtnEl); }catch(e){ console.error('cw bind',e); } }); createWithoutBtn.dataset.bound='1'; }
+                        createWithoutBtn.style.display = 'inline-block';
+                    }
+                }catch(err){ console.warn('ensureCreateButtonsExists error',err); }
+            }
+
+            // run once now to ensure buttons exist
+            ensureCreateButtonsExists();
 
         // Initialize Email app features if present
         const inboxList = document.getElementById('inbox-list');
@@ -49,6 +104,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const envHistoryBody = document.getElementById('env-history-body');
         if (envHistoryBody) {
             initOdooHistory();
+        }
+
+        // Install a MutationObserver to detect future removals of the create buttons
+        try {
+            if (!window.__webnex_button_observer_installed) {
+                const targetNode = appContentArea || document.body;
+                const observer = new MutationObserver((mutationsList) => {
+                    let needReinject = false;
+                    for (const m of mutationsList) {
+                        if (m.type === 'childList') {
+                            // If nodes were removed, check whether our buttons disappeared
+                            if (m.removedNodes && m.removedNodes.length) {
+                                const hasExec = document.getElementById('execute-btn');
+                                const hasCwb = document.getElementById('create-without-plan');
+                                if (!hasExec || !hasCwb) {
+                                    needReinject = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (needReinject) {
+                        console.debug('[app] MutationObserver detected button removal — reinjecting');
+                        // call the same reinjection logic by re-running onAppContentChange
+                        try { onAppContentChange(); } catch (e) { console.error('Reinjection failed', e); }
+                    }
+                });
+                observer.observe(targetNode, { childList: true, subtree: true });
+                window.__webnex_button_observer_installed = true;
+            }
+        } catch (e) {
+            console.warn('Failed to install button MutationObserver', e);
         }
     }
 
@@ -236,14 +323,21 @@ document.addEventListener('DOMContentLoaded', () => {
             handleOdooPlan(event.target);
         } else if (event.target.id === 'create-without-plan') {
             // User opted to create without a generated plan — use sensible defaults and execute
-            odooPlannedModules = ['base', 'web', 'website'];
-            const moduleList = document.getElementById('module-list');
-            moduleList.innerHTML = odooPlannedModules.map(m => `<li class="list-group-item">${m}</li>`).join('');
-            document.getElementById('plan-summary').textContent = 'Proceeding without a plan — using default modules.';
-            document.getElementById('module-container').style.display = 'block';
-            document.getElementById('execute-btn').style.display = 'block';
-            // Execute immediately
-            handleOdooExecute(document.getElementById('execute-btn'));
+            try {
+                odooPlannedModules = ['base', 'web', 'website'];
+                const moduleList = document.getElementById('module-list');
+                if (moduleList) moduleList.innerHTML = odooPlannedModules.map(m => `<li class="list-group-item">${m}</li>`).join('');
+                const planSummary = document.getElementById('plan-summary');
+                if (planSummary) planSummary.textContent = 'Proceeding without a plan — using default modules.';
+                const moduleContainer = document.getElementById('module-container');
+                if (moduleContainer) moduleContainer.style.display = 'block';
+                const execBtnEl = document.getElementById('execute-btn');
+                if (execBtnEl) execBtnEl.style.display = 'block';
+                // Execute immediately (defensive: handleOdooExecute can accept null)
+                handleOdooExecute(execBtnEl);
+            } catch (err) {
+                console.error('create-without-plan handler failed:', err);
+            }
         } else if (event.target.id === 'execute-btn') {
             handleOdooExecute(event.target);
         } else if (event.target.closest('.theme-card')) {
@@ -523,18 +617,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (data.error || (data.modules && data.modules.length === 0)) {
-                    document.getElementById('plan-summary').textContent = data.summary || data.error || 'Could not determine modules. Please try rephrasing your request.';
+                    const summaryEl = document.getElementById('plan-summary');
+                    const text = data.summary || data.error || 'Could not determine modules. Please try rephrasing your request.';
+                    if(window.renderPlanSummary) try{ renderPlanSummary(text, 'plan-summary'); }catch(e){ summaryEl.textContent = text; }
+                    else summaryEl.textContent = text.replace(/\n{3,}/g,'\n\n').trim();
                     document.getElementById('module-container').style.display = 'none';
                     document.getElementById('execute-btn').style.display = 'none';
                 } else {
                     // Guard against unexpected shapes in the response
                     if (!Array.isArray(data.modules)) {
-                        document.getElementById('plan-summary').textContent = data.summary || 'Unexpected response from planner.';
+                        const summaryEl = document.getElementById('plan-summary');
+                        const msg = data.summary || 'Unexpected response from planner.';
+                        if(/<\/?[a-z][\s\S]*>/i.test(msg)){
+                            try{ summaryEl.innerHTML = msg; }catch(e){ summaryEl.textContent = msg; }
+                        } else if(window.renderPlanSummary){
+                            try{ renderPlanSummary(msg, 'plan-summary'); }catch(e){ summaryEl.textContent = msg; }
+                        } else { summaryEl.textContent = (msg||'').replace(/\n{3,}/g,'\n\n').trim(); }
                         document.getElementById('module-container').style.display = 'none';
                         document.getElementById('execute-btn').style.display = 'none';
                     } else {
                         odooPlannedModules = data.modules;
-                        document.getElementById('plan-summary').textContent = data.summary;
+                        const summaryEl = document.getElementById('plan-summary');
+                        const summaryText = data.summary_html || data.summary || '';
+                        // If server returned pre-rendered HTML, insert directly. Otherwise prefer markdown renderer.
+                        if(/<\/?[a-z][\s\S]*>/i.test(summaryText)){
+                            try{ summaryEl.innerHTML = summaryText; }catch(e){ summaryEl.textContent = summaryText; }
+                        } else if(window.renderPlanSummary){
+                            try{ renderPlanSummary(summaryText, 'plan-summary'); }catch(e){ summaryEl.textContent = summaryText; }
+                        } else {
+                            summaryEl.textContent = (summaryText||'').replace(/\n{3,}/g,'\n\n').trim();
+                        }
                         const moduleList = document.getElementById('module-list');
                         moduleList.innerHTML = '';
                         data.modules.forEach(module => {
@@ -619,7 +731,55 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Bind Detect Modes button (if present) to call bulk detection endpoint
+        const detectBtn = document.getElementById('env-detect-modes');
+        if (detectBtn && !detectBtn.dataset.bound) {
+            detectBtn.dataset.bound = 'true';
+            detectBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (!confirm('Run mode detection for existing environments?')) return;
+                try {
+                    detectBtn.disabled = true;
+                    const res = await fetch('/envs/detect_modes', { method: 'POST' });
+                    const j = await parseJsonResponse(res);
+                    if (res.ok) {
+                        showToast('Mode detection complete: updated '+(j.updated||0), 'success');
+                        loadHistory();
+                    } else {
+                        showToast('Mode detection failed: '+(j.message||'unknown'), 'danger');
+                    }
+                } catch (err) {
+                    showToast('Mode detection failed: '+err.message, 'danger');
+                } finally {
+                    detectBtn.disabled = false;
+                }
+            });
+        }
+
         loadHistory();
+
+        // Bind cleanup button to call envs cleanup endpoint
+        const cleanupBtn = document.getElementById('env-cleanup');
+        if (cleanupBtn && !cleanupBtn.dataset.bound) {
+            cleanupBtn.dataset.bound = 'true';
+            cleanupBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (!confirm('Clean up duplicate environment history entries? This will remove duplicates from env_history.json.')) return;
+                try {
+                    cleanupBtn.disabled = true;
+                    const res = await fetch('/envs/cleanup', { method: 'POST' });
+                    const j = await parseJsonResponse(res);
+                    if (res.ok) {
+                        showToast('Cleanup complete. Removed: '+(j.cleaned||0), 'success');
+                        loadHistory();
+                    } else {
+                        showToast('Cleanup failed: '+(j.message||'unknown'), 'danger');
+                    }
+                } catch (err) {
+                    showToast('Cleanup failed: '+err.message, 'danger');
+                } finally { cleanupBtn.disabled = false; }
+            });
+        }
 
         async function loadHistory() {
             bodyEl.innerHTML = '<tr><td colspan="5" class="text-muted">Loading…</td></tr>';
@@ -627,6 +787,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/odoo/environments');
                 const data = await parseJsonResponse(res);
                 const list = Array.isArray(data.environments) ? data.environments : [];
+                // If server provided grouped data, render a grouped view (one base per row)
+                if (data.grouped && Array.isArray(data.grouped)) {
+                    const grouped = data.grouped;
+                    showToast(`Refreshed: loaded ${list.length} environment(s) across ${grouped.length} bases`, 'info');
+                    if (grouped.length === 0) {
+                        bodyEl.innerHTML = '';
+                        if (emptyEl) emptyEl.style.display = 'block';
+                        return;
+                    }
+                    if (emptyEl) emptyEl.style.display = 'none';
+                    const html = grouped.map(renderGroupedRow).join('');
+                    bodyEl.innerHTML = html;
+                    return;
+                }
+
                 showToast(`Refreshed: loaded ${list.length} environment(s)`, 'info');
                 if (list.length === 0) {
                     bodyEl.innerHTML = '';
@@ -695,6 +870,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn btn-outline-primary btn-sm" data-reopen-db="${dbAttr}">Re-open</button>
                     <button class="btn btn-outline-danger btn-sm" data-drop-db="${dbAttr}">Drop</button>
                 </td>
+            </tr>`;
+    }
+
+    function renderGroupedRow(group) {
+        const safe = (v) => (v || '').toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const base = safe(group.base);
+        // If environments were classified into 'others' (no -development/-staging suffix)
+        // prefer the newest 'others' entry as the development entry so the table shows actions.
+        let dev = group.development || null;
+        let stg = group.staging || null;
+        const others = Array.isArray(group.others) ? group.others.slice().sort((a,b)=> (b.created_at||'').localeCompare(a.created_at||'')) : [];
+        if(!dev && others.length>0) dev = others[0];
+        if(!stg && others.length>1) stg = others[1];
+        const devPort = dev ? (dev.port || '') : '';
+        const stgPort = stg ? (stg.port || '') : '';
+        const devUrl = dev ? (dev.url || '#') : '#';
+        const stgUrl = stg ? (stg.url || '#') : '#';
+        const devCreated = dev ? (new Date(dev.created_at).toLocaleString()) : '';
+        const stgCreated = stg ? (new Date(stg.created_at).toLocaleString()) : '';
+
+        const mkActions = (entry) => {
+            if (!entry) return '';
+            const dbRaw = entry.db_name || '';
+            const dbAttr = dbRaw.replace(/"/g, '&quot;');
+            const url = entry.url ? `href="${entry.url}" target="_blank"` : '';
+            const logUrl = dbRaw ? `/odoo/local_env/log/${encodeURIComponent(dbRaw)}` : '#';
+            return `
+                <a class="btn btn-link btn-sm" ${url}>Open</a>
+                <a class="btn btn-outline-secondary btn-sm" href="${logUrl}" target="_blank">Log</a>
+                <button class="btn btn-outline-primary btn-sm" data-reopen-db="${dbAttr}">Re-open</button>
+                <button class="btn btn-outline-danger btn-sm" data-drop-db="${dbAttr}">Drop</button>`;
+        };
+
+        return `
+            <tr>
+                <td class="text-nowrap">${base}</td>
+                <td class="text-center">${devCreated}</td>
+                <td class="text-center">${dev ? dev.odoo_version||'' : ''}</td>
+                <td class="text-center">${dev ? (dev.mode||'development') : ''}</td>
+                <td class="text-center">${dev ? mkActions(dev) : ''}</td>
+                <td class="text-center">${stgCreated}</td>
+                <td class="text-center">${stg ? stg.odoo_version||'' : ''}</td>
+                <td class="text-center">${stg ? (stg.mode||'staging') : ''}</td>
+                <td class="text-end">${stg ? mkActions(stg) : ''}</td>
             </tr>`;
     }
 
@@ -864,8 +1083,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleOdooExecute(executeBtn) {
-        executeBtn.disabled = true;
-        document.getElementById('creation-status').style.display = 'block';
+        const btn = executeBtn || document.getElementById('execute-btn');
+        if (btn) btn.disabled = true;
+        const creationStatusEl = document.getElementById('creation-status');
+        if (creationStatusEl) creationStatusEl.style.display = 'block';
         const creationLog = document.getElementById('creation-log');
         creationLog.textContent = 'Sending request to create environment...';
 
@@ -876,9 +1097,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const designInput = document.getElementById('website-design-input');
         const websiteDesign = designInput ? designInput.value : null;
 
-        // Get optional DB name
+        // Get required DB name
         const dbInput = document.getElementById('odoo-dbname-input');
         const dbName = dbInput ? dbInput.value.trim() : '';
+        if (!dbName) {
+            alert('Please provide a name for the Odoo database before creating the environment.');
+            if (btn) btn.disabled = false;
+            if (creationStatusEl) creationStatusEl.style.display = 'none';
+            return;
+        }
 
         // Get the selected Odoo version
         const versionInput = document.getElementById('odoo-version-input');
@@ -913,8 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const humanNames = missing.join(', ');
                 if (!confirm(`This environment requires the following themes: ${humanNames}. Add them to the modules list and proceed?`)) {
                     // User cancelled; re-enable execute button and stop
-                    executeBtn.disabled = false;
-                    document.getElementById('creation-status').style.display = 'none';
+                    if (btn) btn.disabled = false;
+                    if (creationStatusEl) creationStatusEl.style.display = 'none';
                     return;
                 }
                 // Add missing themes to modules and update UI list

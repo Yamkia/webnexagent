@@ -1,0 +1,10 @@
+<odoo>
+  <menuitem id="menu_module_creator_root" name="Module Creator" sequence="99"/>
+  <record id="action_open_create_module_wizard" model="ir.actions.act_window">
+    <field name="name">Create Module</field>
+    <field name="res_model">create.module.wizard</field>
+    <field name="target">new</field>
+    <field name="view_mode">form</field>
+  </record>
+  <menuitem id="menu_module_creator_action" name="Create Module" parent="menu_module_creator_root" action="action_open_create_module_wizard"/>
+</odoo>
