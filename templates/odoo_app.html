@@ -36,95 +36,85 @@
 
                             <!-- Step 2: Review and Execute -->
                             <div id="plan-display" class="card shadow-sm mb-4 border-0" style="display: none;">
+                                <style>
+                                    /* Keep the plan summary readable and prevent it from pushing action buttons off-screen */
+                                                #plan-display .plan-body{ display:flex; flex-direction:column; max-height:46vh; }
+                                                /* Use normal whitespace handling so inserted markdown/html doesn't create
+                                                    large vertical gaps (pre-wrap preserves newlines which can be excessive). */
+                                                #plan-display .plan-content{ padding:1rem; overflow:auto; white-space:normal; word-break:break-word; }
+                                    #plan-display .plan-content table{ max-width:100%; overflow:auto; }
+                                    #plan-display .plan-actions{ position:sticky; bottom:0; background:linear-gradient(#ffffff, rgba(255,255,255,0.95)); padding:0.6rem 1rem; border-top:1px solid #eee; z-index:1040; align-items:center; display:flex; gap:.5rem; }
+                                </style>
                                 <div class="card-header bg-transparent">
                                     <h5>Step 2: Review and Execute Plan</h5>
                                 </div>
-                                <div class="card-body">
-                                    <p id="plan-summary"></p>
-                                    <div id="module-container" style="display: none;">
-                                        <h6>Modules to be installed:</h6>
-                                        <ul id="module-list" class="list-group mb-3"></ul>
-                                    </div>
-                                    <!-- This new section will appear if the 'website' module is planned -->
-                                    <div id="website-design-selector" class="mb-3" style="display: none;" data-theme-group="website-design">
-                                        <h6>Select a Website Theme (required)</h6>
-                                        <p class="text-muted small">If you include the 'website' module, you must pick which theme to inject. This project requires two themes to be present; they will be added to the modules list.</p>
-                                        <input type="hidden" id="website-design-input" value="">
-                                        <div class="row g-3 mt-2">
-                                            <div class="col-md-6 col-lg-4">
-                                                <label for="website-design-select" class="form-label">Theme</label>
-                                                <select class="form-select theme-select" id="website-design-select" data-target-input="website-design-input">
-                                                    <option value="" selected disabled>Choose a theme...</option>
-                                                    <option value="default">Default Odoo Design</option>
-                                                    <option value="deployable_brand_theme">Custom Brand Theme</option>
-                                                    <option value="bluewave_theme">BlueWave Theme</option>
-                                                    <option value="theme_anemone">Anemone</option>
-                                                    <option value="theme_autoflip">Autoflip</option>
-                                                </select>
-                                                <div id="website-design-input-error" class="text-danger small mt-2" style="display: none;"></div>
-                                            </div>
-                                            <div class="col-md-6 col-lg-8">
-                                                <label class="form-label">Required Project Themes</label>
-                                                <div class="d-flex gap-3 align-items-center">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" value="deployable_brand_theme" id="req-theme-deployable" checked disabled>
-                                                        <label class="form-check-label small" for="req-theme-deployable">deployable_brand_theme (will be added)</label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" value="bluewave_theme" id="req-theme-bluewave" checked disabled>
-                                                        <label class="form-check-label small" for="req-theme-bluewave">bluewave_theme (will be added)</label>
-                                                    </div>
+                                <div class="plan-body">
+                                    <div class="plan-content">
+                                        <p id="plan-summary"></p>
+                                        <div id="module-container" style="display: none;">
+                                            <h6>Modules to be installed:</h6>
+                                            <ul id="module-list" class="list-group mb-3"></ul>
+                                        </div>
+                                        <!-- This new section will appear if the 'website' module is planned -->
+                                        <div id="website-design-selector" class="mb-3" style="display: none;" data-theme-group="website-design">
+                                            <h6>Select a Website Theme (required)</h6>
+                                            <p class="text-muted small">If you include the 'website' module, you must pick which theme to inject. This project requires two themes to be present; they will be added to the modules list.</p>
+                                            <input type="hidden" id="website-design-input" value="">
+                                            <div class="row g-3 mt-2">
+                                                <div class="col-md-6 col-lg-4">
+                                                    <label for="website-design-select" class="form-label">Theme</label>
+                                                    <select class="form-select theme-select" id="website-design-select" data-target-input="website-design-input">
+                                                        <option value="" selected disabled>Choose a theme...</option>
+                                                        <option value="default">Default Odoo Design</option>
+                                                        <option value="deployable_brand_theme">Custom Brand Theme</option>
+                                                        <option value="bluewave_theme">BlueWave Theme</option>
+                                                        <option value="theme_anemone">Anemone</option>
+                                                        <option value="theme_autoflip">Autoflip</option>
+                                                    </select>
+                                                    <div id="website-design-input-error" class="text-danger small mt-2" style="display: none;"></div>
                                                 </div>
-                                                <small class="text-muted d-block mt-2">You will be asked to confirm adding these themes when creating the environment.</small>
+                                                <div class="col-md-6 col-lg-8">
+                                                    <label class="form-label">Required Project Themes</label>
+                                                    <div class="d-flex gap-3 align-items-center">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="deployable_brand_theme" id="req-theme-deployable" checked disabled>
+                                                            <label class="form-check-label small" for="req-theme-deployable">deployable_brand_theme (will be added)</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="bluewave_theme" id="req-theme-bluewave" checked disabled>
+                                                            <label class="form-check-label small" for="req-theme-bluewave">bluewave_theme (will be added)</label>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted d-block mt-2">You will be asked to confirm adding these themes when creating the environment.</small>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- This new section allows selecting the Odoo version -->
-                                    <div class="mb-3">
-                                        <h6>Select Odoo Version</h6>
-                                        <p class="text-muted small">Choose the version for your self-hosted Odoo environment.</p>
-                                        <select class="form-select" id="odoo-version-input">
-                                            <option value="19.0">Odoo 19.0 (Latest)</option>
-                                            <option value="18.0">Odoo 18.0</option>
-                                            <option value="17.0">Odoo 17.0</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <h6>Database Name</h6>
-                                        <p class="text-muted small">Optional. If empty, a fresh name will be generated.</p>
-                                        <input type="text" id="odoo-dbname-input" class="form-control" placeholder="e.g. agency_crm_site">
-                                    </div>
-                                    <div class="mb-3 border rounded p-3 bg-light">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <div>
-                                                <h6 class="mb-0">Brand &amp; Theming (optional)</h6>
-                                                <p class="text-muted small mb-0">Set brand info before the environment is created.</p>
-                                            </div>
+                                        <!-- This new section allows selecting the Odoo version -->
+                                        <div class="mb-3">
+                                            <h6>Select Odoo Version</h6>
+                                            <p class="text-muted small">Choose the version for your self-hosted Odoo environment.</p>
+                                            <select class="form-select" id="odoo-version-input">
+                                                <option value="19.0">Odoo 19.0 (Latest)</option>
+                                                <option value="18.0">Odoo 18.0</option>
+                                                <option value="17.0">Odoo 17.0</option>
+                                            </select>
                                         </div>
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Brand Name</label>
-                                                <input type="text" id="brand-name-input" class="form-control" placeholder="e.g. Navy Labs">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Brand Code</label>
-                                                <input type="text" id="brand-code-input" class="form-control" placeholder="e.g. navylabs">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Primary Color</label>
-                                                <input type="color" id="brand-primary-input" class="form-control form-control-color" value="#1f4f8a" title="Primary color">
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Secondary Color</label>
-                                                <input type="color" id="brand-secondary-input" class="form-control form-control-color" value="#223047" title="Secondary color">
-                                            </div>
-                                            <div class="col-12">
-                                                <label class="form-label">Logo URL (optional)</label>
-                                                <input type="url" id="brand-logo-input" class="form-control" placeholder="https://.../logo.png">
-                                            </div>
+                                        <div class="mb-3">
+                                            <h6>Environment Mode</h6>
+                                            <p class="text-muted small">Choose whether this environment is for development, staging, or production.</p>
+                                            <select class="form-select" id="env-mode-input" name="env_mode">
+                                                <option value="development" selected>Development</option>
+                                                <option value="staging">Staging</option>
+                                                <option value="production">Production</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <h6>Database Name</h6>
+                                            <p class="text-muted small">Optional. If empty, a fresh name will be generated.</p>
+                                            <input type="text" id="odoo-dbname-input" class="form-control" placeholder="e.g. agency_crm_site">
                                         </div>
                                     </div>
-                                    <div class="d-flex gap-2 align-items-center">
+                                    <div class="plan-actions">
                                         <button id="execute-btn" class="btn btn-success" style="display:inline-block">Create Environment</button>
                                         <button id="create-without-plan" class="btn btn-outline-secondary">Create Without Plan</button>
                                         <small id="create-help" class="text-muted ms-3">Tip: if planning fails, use "Create Without Plan" to proceed with sensible defaults.</small>
@@ -151,7 +141,12 @@
                             <div class="card shadow-sm border-0 mt-4" id="env-history-card">
                                 <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Previously Opened Environments</h5>
-                                    <button class="btn btn-sm btn-outline-secondary" id="env-history-refresh">Refresh</button>
+                                    <small class="text-muted ms-3" id="template-stamp">Template v: 2026-02-23T01:30:00Z</small>
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-secondary" id="env-history-refresh">Refresh</button>
+                                            <button class="btn btn-sm btn-outline-info" id="env-detect-modes">Detect Modes</button>
+                                                <button id="env-cleanup" class="btn btn-sm btn-outline-danger me-2">Clean Up Duplicates</button>
+                                        </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="env-history-empty" class="text-muted p-3" style="display: none;">No environments recorded yet.</div>
@@ -159,11 +154,15 @@
                                         <table class="table table-sm align-middle mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th style="width: 18%">Opened</th>
-                                                    <th style="width: 22%">Database</th>
-                                                    <th style="width: 10%">Version</th>
-                                                    <th>Modules</th>
-                                                    <th style="width: 18%" class="text-end">Actions</th>
+                                                    <th>Base</th>
+                                                    <th class="text-center">Dev Opened</th>
+                                                    <th class="text-center">Dev Version</th>
+                                                    <th class="text-center">Dev Mode</th>
+                                                    <th class="text-center">Dev Actions</th>
+                                                    <th class="text-center">Staging Opened</th>
+                                                    <th class="text-center">Staging Version</th>
+                                                    <th class="text-center">Staging Mode</th>
+                                                    <th class="text-end">Staging Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="env-history-body"></tbody>
@@ -267,3 +266,408 @@
     </div>
 </div>
 <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true" style="z-index: 1100;"></div>
+
+<!-- Enhanced client script: plan renderer, UI wiring, and history refresh -->
+<script>
+function _escapeHtml(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderPlanSummary(text, targetId){
+    const el = document.getElementById(targetId);
+    if(!el) return;
+    text = text || '';
+    const parts = text.split(/```/g);
+    let html = '';
+        for(let i=0;i<parts.length;i++){
+            const part = parts[i];
+            if(i%2===1){
+                html += '<pre><code>'+_escapeHtml(part)+'</code></pre>';
+            } else {
+                let s = part;
+                const lines = s.split(/\n/);
+                const blocks = [];
+                let cur = [];
+                const flush = ()=>{ if(cur.length) { blocks.push({type: 'table', lines: cur.slice()}); cur = []; } };
+                for(let ln of lines){
+                    if(/\|/.test(ln) && ln.trim().startsWith('|')){
+                        cur.push(ln);
+                    } else {
+                        flush();
+                        blocks.push({type: 'text', line: ln});
+                    }
+                }
+                flush();
+                let out = '';
+                for(const b of blocks){
+                    if(b.type === 'text'){
+                        let line = b.line || '';
+                        if(/^\s*#{1,6}\s+/.test(line)){
+                            const lvl = Math.min(6, (line.match(/^\s*#+/)||[''])[0].length);
+                            line = _escapeHtml(line.replace(/^\s*#{1,6}\s+/, ''));
+                            out += `<h${lvl}>${line}</h${lvl}>`;
+                            continue;
+                        }
+                        line = _escapeHtml(line).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                        line = line.replace(/`([^`]+)`/g, '<code>$1</code>');
+                        if(/^\s*[-*+]\s+/.test(line)){
+                            out += '<ul>' + line.replace(/^\s*[-*+]\s+/, '<li>') + '</li>';
+                            out += '</ul>';
+                        } else {
+                            out += line.replace(/\n/g,'<br>');
+                        }
+                    } else if(b.type === 'table'){
+                        const tlines = b.lines.map(x=>x.trim()).filter(x=>x.length>0);
+                        if(tlines.length){
+                            const rows = tlines.map(r=>{
+                                let inner = r.replace(/^\|/, '').replace(/\|$/, '');
+                                return inner.split('|').map(c=>c.trim());
+                            });
+                            let hasSeparator = false;
+                            if(rows.length>1 && rows[1].every(c=>/^:?-{3,}:?$/.test(c))) { hasSeparator = true; }
+                            out += '<div class="table-responsive"><table class="table table-sm table-striped">';
+                            const header = rows[0];
+                            out += '<thead class="table-light"><tr>' + header.map(h=>'<th>'+_escapeHtml(h)+'</th>').join('') + '</tr></thead>';
+                            out += '<tbody>';
+                            for(let ri=1; ri<rows.length; ri++){
+                                if(ri===1 && hasSeparator) continue;
+                                const r = rows[ri];
+                                out += '<tr>' + r.map(c=>'<td>'+_escapeHtml(c)+'</td>').join('') + '</tr>';
+                            }
+                            out += '</tbody></table></div>';
+                        }
+                    }
+                }
+                html += out;
+        }
+    }
+    el.innerHTML = html;
+    const toggle = document.getElementById('plan-summary-toggle');
+    if(text.length>1200){
+        el.style.maxHeight = '160px';
+        if(toggle){ toggle.style.display = 'inline-block'; toggle.textContent = 'Show more'; toggle.onclick = ()=>{ if(el.style.maxHeight==='160px'){ el.style.maxHeight='none'; toggle.textContent='Show less'; } else { el.style.maxHeight='160px'; toggle.textContent='Show more'; } } }
+    } else {
+        if(toggle) toggle.style.display = 'none';
+        el.style.maxHeight = '';
+    }
+}
+
+async function refreshEnvHistory(){
+    try{
+        const res = await fetch('/envs', {headers:{'Accept':'application/json'}});
+        const choices = await res.json();
+        const tbody = document.getElementById('env-history-body');
+        tbody.innerHTML = '';
+        if(!choices || choices.length===0){
+            document.getElementById('env-history-empty').style.display = 'block';
+            return;
+        }
+        document.getElementById('env-history-empty').style.display = 'none';
+        const seen = new Set();
+        for(const env of choices){
+            // Skip entries without a db name and dedupe by db_name
+            if(!env || !env.db_name) continue;
+            const key = String(env.db_name).toLowerCase().trim();
+            if(seen.has(key)) continue;
+            seen.add(key);
+            const tr = document.createElement('tr');
+            const openedTd = document.createElement('td'); openedTd.textContent = env.created_at || ''; 
+            const dbTd = document.createElement('td'); dbTd.textContent = env.db_name || '';
+            const verTd = document.createElement('td'); verTd.textContent = env.odoo_version || '';
+            const modeTd = document.createElement('td');
+            const sel = document.createElement('select'); sel.className = 'form-select form-select-sm';
+            ['development','staging','production'].forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; if((env.mode && env.mode===m) || (!env.mode && m==='development')) opt.selected = true; sel.appendChild(opt); });
+            sel.onchange = async ()=>{ try{ const newMode = sel.value; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/mode', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({mode: newMode}) }); if(r.ok){ refreshEnvHistory(); } else { const j = await r.json(); alert('Failed to set mode: '+(j.message||JSON.stringify(j))); } }catch(e){ alert('Failed to set mode: '+e); } };
+            modeTd.appendChild(sel);
+            const modsTd = document.createElement('td'); modsTd.textContent = env.modules || '';
+            const actionsTd = document.createElement('td'); actionsTd.className = 'text-end';
+            // Note: Open action is provided by the unified Open button below which
+            // will call the server to start (if needed) and then open the URL.
+            const bk = document.createElement('button'); bk.className = 'btn btn-sm btn-outline-secondary me-2'; bk.textContent = 'Backup'; bk.onclick = async ()=>{ if(!confirm('Create backup for '+env.db_name+'?')) return; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/backup',{method:'POST'}); const j = await r.json(); if(r.ok) alert('Backup created:\n'+JSON.stringify(j)); else alert('Backup failed:\n'+(j.message||JSON.stringify(j))); };
+            actionsTd.appendChild(bk);
+            const up = document.createElement('button'); up.className = 'btn btn-sm btn-outline-success me-2'; up.textContent = 'Upgrade'; up.onclick = async ()=>{ const mods = prompt('Enter comma-separated modules to upgrade, or leave blank to upgrade all:',''); if(mods===null) return; const payload = mods ? {modules: mods} : {}; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/upgrade', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)}); const j = await r.json(); if(r.ok) alert('Upgrade output:\n'+(j.output||j.message||JSON.stringify(j))); else alert('Upgrade failed:\n'+(j.message||JSON.stringify(j))); };
+            actionsTd.appendChild(up);
+            const ss = document.createElement('button'); ss.className = 'btn btn-sm btn-outline-warning'; ss.textContent = env.running ? 'Stop' : 'Start'; ss.onclick = async ()=>{ const url = '/envs/'+encodeURIComponent(env.db_name)+'/'+(env.running?'stop':'start'); const r = await fetch(url, {method:'POST'}); const j = await r.json(); alert((j.status==='ok'? 'Success: ':'Error: ')+ (j.message||JSON.stringify(j))); refreshEnvHistory(); };
+            actionsTd.appendChild(ss);
+            const openBtn = document.createElement('button'); openBtn.className = 'btn btn-sm btn-outline-primary me-2'; openBtn.textContent = 'Open'; openBtn.onclick = async ()=>{
+                console.log('[odoo_app] Open clicked for', env.db_name);
+                showToast('Opening: '+env.db_name, 'Info');
+                try{
+                    if(env.url){ window.open(env.url,'_blank'); return; }
+                    openBtn.disabled = true;
+                    openBtn.textContent = 'Starting...';
+                    // Use the unified env start endpoint which works for Docker or native envs
+                    const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/start', { method: 'POST' });
+                    let j = {};
+                    try{ j = await r.json(); }catch(e){ console.warn('Failed to parse JSON response', e); }
+                    console.log('[odoo_app] /envs/start response', r.status, j);
+                    if(r.ok && (j.url || j.status==='started' || j.status==='ok')){
+                        const url = j.url || (j.message && (j.message.match(/http[^\s]+/)||[])[0]) || ('http://localhost:' + (j.port || env.port || 8069));
+                        if(url) window.open(url, '_blank');
+                        showToast('Environment started','Success');
+                        refreshEnvHistory();
+                    } else {
+                        alert('Failed to start environment: '+(j.message||j.error||JSON.stringify(j)));
+                    }
+                }catch(err){
+                    console.error('Failed to open/start env',err);
+                    alert('Failed to open/start environment: '+err);
+                } finally {
+                    openBtn.disabled = false;
+                    openBtn.textContent = 'Open';
+                }
+            };
+            actionsTd.appendChild(openBtn);
+            // Create Staging button: prompts for name and calls /envs/create with mode=staging
+            const createStagingBtn = document.createElement('button');
+            createStagingBtn.className = 'btn btn-sm btn-outline-secondary me-2';
+            createStagingBtn.textContent = 'Create Staging';
+            createStagingBtn.onclick = async ()=>{
+                const defaultName = env.db_name ? (env.db_name.endsWith('-staging') ? env.db_name : (env.db_name + '-staging')) : '';
+                const name = prompt('Staging DB name:', defaultName);
+                if(!name) return;
+                try{
+                    createStagingBtn.disabled = true;
+                    createStagingBtn.textContent = 'Creating...';
+                    const payload = { name: name, version: env.odoo_version || '19.0', mode: 'staging', type: 'docker' };
+                    const res = await fetch('/envs/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    const j = await res.json();
+                    if(res.ok && j.status === 'ok'){
+                        showToast('Staging created','Success');
+                        refreshEnvHistory();
+                    } else {
+                        alert('Failed to create staging: '+(j.message||JSON.stringify(j)));
+                    }
+                }catch(err){
+                    alert('Failed to create staging: '+err);
+                } finally {
+                    createStagingBtn.disabled = false;
+                    createStagingBtn.textContent = 'Create Staging';
+                }
+            };
+            actionsTd.appendChild(createStagingBtn);
+            const detailsBtn = document.createElement('button'); detailsBtn.className = 'btn btn-sm btn-outline-info me-2'; detailsBtn.textContent = 'Details'; detailsBtn.onclick = ()=>{ const pre = document.getElementById('env-details-content'); pre.textContent = JSON.stringify(env, null, 2); try{ const m = new bootstrap.Modal(document.getElementById('envDetailsModal')); m.show(); }catch(e){ alert(pre.textContent); } };
+            actionsTd.appendChild(detailsBtn);
+            tr.appendChild(dbTd); tr.appendChild(openedTd); tr.appendChild(verTd); tr.appendChild(modeTd); tr.appendChild(modsTd); tr.appendChild(actionsTd);
+            tbody.appendChild(tr);
+        }
+    }catch(e){ console.error('Failed to refresh env history',e); }
+}
+
+function showToast(message, title){
+    const container = document.getElementById('toast-container');
+    const id = 't'+Math.random().toString(36).slice(2,8);
+    const div = document.createElement('div');
+    div.className = 'toast align-items-center text-bg-dark border-0 show';
+    div.role = 'alert'; div.ariaLive = 'assertive'; div.ariaAtomic = 'true';
+    div.id = id;
+    div.innerHTML = `<div class="d-flex"><div class="toast-body">${title?('<strong>'+title+'</strong>: '):''}${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+    container.appendChild(div);
+    setTimeout(()=>{ try{ div.remove(); }catch(e){} }, 8000);
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    refreshEnvHistory();
+    const refreshBtn = document.getElementById('env-history-refresh'); if(refreshBtn) refreshBtn.addEventListener('click', (e)=>{ e.preventDefault(); refreshEnvHistory(); });
+
+    // Planning buttons
+    document.querySelectorAll('.plan-btn').forEach(btn=>{
+        btn.addEventListener('click', async (e)=>{
+            e.preventDefault();
+            const planType = btn.getAttribute('data-plan-type') || 'community';
+            const areaId = planType === 'online' ? 'business-need-online' : planType === 'sh' ? 'business-need-sh' : 'business-need';
+            const text = document.getElementById(areaId).value.trim();
+            const errorEl = document.getElementById(planType==='online' ? 'plan-error-online' : planType==='sh' ? 'plan-error-sh' : 'plan-error');
+            if(!text){ if(errorEl){ errorEl.style.display='block'; errorEl.textContent='Please describe your business need.'; } return; }
+            if(errorEl){ errorEl.style.display='none'; }
+            const spinner = btn.querySelector('.spinner-border'); if(spinner) spinner.style.display='inline-block';
+            btn.disabled = true;
+            try{
+                const res = await fetch('/odoo/plan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({business_need: text, plan_type: planType})});
+                const j = await res.json();
+                if(!res.ok || j.error){ if(errorEl){ errorEl.style.display='block'; errorEl.textContent = j.message || j.error || 'Planning failed'; } else showToast(j.message||j.error||'Planning failed','Error'); }
+                else {
+                    if(planType === 'community'){
+                        document.getElementById('plan-display').style.display = 'block';
+                        // Prefer pre-rendered HTML from server when available (cleaner formatting)
+                        // Prefer using the client-side markdown renderer so markdown/tables
+                        // are converted to compact HTML instead of being displayed raw.
+                        const summaryText = j.summary_html || j.summary || '';
+                        if(typeof renderPlanSummary === 'function'){
+                            try{ renderPlanSummary(summaryText, 'plan-summary'); } catch(e){ document.getElementById('plan-summary').textContent = summaryText; }
+                        } else {
+                            // Fallback: collapse excessive blank lines to avoid huge gaps
+                            const collapsed = (summaryText||'').replace(/\n{3,}/g,'\n\n').trim();
+                            document.getElementById('plan-summary').textContent = collapsed;
+                        }
+                        const mods = j.modules || [];
+                        const list = document.getElementById('module-list'); list.innerHTML = '';
+                        if(mods.length){ document.getElementById('module-container').style.display = 'block'; for(const m of mods){ const li = document.createElement('li'); li.className='list-group-item'; li.textContent = m; list.appendChild(li); } } else { document.getElementById('module-container').style.display = 'none'; }
+                        const hasWebsite = mods.includes('website') || mods.includes('website_builder') || mods.includes('website_theme');
+                        document.getElementById('website-design-selector').style.display = hasWebsite ? 'block' : 'none';
+                        // Robustly show the execute and fallback create buttons and log the plan result for debugging
+                        try{
+                            console.log('[odoo_app] plan response:', j);
+                            const execBtnEl = document.getElementById('execute-btn');
+                            const cwBtn = document.getElementById('create-without-plan');
+                            if(execBtnEl){
+                                execBtnEl.style.display = 'inline-block';
+                                execBtnEl.hidden = false;
+                                execBtnEl.classList.remove('d-none');
+                                // ensure button is on top and visible even for long plans
+                                execBtnEl.style.zIndex = '1050';
+                                // give browser a tick to layout then bring into view
+                                setTimeout(()=>{ try{ execBtnEl.scrollIntoView({behavior: 'smooth', block: 'center'}); }catch(e){} }, 80);
+                            } else {
+                                console.warn('[odoo_app] execute-btn element not found in DOM');
+                            }
+                            if(cwBtn){ cwBtn.style.display = 'inline-block'; cwBtn.hidden = false; cwBtn.classList.remove('d-none'); }
+                        }catch(e){ console.error('Failed to show execute/create buttons', e); }
+
+                        // Ensure execute button is placed inside the plan action container so it cannot be hidden by other layout elements
+                        try{
+                            const ensureExecBtnPlacement = () => {
+                                const planDisplay = document.getElementById('plan-display');
+                                if(!planDisplay) return;
+                                const actionContainer = planDisplay.querySelector('.d-flex.gap-2.align-items-center');
+                                const execBtnEl = document.getElementById('execute-btn');
+                                const cwBtn = document.getElementById('create-without-plan');
+                                if(actionContainer && execBtnEl){
+                                    // If create-without-plan exists inside the container, insert exec before it
+                                    if(cwBtn && actionContainer.contains(cwBtn)){
+                                        if(execBtnEl.parentNode !== actionContainer) actionContainer.insertBefore(execBtnEl, cwBtn);
+                                    } else {
+                                        // otherwise append to the container
+                                        if(execBtnEl.parentNode !== actionContainer) actionContainer.appendChild(execBtnEl);
+                                    }
+                                    // make sure styles allow visibility
+                                    execBtnEl.style.display = 'inline-block'; execBtnEl.hidden = false; execBtnEl.classList.remove('d-none');
+                                    execBtnEl.style.zIndex = '1050';
+                                    execBtnEl.style.minWidth = '160px';
+                                    actionContainer.style.overflow = 'visible';
+                                    // scroll plan into view to show the button
+                                    setTimeout(()=>{ try{ execBtnEl.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 50);
+                                }
+                            };
+                            ensureExecBtnPlacement();
+                            // Also run again shortly after to handle delayed layout changes
+                            setTimeout(ensureExecBtnPlacement, 250);
+                            // Watch the plan card for DOM changes and repair the buttons if they get removed
+                            try{
+                                const planCard = document.getElementById('plan-display');
+                                if(planCard){
+                                    let repairTimer = null;
+                                    const observer = new MutationObserver((mutations)=>{
+                                        if(repairTimer) clearTimeout(repairTimer);
+                                        repairTimer = setTimeout(()=>{ try{ ensureExecBtnPlacement(); }catch(e){} }, 80);
+                                    });
+                                    observer.observe(planCard, { childList: true, subtree: true, attributes: true });
+                                    // Keep a reference so other scripts can't easily GC it
+                                    window.__odoo_plan_btn_observer = observer;
+                                }
+                            }catch(e){ console.warn('Failed to create MutationObserver for plan-display', e); }
+                        }catch(e){ console.warn('ensureExecBtnPlacement failed', e); }
+                    } else if(planType === 'online'){
+                        document.getElementById('plan-display-online').style.display='block';
+                        renderPlanSummary(j.summary || '', 'plan-summary-online');
+                        const a = document.getElementById('execute-btn-online'); if(j.url){ a.href = j.url; a.style.display = 'inline-block'; } else a.style.display='none';
+                    } else if(planType === 'sh'){
+                        document.getElementById('plan-display-sh').style.display='block';
+                        if(j.guide_html){ document.getElementById('plan-summary-sh').innerHTML = j.guide_html; } else { renderPlanSummary(j.summary || '', 'plan-summary-sh'); }
+                    }
+                }
+            }catch(err){ console.error('Plan request failed',err); if(errorEl){ errorEl.style.display='block'; errorEl.textContent = String(err); } }
+            finally{ if(spinner) spinner.style.display='none'; btn.disabled = false; }
+        });
+    });
+
+    const themeSelect = document.getElementById('website-design-select');
+    if(themeSelect){ themeSelect.addEventListener('change', ()=>{ const target = themeSelect.getAttribute('data-target-input'); if(target){ document.getElementById(target).value = themeSelect.value; } }); }
+
+    // Execution handler extracted so it can be attached to dynamically-created buttons
+    async function executeCreateHandler(e){
+        try{ if(e && e.preventDefault) e.preventDefault(); }catch(_){}
+        const dbName = document.getElementById('odoo-dbname-input').value.trim();
+        if(!dbName){ alert('Please provide a Database Name before creating the environment.'); return; }
+        const mods = Array.from(document.getElementById('module-list').children).map(li=>li.textContent.trim()).filter(Boolean);
+        if(mods.length===0){ if(!confirm('No modules were detected from the plan. Create environment anyway?')) return; }
+        const website_design = document.getElementById('website-design-input').value || null;
+        const odoo_version = document.getElementById('odoo-version-input').value || '19.0';
+        const branding_modules = [];
+        // find the button element (might be newly created)
+        let btn = document.getElementById('execute-btn');
+        if(!btn){
+            // ensure there's a visible button to show progress
+            const cwBtn = document.getElementById('create-without-plan');
+            btn = document.createElement('button');
+            btn.id = 'execute-btn';
+            btn.className = 'btn btn-success';
+            btn.textContent = 'Create Environment';
+            if(cwBtn && cwBtn.parentNode) cwBtn.parentNode.insertBefore(btn, cwBtn);
+        }
+        btn.disabled = true; const origText = btn.textContent; btn.textContent = 'Creating...';
+        try{
+            const payload = { modules: mods, website_design, odoo_version, db_name: dbName, branding_modules };
+            const r = await fetch('/odoo/execute', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+            const j = await r.json();
+            if(r.ok && j.job_id){ document.getElementById('plan-display').style.display='none'; document.getElementById('creation-status').style.display='block'; pollJob(j.job_id); } else { alert('Failed to start creation: '+(j.message||j.error||JSON.stringify(j))); }
+        }catch(err){ console.error('Execute failed',err); alert('Execute request failed: '+err); }
+        finally{ btn.disabled=false; btn.textContent = origText || 'Create Environment'; }
+    }
+
+    // Attach handler to existing execute button if present; create/repair it if missing
+    (function ensureExecBtn(){
+        let execBtnEl = document.getElementById('execute-btn');
+        const cwBtn = document.getElementById('create-without-plan');
+        if(!execBtnEl){
+            execBtnEl = document.createElement('button');
+            execBtnEl.id = 'execute-btn';
+            execBtnEl.className = 'btn btn-success';
+            execBtnEl.style.display = 'inline-block';
+            execBtnEl.textContent = 'Create Environment';
+            if(cwBtn && cwBtn.parentNode) cwBtn.parentNode.insertBefore(execBtnEl, cwBtn);
+        }
+        // safety styles to keep it visible
+        execBtnEl.style.zIndex = '1050';
+        execBtnEl.style.minWidth = '160px';
+        execBtnEl.style.marginRight = '8px';
+        // avoid duplicate handlers
+        execBtnEl.removeEventListener && execBtnEl.removeEventListener('click', executeCreateHandler);
+        execBtnEl.addEventListener('click', executeCreateHandler);
+    })();
+
+    const cw = document.getElementById('create-without-plan');
+    if(cw){
+        cw.addEventListener('click', async (e)=>{
+            e.preventDefault();
+            const dbName = document.getElementById('odoo-dbname-input').value.trim();
+            if(!dbName){ alert('Please provide a Database Name for the new environment.'); return; }
+            const version = document.getElementById('odoo-version-input').value || '19.0';
+            try{
+                const r = await fetch('/envs/create', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: dbName, db_name: dbName, version, type: 'docker'})});
+                const j = await r.json();
+                if(r.ok && j.status==='ok'){ showToast('Environment created: '+(j.message||dbName),'Success'); refreshEnvHistory(); } else { alert('Create failed: '+(j.message||j.error||JSON.stringify(j))); }
+            }catch(err){ console.error('Create without plan failed',err); alert('Request failed: '+err); }
+        });
+    }
+});
+
+async function pollJob(jobId){
+    const logEl = document.getElementById('creation-log');
+    const linkContainer = document.getElementById('environment-link-container');
+    logEl.textContent = '';
+    try{
+        while(true){
+            const r = await fetch('/odoo/job_status/'+encodeURIComponent(jobId));
+            const j = await r.json();
+            if(j && j.log){ logEl.textContent = (j.log||[]).join('\n\n'); logEl.scrollTop = logEl.scrollHeight; }
+            if(!j || j.status==='not_found'){ showToast('Job not found','Error'); break; }
+            if(j.status==='done' || j.status==='error' || j.status==='failed'){
+                if(j.url){ document.getElementById('environment-link').href = j.url; linkContainer.style.display='block'; }
+                showToast('Creation finished: '+(j.status),'Info');
+                break;
+            }
+            await new Promise(r=>setTimeout(r,1500));
+        }
+    }catch(e){ console.error('Polling job failed',e); showToast('Failed to monitor job: '+e,'Error'); }
+}
+</script>

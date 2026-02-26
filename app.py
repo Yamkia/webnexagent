@@ -11,6 +11,7 @@ import re
 import random
 import ipaddress
 import json
+import shutil
 
 import markdown
 # --- Setup Python Path ---
@@ -59,6 +60,26 @@ def _save_env_history(envs):
             json.dump(envs, f, indent=2)
     except Exception as e:
         print(f"Failed to save env history: {e}", file=sys.stderr)
+
+
+def _normalize_base(name: str) -> str:
+    """Normalize a db name to its base by stripping repeated -development/-staging suffixes."""
+    if not name:
+        return ''
+    base = name.strip()
+    low = base.lower()
+    changed = True
+    while changed:
+        changed = False
+        if low.endswith('-development'):
+            base = base[: -len('-development')].rstrip('-')
+            low = base.lower()
+            changed = True
+        elif low.endswith('-staging'):
+            base = base[: -len('-staging')].rstrip('-')
+            low = base.lower()
+            changed = True
+    return base
 
 
 def _find_env(db_name):
@@ -186,7 +207,31 @@ def _docker_available():
         return False, str(e)
 
 
-def _create_docker_environment(name, version='19.0', http_port=8069, pg_user='odoo', pg_password='odoo', pg_host='db', pg_port=5432, admin_password='admin'):
+def _locate_docker_executable():
+    """Try to locate the docker executable in common locations on Windows and Unix.
+    Return the path to the docker executable or None if not found."""
+    # First try PATH
+    p = shutil.which('docker') or shutil.which('docker.exe')
+    if p:
+        return p
+    # Common Windows install location (Docker Desktop)
+    candidates = [
+        r"C:\Program Files\Docker\Docker\resources\bin\docker.exe",
+        r"C:\Program Files\Docker\Docker\resources\bin\docker",
+        r"C:\Program Files\Docker\resources\bin\docker.exe",
+        r"C:\Program Files\Docker\resources\bin\docker",
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    # Allow override via environment variable
+    env_path = os.environ.get('DOCKER_PATH')
+    if env_path and os.path.exists(env_path):
+        return env_path
+    return None
+
+
+def _create_docker_environment(name, version='19.0', http_port=8069, pg_user='odoo', pg_password='odoo', pg_host='db', pg_port=5432, admin_password='admin', env_mode='development'):
     """Create a Docker-based Odoo environment by writing a docker-compose file and starting it with docker compose.
     Returns a dict with keys: success (bool), message (str), url (optional).
     """
@@ -196,27 +241,41 @@ def _create_docker_environment(name, version='19.0', http_port=8069, pg_user='od
         os.makedirs(env_dir, exist_ok=True)
 
         compose_path = os.path.join(env_dir, 'docker-compose.yml')
-        compose_content = f"""version: '3.8'
+        # Use absolute env_file path so docker-compose resolves it reliably on Windows
+        env_file_path = os.path.join(repo_root, f'.env.{env_mode}')
+        # Normalize to forward slashes for compose compatibility
+        env_file_path = env_file_path.replace('\\', '/')
 
-services:
-  odoo-{name}:
-    image: odoo:{version}
-    environment:
-      POSTGRES_HOST: {pg_host}
-      POSTGRES_USER: {pg_user}
-      POSTGRES_PASSWORD: {pg_password}
-    ports:
-      - "{http_port}:8069"
-    volumes:
-      - ../../addons:/mnt/extra-addons
-      - ../../deployable_brand_theme:/mnt/brand_theme
-      - odoo_{name}_data:/var/lib/odoo
-    depends_on:
-      - db
+        # sanitize name for use in Docker container/volume identifiers
+        safe_name = re.sub(r'[^a-z0-9_.-]', '-', str(name).lower())
 
-volumes:
-  odoo_{name}_data:
-"""
+        compose_lines = [
+            "version: '3.8'",
+            "",
+            "services:",
+            f"  odoo-{safe_name}:",
+            f"    image: odoo:{version}",
+            f"    container_name: {safe_name}",
+            f"    # Use per-environment env_file so services pick appropriate APP_ENV",
+            f"    env_file: {env_file_path}",
+            "    environment:",
+            f"      POSTGRES_HOST: {pg_host}",
+            f"      POSTGRES_USER: {pg_user}",
+            f"      POSTGRES_PASSWORD: {pg_password}",
+            "    ports:",
+            f"      - \"{http_port}:8069\"",
+            "    volumes:",
+            "      - ../../addons:/mnt/extra-addons",
+            "      - ../../deployable_brand_theme:/mnt/brand_theme",
+            f"      - odoo_{safe_name}_data:/var/lib/odoo",
+            "    depends_on:",
+            "      - db",
+            "",
+            "volumes:",
+            f"  odoo_{safe_name}_data:",
+        ]
+        compose_content = "\n".join(compose_lines) + "\n"
+
         with open(compose_path, 'w', encoding='utf-8') as f:
             f.write(compose_content)
 
@@ -251,9 +310,16 @@ admin_passwd = {admin_password}
                 # Not fatal; continue
                 pass
 
-        # Start the environment compose
+        # Start the environment compose using a dedicated compose project name so
+        # the environment's containers, networks and volumes are isolated from the
+        # root project. Use the sanitized `safe_name` as the project id.
+        project_arg = ['-p', safe_name]
         try:
-            subprocess.run([docker_cmd, 'compose', '-f', compose_path, 'up', '-d'], check=True)
+            if os.path.exists(root_compose):
+                cmd = [docker_cmd, 'compose'] + project_arg + ['-f', root_compose, '-f', compose_path, 'up', '-d']
+            else:
+                cmd = [docker_cmd, 'compose'] + project_arg + ['-f', compose_path, 'up', '-d']
+            subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError as e:
             return {'success': False, 'message': f"docker compose failed: {e}", 'compose_path': compose_path}
 
@@ -263,9 +329,12 @@ admin_passwd = {admin_password}
             'port': http_port,
             'odoo_version': version,
             'url': f'http://localhost:{http_port}',
-            'created_at': (time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
+            'created_at': (time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())),
+            'type': 'docker',
+            'mode': env_mode
         }
         envs = _load_env_history() or []
+        # Remove any exact duplicates, then insert at top
         envs = [e for e in envs if not (e.get('db_name') == env_entry['db_name'] and e.get('port') == env_entry['port'])]
         envs.insert(0, env_entry)
         _save_env_history(envs)
@@ -616,8 +685,10 @@ def create_env():
     data = request.get_json() or {}
     name = data.get('name') or data.get('db_name')
     version = data.get('version', '18.0')
+    env_mode = data.get('mode') or data.get('env_mode') or 'development'
     port = data.get('port')
-    env_type = data.get('type', 'auto')  # 'native', 'docker', or 'auto'
+    # Default to Docker for all new environments unless 'native' explicitly requested
+    env_type = data.get('type', 'docker')  # 'native', 'docker', or 'auto'
     
     if not name:
         return jsonify({'status': 'error', 'message': 'Environment name is required'}), 400
@@ -638,11 +709,17 @@ def create_env():
             admin_password=data.get('admin_password', 'admin')
         )
     else:
+        # If no port supplied, pick the next available starting at 8069
+        if not port:
+            found = _find_next_available_port(base_port=8069, max_port=9000)
+            port = found or 8069
+
         result = _create_docker_environment(
             name=name,
             version=version,
-            http_port=port or 8069,
-            admin_password=data.get('admin_password', 'admin')
+            http_port=port,
+            admin_password=data.get('admin_password', 'admin'),
+            env_mode=env_mode
         )
     
     if result.get('success'):
@@ -654,6 +731,7 @@ def create_env():
 @app.route('/envs/<env_name>/start', methods=['POST'])
 def start_env(env_name):
     """Start an environment (supports both native and Docker)."""
+    print(f"[HTTP] /envs/{env_name}/start called from {request.remote_addr}")
     # First check env_history for type
     env_info = _find_env(env_name)
     
@@ -666,6 +744,10 @@ def start_env(env_name):
     
     # Fall back to Docker
     compose_path = os.path.join(project_root, 'environments', env_name, 'docker-compose.yml')
+    # Check docker availability early and return a helpful error if missing
+    docker_ok, docker_msg = _docker_available()
+    if not docker_ok:
+        return jsonify({'status': 'error', 'message': f"Docker is not available on this host. {docker_msg}. Install Docker (Docker Desktop) or run this server on a machine with Docker installed."}), 500
     if not os.path.isfile(compose_path):
         return jsonify({'status': 'error', 'message': 'Environment not found.'}), 404
     r = _run_compose_file(compose_path, ['up', '-d'])
@@ -721,6 +803,96 @@ def env_logs(env_name):
         return jsonify({'status': 'error', 'message': r.get('error') or r.get('output')}), 500
 
 
+def _backup_env(env_name):
+    """Create DB dump and filestore tarball for the given environment.
+    Returns dict with success, db_backup, filestore_backup, message.
+    """
+    try:
+        backups_dir = os.path.join(project_root, 'backups')
+        os.makedirs(backups_dir, exist_ok=True)
+
+        timestamp = time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())
+        db_name = env_name
+        root_compose = os.path.join(project_root, 'docker-compose.yml')
+        docker_cmd = shutil.which('docker') or 'docker'
+
+        pg_user = os.getenv('POSTGRES_USER', 'odoo')
+
+        db_backup_path = os.path.join(backups_dir, f"{db_name}-{timestamp}.sql")
+        # Run pg_dump via root db service
+        if not os.path.exists(root_compose):
+            return {'success': False, 'message': 'Root docker-compose.yml not found; cannot run pg_dump.'}
+
+        with open(db_backup_path, 'wb') as out:
+            proc = subprocess.run([docker_cmd, 'compose', '-f', root_compose, 'exec', '-T', 'db', 'pg_dump', '-U', pg_user, db_name], stdout=out, stderr=subprocess.PIPE)
+            if proc.returncode != 0:
+                return {'success': False, 'message': f'pg_dump failed: {proc.stderr.decode() if proc.stderr else "unknown"}'}
+
+        # Filestore backup (if environment compose exists and odoo service present)
+        env_compose = os.path.join(project_root, 'environments', env_name, 'docker-compose.yml')
+        filestore_path = None
+        if os.path.exists(env_compose):
+            filestore_path = os.path.join(backups_dir, f"{db_name}-filestore-{timestamp}.tgz")
+            # Attempt to tar the filestore inside the odoo container and capture stdout
+            svc_name = f'odoo-{env_name}'
+            with open(filestore_path, 'wb') as outf:
+                proc2 = subprocess.run([docker_cmd, 'compose', '-f', env_compose, 'exec', '-T', svc_name, 'tar', 'czf', '-', '/var/lib/odoo/filestore'], stdout=outf, stderr=subprocess.PIPE)
+                if proc2.returncode != 0:
+                    # If filestore path differs, ignore filestore backup but keep DB backup
+                    filestore_path = None
+
+        return {'success': True, 'db_backup': db_backup_path, 'filestore_backup': filestore_path, 'message': 'Backup completed'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+
+def _upgrade_env(env_name, modules=None):
+    """Run an Odoo module upgrade on the given environment. If modules is None, upgrade all modules.
+    Returns dict with success and output/message.
+    """
+    try:
+        env_compose = os.path.join(project_root, 'environments', env_name, 'docker-compose.yml')
+        if not os.path.exists(env_compose):
+            return {'success': False, 'message': 'Environment compose not found.'}
+        docker_cmd = shutil.which('docker') or 'docker'
+        svc_name = f'odoo-{env_name}'
+        if modules:
+            args = ['odoo', '-d', env_name, '-u', modules]
+        else:
+            args = ['odoo', '-d', env_name, '-u', 'all']
+
+        proc = subprocess.run([docker_cmd, 'compose', '-f', env_compose, 'exec', '-T', svc_name] + args, capture_output=True, text=True, timeout=600)
+        if proc.returncode != 0:
+            return {'success': False, 'message': proc.stderr or proc.stdout}
+        return {'success': True, 'output': proc.stdout}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+
+@app.route('/envs/<env_name>/backup', methods=['POST'])
+def env_backup_route(env_name):
+    """Trigger a backup for the named environment."""
+    if not _docker_available()[0]:
+        return jsonify({'status': 'error', 'message': 'Docker is not available on this host.'}), 500
+    result = _backup_env(env_name)
+    if result.get('success'):
+        return jsonify({'status': 'ok', 'db_backup': result.get('db_backup'), 'filestore_backup': result.get('filestore_backup'), 'message': result.get('message')})
+    return jsonify({'status': 'error', 'message': result.get('message')}), 500
+
+
+@app.route('/envs/<env_name>/upgrade', methods=['POST'])
+def env_upgrade_route(env_name):
+    """Trigger a module upgrade for the named environment. Accepts optional JSON {modules: 'mod1,mod2'}"""
+    data = request.get_json(force=True) or {}
+    modules = data.get('modules')
+    if not _docker_available()[0]:
+        return jsonify({'status': 'error', 'message': 'Docker is not available on this host.'}), 500
+    result = _upgrade_env(env_name, modules=modules)
+    if result.get('success'):
+        return jsonify({'status': 'ok', 'output': result.get('output')})
+    return jsonify({'status': 'error', 'message': result.get('message')}), 500
+
+
 @app.route('/envs/native/status', methods=['GET'])
 def native_status():
     """Check if native Odoo environment is available on this server."""
@@ -770,6 +942,7 @@ def get_odoo_env_choices():
             'url': env.get('url') or (f'http://localhost:{port}' if port else None),
             'type': env_type,
             'service': service,
+            'mode': env.get('mode'),
             'running': _is_env_running(db, env_type=env_type, service_name=service)
         }
 
@@ -784,6 +957,7 @@ def get_odoo_env_choices():
             db_name = entry
             port = None
             odoo_version = None
+            mode = None
 
             conf_path = os.path.join(env_path, 'odoo.conf')
             readme_path = os.path.join(env_path, 'README.md')
@@ -819,6 +993,27 @@ def get_odoo_env_choices():
                     pass
 
             url = f'http://localhost:{port}' if port else None
+            # Try to detect env mode from docker-compose.yml (env_file or APP_ENV)
+            compose_yaml = os.path.join(env_path, 'docker-compose.yml')
+            if os.path.isfile(compose_yaml):
+                try:
+                    with open(compose_yaml, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            ln = line.strip()
+                            if ln.startswith('env_file:'):
+                                # format: env_file: ../../.env.<mode>
+                                parts = ln.split(':', 1)
+                                if len(parts) > 1:
+                                    val = parts[1].strip().lstrip('"').rstrip('"')
+                                    if '.env.' in val:
+                                        mode = val.split('.env.')[-1]
+                            if 'APP_ENV' in ln and ('=' in ln or ':'):
+                                # pick up APP_ENV=production or APP_ENV: production
+                                m = re.search(r'APP_ENV\s*[:=]\s*(\w+)', ln)
+                                if m:
+                                    mode = m.group(1)
+                except Exception:
+                    pass
             key = (db_name, str(port))
             if key not in choices_map:
                 choices_map[key] = {
@@ -826,6 +1021,7 @@ def get_odoo_env_choices():
                     'port': port,
                     'odoo_version': odoo_version,
                     'url': url,
+                    'mode': mode,
                     'running': _is_env_running(db_name)
                 }
 
@@ -840,6 +1036,7 @@ def start_odoo_env():
         env_name = request.form.get('env_name')
         port = request.form.get('port')
         version = request.form.get('odoo_version', '19.0')
+        env_mode = request.form.get('env_mode', 'development')
         auto_start = str(request.form.get('auto_start') or '').lower() in ('1', 'true', 'yes', 'on')
         if env_name and port:
             # Call Docker-based helper script to create an environment
@@ -853,7 +1050,7 @@ def start_odoo_env():
 
                 # Try Python-based docker creation first (preferred)
                 try:
-                    r = _create_docker_environment(env_name, version=version, http_port=int(port))
+                    r = _create_docker_environment(env_name, version=version, http_port=int(port), env_mode=env_mode)
                     if r.get('success'):
                         msg = r.get('message') or f"Triggered environment creation for '{env_name}'."
                         msg += f" Check env at: {r.get('url')}"
@@ -917,6 +1114,142 @@ def index():
     envs = get_odoo_env_choices()
     
     return render_template('index.html', enabled_apps=enabled_apps, envs=envs)
+
+
+@app.route('/envs/<env_name>/mode', methods=['POST'])
+def set_env_mode(env_name):
+    """Set the `mode` (development|staging|production) for a recorded environment."""
+    try:
+        data = request.get_json() or {}
+        mode = data.get('mode') or request.form.get('mode')
+        if not mode:
+            return jsonify({'status': 'error', 'message': 'Mode is required.'}), 400
+        mode = str(mode).strip().lower()
+        if mode not in ('development', 'staging', 'production'):
+            return jsonify({'status': 'error', 'message': 'Invalid mode.'}), 400
+
+        envs = _load_env_history() or []
+        found = False
+        for e in envs:
+            if str(e.get('db_name') or '').lower() == str(env_name).lower():
+                e['mode'] = mode
+                found = True
+                break
+
+        if not found:
+            # Create a minimal entry if one does not exist yet
+            entry = {
+                'db_name': env_name,
+                'port': None,
+                'odoo_version': None,
+                'url': None,
+                'created_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                'type': 'docker',
+                'mode': mode
+            }
+            envs.insert(0, entry)
+
+        _save_env_history(envs)
+        return jsonify({'status': 'ok', 'message': f"Mode for '{env_name}' set to '{mode}'", 'choices': get_odoo_env_choices()})
+    except Exception as ex:
+        return jsonify({'status': 'error', 'message': str(ex)}), 500
+
+
+def _detect_and_update_modes():
+    """Scan environments/ and existing env_history entries to infer and persist missing modes."""
+    envs = _load_env_history() or []
+    env_map = { (e.get('db_name') or '').lower(): e for e in envs }
+    updated = 0
+
+    env_root = os.path.join(project_root, 'environments')
+    if os.path.isdir(env_root):
+        for entry in os.listdir(env_root):
+            env_path = os.path.join(env_root, entry)
+            if not os.path.isdir(env_path):
+                continue
+
+            mode = None
+            compose_yaml = os.path.join(env_path, 'docker-compose.yml')
+            if os.path.isfile(compose_yaml):
+                try:
+                    with open(compose_yaml, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            ln = line.strip()
+                            if ln.startswith('env_file:'):
+                                parts = ln.split(':', 1)
+                                if len(parts) > 1:
+                                    val = parts[1].strip().lstrip('"').rstrip('"').lstrip("'").rstrip("'")
+                                    if '.env.' in val:
+                                        mode = val.split('.env.')[-1]
+                            if 'APP_ENV' in ln and ('=' in ln or ':'):
+                                m = re.search(r'APP_ENV\s*[:=]\s*(\w+)', ln)
+                                if m:
+                                    mode = m.group(1)
+                except Exception:
+                    pass
+
+            key = entry.lower()
+            if key in env_map:
+                e = env_map[key]
+                if not e.get('mode') and mode:
+                    e['mode'] = mode
+                    updated += 1
+            else:
+                if mode:
+                    envs.insert(0, {
+                        'db_name': entry,
+                        'port': None,
+                        'odoo_version': None,
+                        'url': None,
+                        'created_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                        'type': 'docker',
+                        'mode': mode
+                    })
+                    updated += 1
+
+    # Also try to infer mode for history entries that lack it by checking their compose file locations
+    for e in envs:
+        if e.get('mode'):
+            continue
+        name = (e.get('db_name') or '').strip()
+        if not name:
+            continue
+        env_path = os.path.join(env_root, name)
+        mode = None
+        compose_yaml = os.path.join(env_path, 'docker-compose.yml')
+        if os.path.isfile(compose_yaml):
+            try:
+                with open(compose_yaml, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        ln = line.strip()
+                        if ln.startswith('env_file:'):
+                            parts = ln.split(':', 1)
+                            if len(parts) > 1:
+                                val = parts[1].strip().lstrip('"').rstrip('"').lstrip("'").rstrip("'")
+                                if '.env.' in val:
+                                    mode = val.split('.env.')[-1]
+                        if 'APP_ENV' in ln and ('=' in ln or ':'):
+                            m = re.search(r'APP_ENV\s*[:=]\s*(\w+)', ln)
+                            if m:
+                                mode = m.group(1)
+            except Exception:
+                pass
+        if mode:
+            e['mode'] = mode
+            updated += 1
+
+    if updated:
+        _save_env_history(envs)
+    return updated
+
+
+@app.route('/envs/detect_modes', methods=['POST'])
+def detect_modes_route():
+    try:
+        updated = _detect_and_update_modes()
+        return jsonify({'status': 'ok', 'updated': updated, 'choices': get_odoo_env_choices()})
+    except Exception as ex:
+        return jsonify({'status': 'error', 'message': str(ex)}), 500
 
 
 @app.route('/apps/<app_name>')
@@ -1260,11 +1593,11 @@ def website_helper_inject():
     return jsonify({'status': 'ok', 'saved_path': os.path.relpath(resolved, project_root)})
 
 
-def _create_real_environment(job_id, modules, website_design=None, odoo_version='19.0', branding_modules=None, branding_repos=None):
+def _create_real_environment(job_id, modules, website_design=None, odoo_version='19.0', branding_modules=None, branding_repos=None, requested_db_name=None):
     """A background task that creates a real Odoo environment using Docker."""
     job = JOBS[job_id]
     log = job['log']
-    # Use a truncated job_id for shorter, Docker-friendly names
+    # Use a truncated job_id for Docker-friendly resource names
     name_prefix = f"odoo-{job_id[:8]}"
 
     # If branding_repos provided, attempt to clone them into an extra_addons dir
@@ -1337,7 +1670,14 @@ def _create_real_environment(job_id, modules, website_design=None, odoo_version=
     db_container_name = f"{name_prefix}-db"
     odoo_container_name = f"{name_prefix}-app"
     network_name = f"{name_prefix}-net"
-    db_name = f"odoo-{job_id[:8]}-db" # Define a unique database name for Odoo
+    # If caller provided a requested database name, sanitize and use it; otherwise generate a unique name
+    if requested_db_name:
+        # Basic sanitization: allow letters, numbers, hyphen and underscore; replace spaces with hyphen
+        db_name = re.sub(r'[^A-Za-z0-9_\-]', '-', requested_db_name.strip())
+        # Trim to reasonable length
+        db_name = db_name[:64]
+    else:
+        db_name = f"odoo-{job_id[:8]}-db" # Define a unique database name for Odoo
     master_password = uuid.uuid4().hex[:12]
     db_password = uuid.uuid4().hex[:12]
 
@@ -1848,7 +2188,12 @@ Return ONLY the Markdown text for the guide.
                     pass
 
             print(f"[odoo_plan_return] parsed_modules={parsed_modules}")
-            return jsonify({'summary': agent_output, 'modules': list(set(parsed_modules))})
+            try:
+                # Render markdown to HTML for improved client display
+                summary_html = markdown.markdown(agent_output or '', extensions=['fenced_code', 'tables'])
+            except Exception:
+                summary_html = ''
+            return jsonify({'summary': agent_output, 'summary_html': summary_html, 'modules': list(set(parsed_modules))})
     else:
         msg = str(agent_output)
         # Friendly response when the agent is disabled via configuration so the frontend can show a clear message
@@ -1868,6 +2213,11 @@ def odoo_execute():
     odoo_version = data.get('odoo_version', '19.0') # Get Odoo version, default to 19.0
     branding_modules = data.get('branding_modules', []) # New: Get branding modules
 
+    # Require explicit database name from the user
+    db_name = data.get('db_name') or ''
+    if not db_name:
+        return jsonify({'error': 'db_name is required when creating an environment.', 'message': 'Please provide a db_name.'}), 400
+
     if not modules:
         return jsonify({'error': 'No modules provided for execution.', 'message': 'No modules provided for execution.'}), 400
     
@@ -1878,7 +2228,9 @@ def odoo_execute():
     }
 
     # Start the background task
-    thread = threading.Thread(target=_create_real_environment, args=(job_id, modules, website_design, odoo_version, branding_modules))
+    thread = threading.Thread(target=_create_real_environment, args=(job_id, modules, website_design, odoo_version, branding_modules, None,))
+    # Pass requested db_name as kwarg via threading to avoid tuple confusion
+    thread = threading.Thread(target=_create_real_environment, args=(job_id, modules, website_design, odoo_version, branding_modules, None), kwargs={'requested_db_name': db_name})
     thread.start()
 
     return jsonify({'job_id': job_id})
@@ -1900,7 +2252,107 @@ def odoo_environments():
     Currently we do not persist history, so return an empty list instead of 404
     to keep the UI calm.
     """
-    return jsonify({'environments': _load_env_history()})
+    envs = _load_env_history() or []
+    def _normalize_base(name: str) -> str:
+        if not name:
+            return ''
+        base = name.strip()
+        low = base.lower()
+        # Remove repeated suffixes like -development or -staging until stable
+        changed = True
+        while changed:
+            changed = False
+            if low.endswith('-development'):
+                base = base[: -len('-development')].rstrip('-')
+                low = base.lower()
+                changed = True
+            elif low.endswith('-staging'):
+                base = base[: -len('-staging')].rstrip('-')
+                low = base.lower()
+                changed = True
+        return base
+
+    def _group_envs(env_list):
+        groups = {}
+        for e in env_list:
+            name = (e.get('db_name') or '').strip()
+            if not name:
+                continue
+            low = name.lower()
+            mode = None
+            if low.endswith('-development'):
+                mode = 'development'
+            elif low.endswith('-staging'):
+                mode = 'staging'
+            else:
+                mode = (e.get('mode') or '').lower() or 'unknown'
+
+            base = _normalize_base(name)
+            key = base.lower()
+            if key not in groups:
+                groups[key] = {'base': base, 'development': None, 'staging': None, 'others': []}
+
+            if mode in ('development', 'staging'):
+                existing = groups[key].get(mode)
+                if not existing:
+                    groups[key][mode] = e
+                else:
+                    if (e.get('created_at') or '') > (existing.get('created_at') or ''):
+                        groups[key][mode] = e
+            else:
+                groups[key]['others'].append(e)
+
+        return list(groups.values())
+
+    grouped = _group_envs(envs)
+    return jsonify({'environments': envs, 'grouped': grouped})
+
+
+@app.route('/envs/cleanup', methods=['POST'])
+def envs_cleanup():
+    """Clean up duplicate or legacy env_history entries and persist a deduplicated list.
+
+    This keeps at most one entry per base per mode (development/staging), preferring newest.
+    """
+    try:
+        envs = _load_env_history() or []
+
+        # Build map (base -> mode -> entry)
+        cleaned_map = {}
+        for e in envs:
+            name = (e.get('db_name') or '').strip()
+            if not name:
+                continue
+            low = name.lower()
+            if low.endswith('-development'):
+                mode = 'development'
+            elif low.endswith('-staging'):
+                mode = 'staging'
+            else:
+                mode = e.get('mode') or 'unknown'
+
+            base = _normalize_base(name)
+
+            bm = cleaned_map.setdefault(base, {})
+            existing = bm.get(mode)
+            if not existing or (e.get('created_at') or '') > (existing.get('created_at') or ''):
+                bm[mode] = e
+
+        # Flatten map back to list, preserving newest-first ordering across bases
+        new_list = []
+        for base, modes in cleaned_map.items():
+            # prefer adding development then staging then unknown
+            for m in ('development', 'staging'):
+                if modes.get(m):
+                    new_list.append(modes.get(m))
+            for k, v in modes.items():
+                if k not in ('development', 'staging'):
+                    new_list.append(v)
+
+        _save_env_history(new_list)
+        return jsonify({'status': 'ok', 'cleaned': len(envs) - len(new_list), 'environments': new_list})
+    except Exception as ex:
+        return jsonify({'status': 'error', 'message': str(ex)}), 500
 
 
 @app.route('/odoo/local_env/start', methods=['POST'])
@@ -2021,34 +2473,10 @@ def odoo_local_env_start():
             msg = f"Failed to start environment '{db_name}': {e}"
             return jsonify({'error': msg, 'message': msg}), 500
 
-    # Simulate environment creation for new requests (no db_name provided)
-    import datetime
-    import random
-    # Generate a new db_name and port
-    new_db = f"odoo_{random.randint(1000,9999)}"
-    new_port = random.randint(8070, 8090)
-    new_url = f"http://localhost:{new_port}"
-    now = datetime.datetime.utcnow().isoformat() + 'Z'
-    env = {
-        'db_name': new_db,
-        'url': new_url,
-        'odoo_version': data.get('odoo_version', '19.0'),
-        'modules': data.get('modules', []),
-        'website_design': data.get('website_design'),
-        'created_at': now,
-        'port': new_port,
-        'fresh': True
-    }
-    # Save to env_history.json
-    envs = _load_env_history()
-    envs.insert(0, env)
-    _save_env_history(envs)
-    return jsonify({
-        'status': 'success',
-        'message': f"Created new environment '{new_db}' on port {new_port}.",
-        'url': new_url,
-        'db_name': new_db
-    })
+    # Require an explicit database name when creating a new environment.
+    # Previously we auto-generated names; enforce explicit naming to avoid
+    # many orphaned environments.
+    return jsonify({'error': 'db_name is required when creating a new environment. Please provide a name.'}), 400
 
 
 @app.route('/odoo/local_env/drop', methods=['POST'])
@@ -2056,12 +2484,135 @@ def odoo_local_env_drop():
     """Remove an environment from history (placeholder for real drop)."""
     data = request.get_json(force=True) or {}
     db_name = data.get('db_name') or ''
-    envs = _load_env_history()
-    filtered = [e for e in envs if e.get('db_name') != db_name]
-    if len(filtered) != len(envs):
-        _save_env_history(filtered)
-        return jsonify({'message': f"Removed '{db_name}' from history.", 'status': 'removed'})
-    return jsonify({'message': f"No entry found for '{db_name}'.", 'status': 'not_found'})
+    if not db_name:
+        return jsonify({'error': 'db_name is required to drop an environment.'}), 400
+
+    # We'll attempt to match all environment variants for the provided base name
+    messages = []
+    # Check docker availability and decide whether to attempt container/volume operations
+    docker_ok, docker_msg = _docker_available()
+    docker_cmd = None
+    if docker_ok:
+        docker_cmd = _locate_docker_executable()
+    else:
+        messages.append(f"docker not available: {docker_msg}. Skipping docker operations.")
+
+    # Normalize base to catch names like 'test-1-staging' and 'test-1-development'
+    base = _normalize_base(db_name)
+
+    # Find matching history entries
+    envs = _load_env_history() or []
+    matched_envs = [e for e in envs if _normalize_base(e.get('db_name') or '') == base or (e.get('db_name') or '').lower().startswith(db_name.lower())]
+
+    # Find matching directories under environments/
+    env_root = os.path.join(project_root, 'environments')
+    matched_dirs = []
+    if os.path.isdir(env_root):
+        for entry in os.listdir(env_root):
+            full = os.path.join(env_root, entry)
+            if not os.path.isdir(full):
+                continue
+            if _normalize_base(entry) == base or entry.lower().startswith(db_name.lower()):
+                matched_dirs.append(entry)
+
+    # Stop and remove compose for each matched dir.
+    # Use root docker-compose.yml together with per-env compose when present so services like 'db' resolve.
+    root_compose = os.path.join(project_root, 'docker-compose.yml')
+    def _on_rm_error(func, path, excinfo):
+        # Try to make file writable then retry
+        try:
+            os.chmod(path, 0o666)
+            func(path)
+        except Exception:
+            pass
+
+    for entry in matched_dirs:
+        env_dir = os.path.join(env_root, entry)
+        compose_file = os.path.join(env_dir, 'docker-compose.yml')
+        if os.path.isfile(compose_file):
+            try:
+                if docker_cmd:
+                    if os.path.exists(root_compose):
+                        subprocess.run([docker_cmd, 'compose', '-f', root_compose, '-f', compose_file, 'down', '--volumes', '--remove-orphans'], check=True)
+                    else:
+                        subprocess.run([docker_cmd, 'compose', '-f', compose_file, 'down', '--volumes', '--remove-orphans'], check=True)
+                    messages.append(f"Stopped docker-compose for '{entry}'.")
+                else:
+                    messages.append(f"Skipping docker-compose down for '{entry}': docker not available.")
+            except FileNotFoundError:
+                messages.append(f"Failed to stop docker-compose for '{entry}': docker executable not found")
+            except Exception as e:
+                messages.append(f"Failed to stop docker-compose for '{entry}': {e}")
+        # Remove directory (use onerror to handle permission issues on Windows/OneDrive)
+        try:
+            import shutil as _sh
+            _sh.rmtree(env_dir, onerror=_on_rm_error)
+            messages.append(f"Removed environment files for '{entry}'.")
+        except Exception as e:
+            messages.append(f"Failed to remove environment files for '{entry}': {e}")
+
+    # Remove related log files
+    logs_dir = os.path.join(project_root, 'logs')
+    if os.path.isdir(logs_dir):
+        for fn in os.listdir(logs_dir):
+            if fn.lower().startswith(base.lower() + '-') and fn.lower().endswith('.log'):
+                try:
+                    os.remove(os.path.join(logs_dir, fn))
+                    messages.append(f"Removed log {fn}.")
+                except Exception:
+                    pass
+
+    # Remove matching entries from history
+    if matched_envs:
+        remaining = [e for e in envs if e not in matched_envs]
+        _save_env_history(remaining)
+        for e in matched_envs:
+            messages.append(f"Removed '{e.get('db_name')}' from history.")
+
+        # Also attempt to remove any docker containers and volumes related to these names
+        # Only attempt docker container/volume ops if docker is available
+        if docker_cmd:
+            try:
+                ps = subprocess.run([docker_cmd, 'ps', '-a', '--format', '{{.ID}} {{.Names}}'], capture_output=True, text=True)
+                for line in ps.stdout.splitlines():
+                    if not line.strip():
+                        continue
+                    cid, *names = line.split(maxsplit=1)
+                    name = names[0] if names else ''
+                    for e in matched_envs:
+                        nm = e.get('db_name') or ''
+                        if nm and nm.lower() in name.lower():
+                            try:
+                                subprocess.run([docker_cmd, 'rm', '-f', cid], check=True)
+                                messages.append(f"Removed container {cid} ({name}).")
+                            except Exception as ex:
+                                messages.append(f"Failed to remove container {cid} ({name}): {ex}")
+            except FileNotFoundError:
+                messages.append(f"Failed to inspect/remove containers: docker executable not found")
+            except Exception as e:
+                messages.append(f"Failed to inspect/remove containers: {e}")
+
+            try:
+                vol = subprocess.run([docker_cmd, 'volume', 'ls', '--format', '{{.Name}}'], capture_output=True, text=True)
+                for v in vol.stdout.splitlines():
+                    for e in matched_envs:
+                        nm = e.get('db_name') or ''
+                        if nm and nm.lower() in v.lower():
+                            try:
+                                subprocess.run([docker_cmd, 'volume', 'rm', v], check=True)
+                                messages.append(f"Removed volume {v}.")
+                            except Exception as ex:
+                                messages.append(f"Failed to remove volume {v}: {ex}")
+            except FileNotFoundError:
+                messages.append(f"Failed to inspect/remove volumes: docker executable not found")
+            except Exception as e:
+                messages.append(f"Failed to inspect/remove volumes: {e}")
+        else:
+            messages.append(f"Skipping container/volume removal: docker not available ({docker_msg})")
+
+        return jsonify({'message': ' '.join(messages), 'status': 'removed'})
+
+    return jsonify({'message': ' '.join(messages) or f"No entry found for '{db_name}'.", 'status': 'not_found'})
 
 
 @app.route('/odoo/local_env/log/<path:db_name>', methods=['GET'])
@@ -2096,6 +2647,67 @@ def odoo_local_env_log(db_name):
         return jsonify({'db_name': db_name, 'log': content})
     except Exception as e:
         return jsonify({'error': f"Failed to read log for '{db_name}': {e}"}), 500
+
+
+@app.route('/odoo/local_env/drop_all', methods=['POST'])
+def odoo_local_env_drop_all():
+    """Remove all known environments and their files. Use with caution."""
+    # Stop all docker compose files under environments/* and remove directories
+    env_root = os.path.join(project_root, 'environments')
+    docker_cmd = shutil.which('docker') or 'docker'
+    messages = []
+    if not os.path.isdir(env_root):
+        return jsonify({'message': 'No environments directory found.', 'status': 'empty'})
+    for name in os.listdir(env_root):
+        env_dir = os.path.join(env_root, name)
+        if not os.path.isdir(env_dir):
+            continue
+        compose_file = os.path.join(env_dir, 'docker-compose.yml')
+        if os.path.isfile(compose_file):
+            try:
+                subprocess.run([docker_cmd, 'compose', '-f', compose_file, 'down', '--volumes', '--remove-orphans'], check=True)
+                messages.append(f"Stopped docker-compose for '{name}'.")
+            except Exception as e:
+                messages.append(f"Failed to stop docker-compose for '{name}': {e}")
+        try:
+            import shutil as _sh
+            _sh.rmtree(env_dir)
+            messages.append(f"Removed environment files for '{name}'.")
+        except Exception as e:
+            messages.append(f"Failed to remove environment files for '{name}': {e}")
+
+        # Try to remove containers and volumes that reference this environment name
+        try:
+            ps = subprocess.run([docker_cmd, 'ps', '-a', '--format', '{{.ID}} {{.Names}}'], capture_output=True, text=True)
+            for line in ps.stdout.splitlines():
+                if not line.strip():
+                    continue
+                cid, *names = line.split(maxsplit=1)
+                name_out = names[0] if names else ''
+                if name.lower() in name_out.lower():
+                    try:
+                        subprocess.run([docker_cmd, 'rm', '-f', cid], check=True)
+                        messages.append(f"Removed container {cid} ({name_out}).")
+                    except Exception as e:
+                        messages.append(f"Failed to remove container {cid} ({name_out}): {e}")
+        except Exception as e:
+            messages.append(f"Failed to inspect/remove containers for '{name}': {e}")
+
+        try:
+            vol = subprocess.run([docker_cmd, 'volume', 'ls', '--format', '{{.Name}}'], capture_output=True, text=True)
+            for v in vol.stdout.splitlines():
+                if name.lower() in v.lower():
+                    try:
+                        subprocess.run([docker_cmd, 'volume', 'rm', v], check=True)
+                        messages.append(f"Removed volume {v}.")
+                    except Exception as e:
+                        messages.append(f"Failed to remove volume {v}: {e}")
+        except Exception as e:
+            messages.append(f"Failed to inspect/remove volumes for '{name}': {e}")
+
+    # Clear env history
+    _save_env_history([])
+    return jsonify({'message': ' '.join(messages), 'status': 'removed'})
 
 @app.route('/social/generate_content', methods=['POST'])
 def social_generate_content():

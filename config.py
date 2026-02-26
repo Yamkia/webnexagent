@@ -2,8 +2,32 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load .env from the same directory as this config file
-env_path = Path(__file__).parent / '.env'
+# Load .env from the same directory as this config file.
+# Support multiple environment files: .env.development, .env.production, etc.
+base_dir = Path(__file__).parent
+# Allow override via APP_ENV or ENVIRONMENT environment variable
+env_name = os.getenv('APP_ENV') or os.getenv('ENVIRONMENT') or 'development'
+env_name = env_name.lower()
+
+candidate_files = []
+if env_name in ('production', 'prod'):
+    candidate_files = ['.env.production', '.env.prod', '.env']
+elif env_name in ('development', 'dev'):
+    candidate_files = ['.env.development', '.env']
+else:
+    candidate_files = [f'.env.{env_name}', '.env']
+
+env_path = None
+for fname in candidate_files:
+    p = base_dir / fname
+    if p.exists():
+        env_path = p
+        break
+
+# Fallback to plain .env if nothing else found
+if env_path is None:
+    env_path = base_dir / '.env'
+
 load_dotenv(dotenv_path=env_path)
 
 # --- API Keys ---

@@ -5,6 +5,8 @@
 import os
 import subprocess
 import requests
+import re
+from pathlib import Path
 
 GITHUB_API = 'https://api.github.com'
 ODOO_REPO = 'https://github.com/odoo/odoo.git'
@@ -98,6 +100,12 @@ def create_env_and_repo(odoo_version):
     print(f".\\.venv\\Scripts\\activate")
     print(f"python odoo-bin -c odoo.conf")
 
+    # Also create a containerized environment so this Odoo instance can be run with Docker
+    try:
+        create_containerized_env(folder, odoo_version)
+    except Exception as e:
+        print(f"Failed to create containerized environment: {e}")
+
 def main():
     print("Enter Odoo versions separated by commas (e.g. 16.0,17.0):")
     versions = input().replace(' ', '').split(',')
@@ -107,3 +115,74 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+def find_next_odoo_port(environments_root='environments'):
+        """Scan existing environment compose files for used host ports mapped to Odoo (8069),
+        return next free port starting from 8069.
+        """
+        base = Path(environments_root)
+        used = set()
+        if base.exists():
+                for yml in base.rglob('docker-compose.yml'):
+                        try:
+                                text = yml.read_text()
+                        except Exception:
+                                continue
+                        for m in re.finditer(r'"(\d{4,5}):8069"', text):
+                                used.add(int(m.group(1)))
+        port = 8069
+        while port in used:
+                port += 1
+        return port
+
+
+def create_containerized_env(folder, odoo_version):
+        """Create a simple docker-compose environment under `environments/<folder>`
+        that runs Postgres + Odoo using the official Odoo image.
+        """
+        envs_dir = Path('environments') / folder
+        envs_dir.mkdir(parents=True, exist_ok=True)
+
+        assigned_port = find_next_odoo_port()
+
+        compose = f'''version: '3.8'
+
+services:
+    db:
+        image: postgres:15
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: odoo
+            POSTGRES_PASSWORD: odoo
+        volumes:
+            - db_data_{folder}:/var/lib/postgresql/data
+
+    odoo-{folder}:
+        image: odoo:{odoo_version}
+        container_name: {folder}-odoo
+        environment:
+            POSTGRES_HOST: db
+            POSTGRES_USER: odoo
+            POSTGRES_PASSWORD: odoo
+        ports:
+            - "{assigned_port}:8069"
+        volumes:
+            - ../../addons:/mnt/extra-addons
+            - ../../deployable_brand_theme:/mnt/brand_theme
+            - ../../{folder}:/mnt/odoo-source:ro
+        depends_on:
+            - db
+
+volumes:
+    db_data_{folder}:
+'''
+
+        compose_path = envs_dir / 'docker-compose.yml'
+        compose_path.write_text(compose)
+
+        env_file = envs_dir / '.env.development'
+        env_file.write_text('''POSTGRES_HOST=db\nPOSTGRES_PORT=5432\nPOSTGRES_USER=odoo\nPOSTGRES_PASSWORD=odoo\nAPP_ENV=development\n''')
+
+        print(f"Created containerized environment in {envs_dir} (Odoo host port {assigned_port}).")
+        print(f"To start: docker compose -p {folder} -f docker-compose.yml -f {envs_dir}/docker-compose.yml up -d")
