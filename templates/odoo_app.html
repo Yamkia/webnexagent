@@ -1,12 +1,16 @@
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <h1 class="mb-3">Choose Your Odoo Edition</h1>
-            <p class="lead mb-4">Select the Odoo hosting option that best fits your needs. You can plan and create a local Community instance, or get guidance on Odoo's cloud solutions.</p>
+{% extends 'base.html' %}
 
-            <div class="accordion" id="odoo-options-accordion">
+{% block title %}Odoo Planner – Zisanda‑hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 odoo-app">
+    <div class="odoo-main">
+        <h1 class="mb-3">Configure Your Odoo Environment</h1>
+        <p class="lead mb-4">Plan and create a local Odoo Community environment, and customize which modules are installed.</p>
+
+        <div class="accordion" id="odoo-options-accordion">
                 <!-- Option 1: Odoo Community (Self-Hosted) -->
-                <div class="accordion-item">
+                <div class="accordion-item" id="community-section">
                     <h2 class="accordion-header" id="headingCommunity">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCommunity" aria-expanded="true" aria-controls="collapseCommunity">
                             <strong>Odoo Community Edition (Self-Hosted)</strong>
@@ -17,11 +21,9 @@
                             <p>Create a local Odoo environment on your machine without Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
                             
                             <!-- Step 1: Planning -->
-                            <div class="card shadow-sm mb-4 border-0">
-                                <div class="card-header bg-transparent pt-3">
-                                    <h5>Step 1: Plan Your Environment</h5>
-                                </div>
-                                <div class="card-body">
+                            <div class="glass-card mb-4 p-4">
+                                <h5>Step 1: Plan Your Environment</h5>
+
                                     <div class="mb-3">
                                         <label for="business-need" class="form-label">Describe your business need:</label>
                                         <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a simple CRM to track leads and a website to sell products.'"></textarea>
@@ -35,13 +37,29 @@
                             </div>
 
                             <!-- Step 2: Review and Execute -->
-                            <div id="plan-display" class="card shadow-sm mb-4 border-0" style="display: none;">
+                            <div id="plan-display" class="glass-card mb-4 p-4" style="display: none;">
                                 <style>
                                     /* Keep the plan summary readable and prevent it from pushing action buttons off-screen */
-                                                #plan-display .plan-body{ display:flex; flex-direction:column; max-height:46vh; }
-                                                /* Use normal whitespace handling so inserted markdown/html doesn't create
-                                                    large vertical gaps (pre-wrap preserves newlines which can be excessive). */
-                                                #plan-display .plan-content{ padding:1rem; overflow:auto; white-space:normal; word-break:break-word; }
+                                    #plan-display .plan-body{ display:flex; flex-direction:column; /* remove height cap so all content is visible */ max-height:none; }
+                                    /* slightly reduced padding keeps controls closer together */
+                                    #plan-display .plan-content{ padding:1.5rem 2rem; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+                                    /* constrain inputs/selects inside the plan to a reasonable width */
+                                    #plan-display .plan-content .form-select,
+                                    #plan-display .plan-content .form-control {
+                                        max-width: 600px;
+                                        margin-left: auto;
+                                        margin-right: auto;
+                                        display: block;
+                                    }
+                                    /* tighten spacing of form groups and headings */
+                                    #plan-display .plan-content .mb-3 { margin-bottom:1rem; }
+                                    #plan-display .plan-content h6 { margin:0.5rem 0 0.25rem; }
+                                    #plan-display .plan-content p { margin-bottom:0.5rem; }
+                                    /* tables inside the plan should span the full width and have cell padding */
+                                    #plan-display .plan-content table{ width:100%; border-collapse:collapse; }
+                                    #plan-display .plan-content th,
+                                    #plan-display .plan-content td { padding:0.5rem 0.75rem; vertical-align:top; }
+                                    #plan-display .plan-content table{ max-width:100%; overflow:auto; }
                                     #plan-display .plan-content table{ max-width:100%; overflow:auto; }
                                     #plan-display .plan-actions{ position:sticky; bottom:0; background:linear-gradient(#ffffff, rgba(255,255,255,0.95)); padding:0.6rem 1rem; border-top:1px solid #eee; z-index:1040; align-items:center; display:flex; gap:.5rem; }
                                 </style>
@@ -54,6 +72,11 @@
                                         <div id="module-container" style="display: none;">
                                             <h6>Modules to be installed:</h6>
                                             <ul id="module-list" class="list-group mb-3"></ul>
+                                        </div>
+                                        <div id="custom-modules-container" class="mb-3" style="display: none;">
+                                            <h6>Custom Modules (optional)</h6>
+                                            <p class="text-muted small">Enter additional module technical names (comma-separated) to install alongside the plan.</p>
+                                            <input id="custom-modules-input" class="form-control" placeholder="e.g. my_module, my_other_module">
                                         </div>
                                         <!-- This new section will appear if the 'website' module is planned -->
                                         <div id="website-design-selector" class="mb-3" style="display: none;" data-theme-group="website-design">
@@ -123,11 +146,9 @@
                             </div>
 
                             <!-- Step 3: Creation Status -->
-                            <div id="creation-status" class="card shadow-sm border-0" style="display: none;">
-                                <div class="card-header bg-transparent">
-                                    <h5>Step 3: Environment Creation Status</h5>
-                                </div>
-                                <div class="card-body">
+                            <div id="creation-status" class="glass-card border-0 mb-4 p-4" style="display: none;">
+                                <h5>Step 3: Environment Creation Status</h5>
+
                                     <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
                                     <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
                                         <p class="fw-bold">Your new environment is ready!</p>
@@ -138,8 +159,8 @@
                             </div>
 
                             <!-- Environment History -->
-                            <div class="card shadow-sm border-0 mt-4" id="env-history-card">
-                                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <div class="glass-card border-0 mt-4" id="env-history-card">
+                                <div class="d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Previously Opened Environments</h5>
                                     <small class="text-muted ms-3" id="template-stamp">Template v: 2026-02-23T01:30:00Z</small>
                                         <div class="btn-group">
@@ -173,172 +194,100 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Option 2: Odoo Online (SaaS) -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOnline">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOnline" aria-expanded="false" aria-controls="collapseOnline">
-                            <strong>Odoo Online (SaaS)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseOnline" class="accordion-collapse collapse" aria-labelledby="headingOnline" data-bs-parent="#odoo-options-accordion">
-                        <div class="accordion-body">
-                            <p>Odoo Online is a SaaS platform managed by Odoo. Use the planner below to get a customized link that pre-selects the right apps for you on the Odoo trial page.</p>
-                            
-                            <!-- Step 1: Planning -->
-                            <div class="card shadow-sm mb-4 border-0">
-                                <div class="card-header bg-transparent pt-3">
-                                    <h5>Step 1: Plan Your Odoo Online Instance</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="business-need-online" class="form-label">Describe your business need:</label>
-                                        <textarea class="form-control" id="business-need-online" rows="3" placeholder="e.g., 'I want to manage customer relationships and send them marketing emails.'"></textarea>
-                                    </div>
-                                    <button data-plan-type="online" class="btn btn-primary plan-btn">
-                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                                        Generate Trial Link
-                                    </button>
-                                    <div id="plan-error-online" class="alert alert-danger mt-3" style="display: none;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Step 2: Launch -->
-                            <div id="plan-display-online" class="card shadow-sm mb-4 border-0" style="display: none;">
-                                <div class="card-header bg-transparent">
-                                    <h5>Step 2: Launch on Odoo.com</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p>The agent recommends the following setup. Click the button to open the Odoo trial page with these apps pre-selected.</p>
-                                    <div id="plan-summary-online" class="alert alert-info"></div>
-                                    <a id="execute-btn-online" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success" style="display: none;">Create Free Trial on Odoo.com</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Option 3: Odoo.sh (PaaS) -->
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingSh">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSh" aria-expanded="false" aria-controls="collapseSh">
-                            <strong>Odoo.sh (PaaS)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseSh" class="accordion-collapse collapse" aria-labelledby="headingSh" data-bs-parent="#odoo-options-accordion">
-                        <div class="accordion-body">
-                            <p>Odoo.sh is a PaaS for hosting custom projects. It integrates with GitHub for development and deployment. Use the planner to generate a custom deployment guide based on your needs.</p>
-    
-                            <!-- Step 1: Planning -->
-                            <div class="card shadow-sm mb-4 border-0">
-                                <div class="card-header bg-transparent pt-3">
-                                    <h5>Step 1: Plan Your Odoo.sh Project</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="business-need-sh" class="form-label">Describe your business need:</label>
-                                        <textarea class="form-control" id="business-need-sh" rows="3" placeholder="e.g., 'I need a full ERP with custom modules for manufacturing.'"></textarea>
-                                    </div>
-                                    <button data-plan-type="sh" class="btn btn-primary plan-btn">
-                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                                        Generate Deployment Guide
-                                    </button>
-                                    <div id="plan-error-sh" class="alert alert-danger mt-3" style="display: none;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Step 2: Follow Guide -->
-                            <div id="plan-display-sh" class="card shadow-sm mb-4 border-0" style="display: none;">
-                                <div class="card-header bg-transparent">
-                                    <h5>Step 2: Follow Your Custom Guide</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p>The agent has generated the following guide to help you set up your project on Odoo.sh.</p>
-                                    <div id="plan-summary-sh" class="bg-light p-3 rounded border" style="white-space: pre-wrap;"></div>
-                                    <a href="https://www.odoo.sh" target="_blank" rel="noopener noreferrer" class="btn btn-info mt-3">Go to Odoo.sh to Get Started</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
+
+    <!-- right-hand menu (quick navigation within the planner) -->
+    <nav class="odoo-sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#" data-target="#collapseCommunity">Community</a></li>
+        </ul>
+    </nav>
 </div>
 <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true" style="z-index: 1100;"></div>
-
-<!-- Enhanced client script: plan renderer, UI wiring, and history refresh -->
 <script>
-function _escapeHtml(s){
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+    function _escapeHtml(s){
+        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 function renderPlanSummary(text, targetId){
     const el = document.getElementById(targetId);
     if(!el) return;
     text = text || '';
     const parts = text.split(/```/g);
     let html = '';
-        for(let i=0;i<parts.length;i++){
-            const part = parts[i];
-            if(i%2===1){
-                html += '<pre><code>'+_escapeHtml(part)+'</code></pre>';
+    for(let i=0;i<parts.length;i++){
+        let part = parts[i];
+        if(i%2===1){
+            // inside a code fence; if it looks like a markdown table we
+            // render it as a table rather than raw code so pipes align
+            const lines = part.split(/\n/);
+            const maybeTable = lines.every(ln => /\|/.test(ln));
+            if(maybeTable){
+                // reuse the table rendering logic below by pretending the
+                // fenced content is normal text
+                part = part;
             } else {
-                let s = part;
-                const lines = s.split(/\n/);
-                const blocks = [];
-                let cur = [];
-                const flush = ()=>{ if(cur.length) { blocks.push({type: 'table', lines: cur.slice()}); cur = []; } };
-                for(let ln of lines){
-                    if(/\|/.test(ln) && ln.trim().startsWith('|')){
-                        cur.push(ln);
-                    } else {
-                        flush();
-                        blocks.push({type: 'text', line: ln});
-                    }
-                }
-                flush();
-                let out = '';
-                for(const b of blocks){
-                    if(b.type === 'text'){
-                        let line = b.line || '';
-                        if(/^\s*#{1,6}\s+/.test(line)){
-                            const lvl = Math.min(6, (line.match(/^\s*#+/)||[''])[0].length);
-                            line = _escapeHtml(line.replace(/^\s*#{1,6}\s+/, ''));
-                            out += `<h${lvl}>${line}</h${lvl}>`;
-                            continue;
-                        }
-                        line = _escapeHtml(line).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                        line = line.replace(/`([^`]+)`/g, '<code>$1</code>');
-                        if(/^\s*[-*+]\s+/.test(line)){
-                            out += '<ul>' + line.replace(/^\s*[-*+]\s+/, '<li>') + '</li>';
-                            out += '</ul>';
-                        } else {
-                            out += line.replace(/\n/g,'<br>');
-                        }
-                    } else if(b.type === 'table'){
-                        const tlines = b.lines.map(x=>x.trim()).filter(x=>x.length>0);
-                        if(tlines.length){
-                            const rows = tlines.map(r=>{
-                                let inner = r.replace(/^\|/, '').replace(/\|$/, '');
-                                return inner.split('|').map(c=>c.trim());
-                            });
-                            let hasSeparator = false;
-                            if(rows.length>1 && rows[1].every(c=>/^:?-{3,}:?$/.test(c))) { hasSeparator = true; }
-                            out += '<div class="table-responsive"><table class="table table-sm table-striped">';
-                            const header = rows[0];
-                            out += '<thead class="table-light"><tr>' + header.map(h=>'<th>'+_escapeHtml(h)+'</th>').join('') + '</tr></thead>';
-                            out += '<tbody>';
-                            for(let ri=1; ri<rows.length; ri++){
-                                if(ri===1 && hasSeparator) continue;
-                                const r = rows[ri];
-                                out += '<tr>' + r.map(c=>'<td>'+_escapeHtml(c)+'</td>').join('') + '</tr>';
-                            }
-                            out += '</tbody></table></div>';
-                        }
-                    }
-                }
-                html += out;
+                html += '<pre><code>'+_escapeHtml(part)+'</code></pre>';
+                continue;
+            }
         }
+        // treat "part" as normal markdown/text (including tables)
+        let s = part;
+        const lines = s.split(/\n/);
+        const blocks = [];
+        let cur = [];
+        const flush = ()=>{ if(cur.length) { blocks.push({type: 'table', lines: cur.slice()}); cur = []; } };
+        for(let ln of lines){
+            if(/\|/.test(ln) && ln.trim().startsWith('|')){
+                cur.push(ln);
+            } else {
+                flush();
+                blocks.push({type: 'text', line: ln});
+            }
+        }
+        flush();
+        let out = '';
+        for(const b of blocks){
+            if(b.type === 'text'){
+                let line = b.line || '';
+                if(/^\s*#{1,6}\s+/.test(line)){
+                    const lvl = Math.min(6, (line.match(/^\s*#+/)||[''])[0].length);
+                    line = _escapeHtml(line.replace(/^\s*#{1,6}\s+/, ''));
+                    out += `<h${lvl}>${line}</h${lvl}>`;
+                    continue;
+                }
+                line = _escapeHtml(line).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                line = line.replace(/`([^`]+)`/g, '<code>$1</code>');
+                if(/^\s*[-*+]\s+/.test(line)){
+                    out += '<ul>' + line.replace(/^\s*[-*+]\s+/, '<li>') + '</li>';
+                    out += '</ul>';
+                } else {
+                    out += line.replace(/\n/g,'<br>');
+                }
+            } else if(b.type === 'table'){
+                const tlines = b.lines.map(x=>x.trim()).filter(x=>x.length>0);
+                if(tlines.length){
+                    const rows = tlines.map(r=>{
+                        let inner = r.replace(/^\|/, '').replace(/\|$/, '');
+                        return inner.split('|').map(c=>c.trim());
+                    });
+                    let hasSeparator = false;
+                    if(rows.length>1 && rows[1].every(c=>/^:?-{3,}:?$/.test(c))) { hasSeparator = true; }
+                    out += '<div class="table-responsive"><table class="table table-sm table-striped">';
+                    const header = rows[0];
+                    out += '<thead class="table-light"><tr>' + header.map(h=>'<th>'+_escapeHtml(h)+'</th>').join('') + '</tr></thead>';
+                    out += '<tbody>';
+                    for(let ri=1; ri<rows.length; ri++){
+                        if(ri===1 && hasSeparator) continue;
+                        const r = rows[ri];
+                        out += '<tr>' + r.map(c=>'<td>'+_escapeHtml(c)+'</td>').join('') + '</tr>';
+                    }
+                    out += '</tbody></table></div>';
+                }
+            }
+        }
+        html += out;
     }
     el.innerHTML = html;
     const toggle = document.getElementById('plan-summary-toggle');
@@ -487,17 +436,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 if(!res.ok || j.error){ if(errorEl){ errorEl.style.display='block'; errorEl.textContent = j.message || j.error || 'Planning failed'; } else showToast(j.message||j.error||'Planning failed','Error'); }
                 else {
                     if(planType === 'community'){
-                        document.getElementById('plan-display').style.display = 'block';
-                        // Prefer pre-rendered HTML from server when available (cleaner formatting)
-                        // Prefer using the client-side markdown renderer so markdown/tables
-                        // are converted to compact HTML instead of being displayed raw.
-                        const summaryText = j.summary_html || j.summary || '';
-                        if(typeof renderPlanSummary === 'function'){
-                            try{ renderPlanSummary(summaryText, 'plan-summary'); } catch(e){ document.getElementById('plan-summary').textContent = summaryText; }
+                        document.getElementById('plan-display').style.display = 'block';                        document.getElementById('custom-modules-container').style.display = 'block';                        // Prefer pre-rendered HTML from server when available (cleaner formatting)
+                        if(j.summary_html){
+                            const summaryEl = document.getElementById('plan-summary');
+                            try { summaryEl.innerHTML = j.summary_html; } catch(e){ summaryEl.textContent = j.summary || ''; }
                         } else {
-                            // Fallback: collapse excessive blank lines to avoid huge gaps
-                            const collapsed = (summaryText||'').replace(/\n{3,}/g,'\n\n').trim();
-                            document.getElementById('plan-summary').textContent = collapsed;
+                            renderPlanSummary(j.summary || '', 'plan-summary');
                         }
                         const mods = j.modules || [];
                         const list = document.getElementById('module-list'); list.innerHTML = '';
@@ -589,6 +533,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const dbName = document.getElementById('odoo-dbname-input').value.trim();
         if(!dbName){ alert('Please provide a Database Name before creating the environment.'); return; }
         const mods = Array.from(document.getElementById('module-list').children).map(li=>li.textContent.trim()).filter(Boolean);
+        const customModulesText = (document.getElementById('custom-modules-input')?.value || '').trim();
+        if(customModulesText){
+            const customMods = customModulesText.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);
+            customMods.forEach(m=>{ if(m && !mods.includes(m)) mods.push(m); });
+        }
         if(mods.length===0){ if(!confirm('No modules were detected from the plan. Create environment anyway?')) return; }
         const website_design = document.getElementById('website-design-input').value || null;
         const odoo_version = document.getElementById('odoo-version-input').value || '19.0';
@@ -609,7 +558,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
             const payload = { modules: mods, website_design, odoo_version, db_name: dbName, branding_modules };
             const r = await fetch('/odoo/execute', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
             const j = await r.json();
-            if(r.ok && j.job_id){ document.getElementById('plan-display').style.display='none'; document.getElementById('creation-status').style.display='block'; pollJob(j.job_id); } else { alert('Failed to start creation: '+(j.message||j.error||JSON.stringify(j))); }
+            if(r.ok && j.job_id){
+                document.getElementById('plan-display').style.display='none';
+                document.getElementById('custom-modules-container').style.display = 'none';
+                document.getElementById('creation-status').style.display='block';
+                pollJob(j.job_id);
+            } else { alert('Failed to start creation: '+(j.message||j.error||JSON.stringify(j))); }
         }catch(err){ console.error('Execute failed',err); alert('Execute request failed: '+err); }
         finally{ btn.disabled=false; btn.textContent = origText || 'Create Environment'; }
     }
@@ -671,3 +625,85 @@ async function pollJob(jobId){
     }catch(e){ console.error('Polling job failed',e); showToast('Failed to monitor job: '+e,'Error'); }
 }
 </script>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// sidebar nav + accordion sync
+// Ensures only one panel is visible at a time even if Bootstrap's JS isn't available.
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = Array.from(document.querySelectorAll('.odoo-sidebar .nav-link'));
+    const panels = Array.from(document.querySelectorAll('#odoo-options-accordion .accordion-collapse'));
+    const accordionButtons = Array.from(document.querySelectorAll('#odoo-options-accordion .accordion-button'));
+
+    const setActiveLink = (target) => {
+        navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('data-target') === target));
+    };
+
+    const hideAllPanels = () => {
+        panels.forEach(el => {
+            el.classList.remove('show');
+            el.style.display = 'none';
+            el.setAttribute('aria-hidden', 'true');
+        });
+    };
+
+    const showPanel = (target) => {
+        if(!target) return;
+        const collapseEl = document.querySelector(target);
+        if(!collapseEl) return;
+
+        hideAllPanels();
+
+        const useBootstrap = window.bootstrap && window.bootstrap.Collapse;
+        if(useBootstrap){
+            const inst = bootstrap.Collapse.getOrCreateInstance(collapseEl, {toggle: false});
+            inst.show();
+        }
+
+        collapseEl.classList.add('show');
+        collapseEl.style.display = 'block';
+        collapseEl.setAttribute('aria-hidden', 'false');
+
+        setActiveLink(target);
+
+        // Scroll the open panel into view (offset for fixed header).
+        const headerOffset = 90;
+        const elementPosition = collapseEl.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({ top: elementPosition - headerOffset, behavior: 'smooth' });
+    };
+
+    // When an accordion header is clicked (the accordion buttons inside the page), update the sidebar.
+    accordionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-bs-target') || btn.getAttribute('data-target');
+            if(target){
+                // Short delay to allow Bootstrap to toggle panel state if running.
+                setTimeout(() => showPanel(target), 50);
+            }
+        });
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const target = link.getAttribute('data-target') || link.getAttribute('href');
+            showPanel(target);
+        });
+    });
+
+    // Default: show the panel referenced by the URL hash, if any.
+    if(window.location.hash){
+        showPanel(window.location.hash);
+    } else {
+        // Otherwise, show whichever panel is associated with the active sidebar link (fallback to community)
+        const activeLink = navLinks.find(l => l.classList.contains('active')) || navLinks[0];
+        if(activeLink){
+            const target = activeLink.getAttribute('data-target') || activeLink.getAttribute('href');
+            showPanel(target);
+        }
+    }
+});
+</script>
+{% endblock %}

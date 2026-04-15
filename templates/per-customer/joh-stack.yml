@@ -1,0 +1,67 @@
+version: '3.8'
+
+# Example stack for customer "joh" with two Odoo instances (prod & test)
+# ports chosen from base 8100 (prod) / 8101 (test)
+
+services:
+  db-joh:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: securepass
+      POSTGRES_DB: odoo_joh
+    volumes:
+      - db-data-joh:/var/lib/postgresql/data
+    networks:
+      - odoo-net
+
+  odoo-prod-joh:
+    image: odoo:19
+    restart: unless-stopped
+    depends_on:
+      - db-joh
+    environment:
+      HOST: db-joh
+      POSTGRES_HOST: db-joh
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: securepass
+      DB_NAME: odoo_joh
+    volumes:
+      - addons-joh:/mnt/extra-addons:ro
+      - odoo-data-joh:/var/lib/odoo
+    ports:
+      - "8100:8069"            # production HTTP
+    networks:
+      - odoo-net
+
+  odoo-test-joh:
+    image: odoo:19
+    restart: unless-stopped
+    depends_on:
+      - db-joh
+    environment:
+      HOST: db-joh
+      POSTGRES_HOST: db-joh
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: securepass
+      DB_NAME: odoo_joh_test
+    volumes:
+      - addons-joh:/mnt/extra-addons:ro
+      - odoo-test-data-joh:/var/lib/odoo
+    ports:
+      - "8101:8069"            # test HTTP
+    networks:
+      - odoo-net
+
+volumes:
+  db-data-joh:
+  odoo-data-joh:
+  odoo-test-data-joh:
+  addons-joh:
+
+networks:
+  odoo-net:
+    driver: bridge
+
+# deploy with: docker compose -p joh -f joh-stack.yml up -d

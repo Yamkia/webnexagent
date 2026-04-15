@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Apps - Zisanda-hub{% endblock %}
+
+{% block content %}
+<div class="container py-5" id="manage-apps-container">
+  <h2 class="mb-4">Available Applications</h2>
+  <div class="row" id="app-cards-container">
+    {% for app, enabled in visibility.items() if enabled %}
+    {% set info = app_details.get(app, {}) %}
+    <div class="col-6 col-md-3 mb-4">
+      <a href="/apps/{{app}}" id="load-{{app}}-app" class="glass-card agent-card d-flex flex-column text-decoration-none">
+        {% if info.label %}<div class="label">{{ info.label }}</div>{% endif %}
+        {% if info.icon %}<img src="{{ info.icon }}" alt="{{ info.title }}" class="icon" />{% endif %}
+        {% if info.title %}<div class="title">{{ info.title }}</div>{% endif %}
+        <div class="divider"></div>
+        {% if info.desc %}<div class="description">{{ info.desc }}</div>{% endif %}
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

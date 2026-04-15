@@ -1322,9 +1322,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const saved = data.saved_path ? `<div class="alert alert-success mt-2">Saved to ${data.saved_path}</div>` : '';
             resultEl.innerHTML = `
                 <div class="alert alert-primary">Generated theme CSS</div>
-                <pre class="p-3 bg-light border rounded" style="white-space: pre-wrap;">${data.css.replace(/</g, '&lt;')}</pre>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary copy-snippet-btn" data-copy-target="theme-css-snippet">Copy CSS</button>
+                </div>
+                <pre id="theme-css-snippet" class="p-3 bg-light border rounded" style="white-space: pre-wrap;">${data.css.replace(/</g, '&lt;')}</pre>
                 ${saved}
             `;
+
+            // If we saved the CSS to disk, refresh the helper's theme CSS link so changes appear immediately.
+            if (data.saved_path) {
+                const themeLink = document.getElementById('website-helper-theme-css');
+                if (themeLink) {
+                    const baseHref = themeLink.getAttribute('href').split('?')[0];
+                    themeLink.href = `${baseHref}?ts=${Date.now()}`;
+                }
+            }
         } catch (err) {
             resultEl.innerHTML = `<div class="alert alert-danger">Generation error: ${err.message}</div>`;
         }

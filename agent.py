@@ -40,6 +40,14 @@ if config.ENABLE_SOCIAL_MEDIA_APP:
     except ImportError:
         print("Warning: Social media tools not found. Please create 'social_media_tools.py'.")
 
+if config.ENABLE_CIPC_APP:
+    try:
+        from cipc_tools import tools
+        all_tools.extend(tools)
+        tool_descriptions.append("fetching recent CIPC company registrations, ranking potential clients, and emailing them to Zisandahub")
+    except ImportError:
+        print("Warning: CIPC tools not found. Please create 'cipc_tools.py'.")
+
 
 def _openrouter_headers():
     if config.OPENAI_API_BASE and isinstance(config.OPENAI_API_BASE, str) and "openrouter.ai" in config.OPENAI_API_BASE.lower():

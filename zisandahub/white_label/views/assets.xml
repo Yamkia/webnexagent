@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="white_label_backend_css" model="ir.asset">
+      <field name="name">White Label Backend CSS</field>
+      <field name="bundle">web.assets_backend</field>
+      <field name="path">white_label/static/src/scss/brand.scss</field>
+    </record>
+
+    <record id="white_label_frontend_css" model="ir.asset">
+      <field name="name">White Label Frontend CSS</field>
+      <field name="bundle">web.assets_frontend</field>
+      <field name="path">white_label/static/src/scss/brand.scss</field>
+    </record>
+  </data>
+</odoo>

@@ -1,23 +1,215 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Suite - Web-Nexus Agent</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .navbar {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-    </style>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Social Media Suite - Web-Nexus Agent{% endblock %}
+
+{% block extra_head %}
+<style>
+    .social-media-root {
+        background: radial-gradient(circle at top center, rgba(255,255,255,0.04), transparent 24%),
+                    radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 18%),
+                    linear-gradient(180deg, #05060d 0%, #070a15 40%, #04050a 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .site-nav {
+        background: rgba(6, 10, 22, 0.98);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .site-nav .logo,
+    .site-nav .links a {
+        color: #e2e8f0;
+    }
+
+    .site-nav .links a:hover,
+    .site-nav .links a:focus {
+        color: #facc15;
+    }
+
+    .site-nav .links a.active {
+        color: #a78bfa;
+    }
+
+    .social-media-root .card,
+    .social-media-root .btn {
+        transition: transform .24s ease, box-shadow .24s ease, filter .24s ease;
+    }
+
+    .social-media-root .card {
+        border: 1px solid rgba(255,255,255,0.09);
+        background: rgba(6, 10, 20, 0.92);
+        color: #e2e8f0;
+        backdrop-filter: blur(18px);
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+    }
+
+    .social-media-root .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55);
+    }
+
+    .social-media-root .social-hero-card {
+        border-color: rgba(167, 139, 250, 0.22);
+        background: linear-gradient(135deg, rgba(10, 14, 28, 0.96), rgba(20, 27, 47, 0.96));
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.50);
+    }
+
+    .social-media-root .social-hero-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 30px 85px rgba(0, 0, 0, 0.62);
+    }
+
+    .social-media-root .hero-emoji {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .social-media-root .btn-hero {
+        background: linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f97316 100%);
+        color: #fff;
+        border: none;
+    }
+
+    .social-media-root .btn-hero:hover {
+        filter: brightness(1.08);
+    }
+
+    .social-media-root .btn-instagram-login {
+        background: linear-gradient(135deg, #2c2740 0%, #161b2f 45%, #0c101b 100%);
+        color: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow: 0 12px 26px rgba(0,0,0,0.42);
+    }
+
+    .social-media-root .btn-instagram-login:hover {
+        background: linear-gradient(135deg, #34314f 0%, #1b233b 45%, #101621 100%);
+        filter: brightness(1.05);
+    }
+
+    .social-media-root .navbar {
+        background: rgba(8, 12, 23, 0.92);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .social-media-root .navbar-brand,
+    .social-media-root .nav-link {
+        color: #e2e8f0;
+    }
+
+    .social-media-root .nav-link:hover,
+    .social-media-root .nav-link:focus {
+        color: #a78bfa;
+    }
+
+    .social-media-root .nav-link.active {
+        color: #facc15;
+    }
+
+    .social-media-root .form-control,
+    .social-media-root .form-select,
+    .social-media-root textarea,
+    .social-media-root .form-check-input {
+        background: rgba(255, 255, 255, 0.06);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: inset 0 1px 2px rgba(255,255,255,0.04);
+    }
+
+    .social-media-root .form-control::placeholder,
+    .social-media-root .form-select option,
+    .social-media-root textarea::placeholder {
+        color: rgba(226, 232, 240, 0.55);
+    }
+
+    .social-media-root .card-header.bg-primary,
+    .social-media-root .card-header.bg-success,
+    .social-media-root .card-header.bg-info {
+        background: rgba(15, 23, 42, 0.96) !important;
+        color: #e2e8f0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .social-media-root .bg-light {
+        background: rgba(255,255,255,0.04) !important;
+        color: #e2e8f0 !important;
+    }
+
+    .social-media-root .btn-outline-secondary,
+    .social-media-root .btn-outline-primary,
+    .social-media-root .btn-outline-success,
+    .social-media-root .btn-outline-warning {
+        background: rgba(255,255,255,0.04);
+        color: #e2e8f0;
+        border-color: rgba(148, 163, 184, 0.22);
+    }
+
+    .social-media-root .btn-outline-secondary:hover,
+    .social-media-root .btn-outline-primary:hover,
+    .social-media-root .btn-outline-success:hover,
+    .social-media-root .btn-outline-warning:hover {
+        background: rgba(255,255,255,0.08);
+    }
+
+    .social-media-root .platform-card {
+        cursor: pointer;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(15, 23, 42, 0.94);
+    }
+
+    .social-media-root .platform-card:hover {
+        border-color: rgba(99, 102, 241, 0.32);
+        box-shadow: 0 18px 30px rgba(99, 102, 241, 0.12);
+    }
+
+    .social-media-root .platform-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .social-media-root .text-muted {
+        color: rgba(226, 232, 240, 0.72) !important;
+    }
+
+    .social-media-root .instagram-panel .card-header {
+        background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+        color: #e2e8f0;
+        border: none;
+    }
+
+    .social-media-root .instagram-panel .card-body {
+        background: rgba(15, 23, 42, 0.95);
+    }
+
+    .social-media-root .instagram-panel .profile-panel {
+        background: rgba(30, 41, 59, 0.52);
+    }
+
+    .social-media-root .instagram-panel .profile-avatar {
+        background: linear-gradient(135deg, #8b5cf6 0%, #ef4444 50%, #f97316 100%);
+        width: 80px;
+        height: 80px;
+    }
+
+    .social-media-root .btn-outline-secondary {
+        color: #cbd5e1;
+        border-color: rgba(148, 163, 184, 0.35);
+    }
+
+    .social-media-root .btn-outline-secondary:hover {
+        background: rgba(148, 163, 184, 0.12);
+    }
+
+    .social-media-root .btn-outline-primary:hover {
+        background: rgba(59, 130, 246, 0.16);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="social-media-root">
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">Web-Nexus Agent</a>
@@ -52,12 +244,12 @@
     <p class="lead text-muted">Instagram Business Account Manager</p>
     <div class="row justify-content-center g-4 mt-4">
         <div class="col-lg-6 col-md-8">
-            <div id="show-instagram-manager" class="card h-100 shadow" style="cursor: pointer; border: 3px solid #833ab4; background: linear-gradient(135deg, rgba(131,58,180,0.1) 0%, rgba(253,29,29,0.1) 50%, rgba(252,176,69,0.1) 100%);">
+            <div id="show-instagram-manager" class="card h-100 shadow social-hero-card">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center p-5">
-                    <div style="font-size: 5rem; margin-bottom: 1.5rem;">🤖</div>
+                    <div class="hero-emoji">🤖</div>
                     <h2 class="card-title mb-3">Instagram AI Growth</h2>
                     <p class="card-text text-muted mb-4">AI-powered assistant to analyze your account and grow it organically</p>
-                    <button class="btn btn-lg" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); color: white; border: none;">
+                    <button class="btn btn-lg btn-hero">
                         Open AI Growth Assistant
                     </button>
                 </div>
@@ -75,42 +267,42 @@
         <h3 class="mb-4">Create Content For...</h3>
         <div class="row justify-content-center g-4">
             <div class="col-lg-3 col-md-4 mb-4">
-                <div class="card platform-card shadow-sm h-100" data-platform="LinkedIn" style="cursor: pointer;">
+                <div class="card platform-card shadow-sm h-100" data-platform="LinkedIn">
                     <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">💼</div>
+                        <div class="platform-icon">💼</div>
                         <h5 class="card-title">LinkedIn</h5>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-4 mb-4">
-                <div class="card platform-card shadow-sm h-100" data-platform="Twitter" style="cursor: pointer;">
+                <div class="card platform-card shadow-sm h-100" data-platform="Twitter">
                     <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🐦</div>
+                        <div class="platform-icon">🐦</div>
                         <h5 class="card-title">Twitter / X</h5>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-4 mb-4">
-                <div class="card platform-card shadow-sm h-100" data-platform="Facebook" style="cursor: pointer;">
+                <div class="card platform-card shadow-sm h-100" data-platform="Facebook">
                     <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">👍</div>
+                        <div class="platform-icon">👍</div>
                         <h5 class="card-title">Facebook</h5>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-4 mb-4">
-                <div class="card platform-card shadow-sm h-100" data-platform="Instagram" style="cursor: pointer;">
+                <div class="card platform-card shadow-sm h-100" data-platform="Instagram">
                     <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📸</div>
+                        <div class="platform-icon">📸</div>
                         <h5 class="card-title">Instagram</h5>
                     </div>
                 </div>
             </div>
             <div class="col-12"><hr class="my-3"></div>
             <div class="col-lg-3 col-md-4">
-                <div id="show-account-management" class="card h-100 shadow-sm" style="cursor: pointer;">
+                <div id="show-account-management" class="card platform-card h-100 shadow-sm">
                     <div class="card-body d-flex flex-column align-items-center justify-content-center p-4">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔗</div>
+                        <div class="platform-icon">🔗</div>
                         <h5 class="card-title">Manage Accounts</h5>
                     </div>
                 </div>
@@ -243,9 +435,9 @@
         </div>
 
         <!-- Instagram Follower Manager View -->
-        <div id="instagram-manager-wrapper" class="col-lg-10 mb-4" style="display: none;">
+        <div id="instagram-manager-wrapper" class="col-lg-10 mb-4 instagram-panel" style="display: none;">
             <div class="card h-100">
-                <div class="card-header bg-gradient d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0 text-white">🤖 Instagram AI Growth Suite</h5>
                     <div id="ig-login-status" class="text-white small">
                         <span id="ig-status-text">Not connected</span>
@@ -259,11 +451,11 @@
                         <!-- User Profile Header -->
                         <div class="row mb-4">
                             <div class="col-12">
-                                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(131,58,180,0.1) 0%, rgba(253,29,29,0.1) 100%);">
+                                <div class="card border-0 shadow-sm profile-panel">
                                     <div class="card-body">
                                         <div class="row align-items-center">
                                             <div class="col-auto">
-                                                <div class="rounded-circle bg-gradient p-3" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                                <div class="rounded-circle profile-avatar d-flex align-items-center justify-content-center">
                                                     <span style="font-size: 2.5rem;">📸</span>
                                                 </div>
                                             </div>
@@ -293,6 +485,20 @@
                                                 <button id="refresh-data-btn" class="btn btn-outline-primary">
                                                     <i class="bi bi-arrow-clockwise"></i> Refresh Data
                                                 </button>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-4 mb-2">
+                                                <button id="auto-follow-btn" class="btn btn-success w-100">🤝 Auto Follow Suggested</button>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <button id="auto-like-btn" class="btn btn-warning w-100">❤️ Auto Like Recent Posts</button>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <button id="publish-post-btn" class="btn btn-primary w-100">🚀 Publish Promotion Post</button>
+                                            </div>
+                                            <div class="col-12">
+                                                <small id="engagement-action-status" class="text-muted">Use actions to boost interactions.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -487,7 +693,7 @@
                             <div class="card-body">
                                 <h5 class="mb-3">🔐 Login with Instagram</h5>
                                 <p class="text-muted small mb-3">Securely connect your Instagram account to automatically fetch all your data</p>
-                                <button id="instagram-oauth-btn" class="btn btn-lg w-100" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%); color: white; border: none;">
+                                <button id="instagram-oauth-btn" class="btn btn-lg w-100 btn-instagram-login">
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display: none;"></span>
                                     📸 Login with Instagram
                                 </button>
@@ -633,6 +839,14 @@
     const socialAppDashboard = document.getElementById('social-app-dashboard');
     const socialAppToolView = document.getElementById('social-app-tool-view');
     const backToSocialDashboard = document.getElementById('back-to-social-dashboard');
+    let instagramAccountContext = null;
+
+    function setInstagramAccountContext(data) {
+        instagramAccountContext = data || null;
+        if (instagramAccountContext && instagramAccountContext.username) {
+            console.log('Using Instagram account for content generation:', instagramAccountContext.username);
+        }
+    }
     
     console.log('Dashboard element:', socialAppDashboard);
     console.log('Tool view element:', socialAppToolView);
@@ -691,6 +905,22 @@
             if (accountManagementWrapper) accountManagementWrapper.style.display = 'block';
         });
     }
+
+    function checkInstagramLoginCallback() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('instagram') === 'success') {
+            params.delete('instagram');
+            const cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            history.replaceState(null, '', cleanUrl);
+
+            if (socialAppDashboard) socialAppDashboard.style.display = 'none';
+            if (socialAppToolView) socialAppToolView.style.display = 'block';
+            hideAllTools();
+            if (instagramManagerWrapper) instagramManagerWrapper.style.display = 'block';
+            fetchInstagramAccountData();
+        }
+    }
+    checkInstagramLoginCallback();
     
     // Back to dashboard
     if (backToSocialDashboard) {
@@ -724,6 +954,7 @@
             posts: parseInt(formData.get('posts')),
             avg_engagement_rate: parseFloat(formData.get('engagement'))
         };
+        setInstagramAccountContext(accountData);
         
         fetch('/social/instagram/ai_analyze', {
             method: 'POST',
@@ -886,8 +1117,82 @@
             document.getElementById('connect-section').style.display = 'block';
         });
     }
-    
+
+    // Prebuilt engagement actions
+    document.getElementById('auto-follow-btn')?.addEventListener('click', async () => {
+        const status = document.getElementById('engagement-action-status');
+        status.textContent = 'Executing follow actions...';
+        try {
+            const resp = await fetch('/social/instagram/follow_accounts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ count: 20 })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error || 'unknown');
+            status.textContent = `Followed ${data.target_accounts.length} accounts, now following ${data.new_following}.`;
+            showNotification('✅ Follow action completed!', 'success');
+            document.getElementById('dashboard-following').textContent = data.new_following;
+        } catch (e) {
+            status.textContent = 'Failed to follow accounts: ' + e.message;
+            showNotification('⚠️ Follow action failed', 'danger');
+        }
+    });
+
+    document.getElementById('auto-like-btn')?.addEventListener('click', async () => {
+        const status = document.getElementById('engagement-action-status');
+        status.textContent = 'Liking post engagements...';
+        try {
+            const resp = await fetch('/social/instagram/like_posts', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ total_likes: 40 })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error || 'unknown');
+            status.textContent = `Liked ${data.total_liked} posts to boost engagement.`;
+            showNotification('❤️ Like action completed!', 'success');
+        } catch (e) {
+            status.textContent = 'Failed to like posts: ' + e.message;
+            showNotification('⚠️ Like action failed', 'danger');
+        }
+    });
+
+    document.getElementById('publish-post-btn')?.addEventListener('click', async () => {
+        const status = document.getElementById('engagement-action-status');
+        status.textContent = 'Publishing content to Instagram...';
+        try {
+            const postPrompt = document.getElementById('content-topic')?.value || 'Boost brand overall engagement';
+            const postText = `Auto-promotion: ${postPrompt} — Increase interaction by following and liking relevant accounts.`;
+            const resp = await fetch('/social/instagram/publish_post', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ post_text: postText, hashtags: ['#growth', '#engagement', '#instagram'] })
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error || 'unknown');
+            status.textContent = `Published post; estimated ${data.initial_engagement.likes} likes and ${data.initial_engagement.comments} comments.`;
+            showNotification('🚀 Promotion post submitted!', 'success');
+        } catch (e) {
+            status.textContent = 'Failed to publish post: ' + e.message;
+            showNotification('⚠️ Publish action failed', 'danger');
+        }
+    });
+
     // Instagram OAuth Login
+    let instagramAuthPopup = null;
+    function handleInstagramAuthMessage(event) {
+        if (!event.data || event.data.type !== 'instagram_auth_success') {
+            return;
+        }
+        if (instagramAuthPopup && !instagramAuthPopup.closed) {
+            instagramAuthPopup.close();
+        }
+        showNotification('✅ Instagram connected! Fetching your data...', 'success');
+        fetchInstagramAccountData();
+        window.removeEventListener('message', handleInstagramAuthMessage);
+    }
+
     const instagramOAuthBtn = document.getElementById('instagram-oauth-btn');
     if (instagramOAuthBtn) {
         instagramOAuthBtn.addEventListener('click', () => {
@@ -895,6 +1200,8 @@
             spinner.style.display = 'inline-block';
             instagramOAuthBtn.disabled = true;
             
+            window.addEventListener('message', handleInstagramAuthMessage);
+
             // Request auth URL from server
             fetch('/auth/instagram/login')
                 .then(response => response.json())
@@ -903,35 +1210,30 @@
                         showNotification('Error: ' + data.error, 'danger');
                         spinner.style.display = 'none';
                         instagramOAuthBtn.disabled = false;
+                        window.removeEventListener('message', handleInstagramAuthMessage);
                         return;
                     }
-                    
-                    // Open Instagram OAuth in popup window
+
                     const width = 600;
                     const height = 700;
                     const left = (screen.width - width) / 2;
                     const top = (screen.height - height) / 2;
                     
-                    const popup = window.open(
+                    instagramAuthPopup = window.open(
                         data.auth_url,
                         'Instagram Login',
                         `width=${width},height=${height},left=${left},top=${top}`
                     );
-                    
-                    // Listen for OAuth callback
-                    window.addEventListener('message', function(event) {
-                        if (event.data.type === 'instagram_auth_success') {
-                            popup.close();
-                            showNotification('✅ Instagram connected! Fetching your data...', 'success');
-                            
-                            // Fetch account data automatically
-                            fetchInstagramAccountData();
-                        }
-                    });
+
+                    if (!instagramAuthPopup) {
+                        showNotification('Popup blocked. Opening login in the current tab.', 'warning');
+                        window.location.href = data.auth_url;
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     showNotification('Failed to initiate Instagram login', 'danger');
+                    window.removeEventListener('message', handleInstagramAuthMessage);
                 })
                 .finally(() => {
                     spinner.style.display = 'none';
@@ -944,7 +1246,7 @@
     function fetchInstagramAccountData() {
         document.getElementById('connect-section').style.display = 'none';
         document.getElementById('ig-loading').style.display = 'block';
-        
+
         fetch('/social/instagram/fetch_account_data')
             .then(response => response.json())
             .then(data => {
@@ -954,43 +1256,52 @@
                     document.getElementById('connect-section').style.display = 'block';
                     return;
                 }
-                
-                // Calculate engagement rate from fetched data
+
                 const avgEngagement = ((data.avg_likes_per_post + data.avg_comments_per_post) / 1000) * 100;
-                
-                // Prepare account data for analysis
-                // Note: Instagram Basic Display API doesn't provide follower counts
-                // For demo, we'll use placeholder or ask user to upgrade to Business account
-                const accountData = {
+                let accountData = {
                     username: data.username,
-                    followers: 1000, // Placeholder - need Instagram Business API
-                    following: 500,  // Placeholder
+                    followers: 1000,
+                    following: 500,
                     posts: data.media_count,
                     avg_engagement_rate: avgEngagement
                 };
-                
-                // Analyze with AI
-                fetch('/social/instagram/ai_analyze', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(accountData)
-                })
-                    .then(response => response.json())
-                    .then(analysis => {
-                        if (analysis.error) {
-                            showNotification('Error: ' + analysis.error, 'danger');
-                            return;
+
+                // Merge simulated follower/following from local demo store
+                fetch('/social/instagram/account_info')
+                    .then(resp => resp.json())
+                    .then(simData => {
+                        if (!simData.error) {
+                            accountData.followers = simData.followers || accountData.followers;
+                            accountData.following = simData.following || accountData.following;
+                            accountData.posts = simData.posts || accountData.posts;
                         }
-                        
-                        displayAnalysisResults(analysis);
-                        showNotification('✨ Analysis complete!', 'success');
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showNotification('Failed to analyze account', 'danger');
+                    .catch(() => {
+                        // keep existing placeholders
                     })
                     .finally(() => {
-                        document.getElementById('ig-loading').style.display = 'none';
+                        setInstagramAccountContext(accountData);
+                        fetch('/social/instagram/ai_analyze', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(accountData)
+                        })
+                            .then(response => response.json())
+                            .then(analysis => {
+                                if (analysis.error) {
+                                    showNotification('Error: ' + analysis.error, 'danger');
+                                    return;
+                                }
+                                displayAnalysisResults(analysis);
+                                showNotification('✨ Analysis complete!', 'success');
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                showNotification('Failed to analyze account', 'danger');
+                            })
+                            .finally(() => {
+                                document.getElementById('ig-loading').style.display = 'none';
+                            });
                     });
             })
             .catch(error => {
@@ -1000,7 +1311,7 @@
                 document.getElementById('connect-section').style.display = 'block';
             });
     }
-    
+
     // Platform selection
     const platformCards = document.querySelectorAll('.platform-card');
     platformCards.forEach(card => {
@@ -1060,6 +1371,10 @@
                 payload.style = document.getElementById('post-style').value;
             } else {
                 payload.audience = document.getElementById('video-audience').value;
+            }
+
+            if (instagramAccountContext) {
+                payload.account_data = instagramAccountContext;
             }
             
             try {
@@ -1155,7 +1470,8 @@
 })();
 </script>
 
+{% endblock %}
+
+{% block extra_scripts %}
 <script src="/static/js/instagram_suite.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

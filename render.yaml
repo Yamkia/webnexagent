@@ -1,0 +1,26 @@
+services:
+  - type: web_service
+    name: webnex-agent
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    startCommand: gunicorn -w 4 -b 0.0.0.0:$PORT app:app
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: FLASK_RUN_HOST
+        value: 0.0.0.0
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: ENABLE_ODOO_APP
+        value: "false"
+      - key: ENABLE_EMAIL_APP
+        value: "false"
+      - key: ENABLE_SOCIAL_MEDIA_APP
+        value: "false"
+      - key: ENABLE_TRAFFIC_APP
+        value: "true"
+      - key: ENABLE_BRAND_MANAGER_APP
+        value: "true"
+      - key: ENABLE_WEBSITE_HELPER_APP
+        value: "true"

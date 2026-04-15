@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Zisanda-hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Site Settings</h2>
+  <h4>Visible Applications</h4>
+  <form id="settings-apps-form">
+    {% for app, enabled in visibility.items() %}
+    <div class="form-check form-switch my-2 d-flex align-items-center">
+      <input class="form-check-input me-3" type="checkbox" id="app-{{app}}" {% if enabled %}checked{% endif %}>
+      <label class="form-check-label d-flex align-items-center" for="app-{{app}}">
+        {% set icon = '' %}
+        {% if app == 'email' %}{% set icon = '/static/img/email-logo.png' %}{% endif %}
+        {% if app == 'odoo' %}{% set icon = '/static/img/odoo-logo.png' %}{% endif %}
+        {% if app == 'social_media' %}{% set icon = '/static/img/social-media-logo.png' %}{% endif %}
+        {% if app == 'cipc' %}{% set icon = '/static/img/email-logo.png' %}{% endif %}
+        {% if app == 'website_helper' %}{% set icon = '/static/img/website-logo.png' %}{% endif %}
+        {% if icon %}<img src="{{ icon }}" alt="{{ app.replace('_',' ').title() }} icon" width="24" height="24" class="me-2">{% endif %}
+        {{ app.replace('_',' ').title() }}
+      </label>
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+  </form>
+  <div id="settings-msg" class="mt-3"></div>
+  <div class="mt-4">
+    <h5 class="mb-2">Debug</h5>
+    <p class="small text-muted mb-1">Using .env file: <code>{{ env_path }}</code></p>
+    <pre class="small bg-dark text-white p-2 rounded" style="white-space: pre-wrap;">{{ current_settings | tojson(indent=2) }}</pre>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const form = document.getElementById('settings-apps-form');
+  const msg = document.getElementById('settings-msg');
+
+  function showMessage(html, isError) {
+    msg.innerHTML = html;
+    msg.className = isError ? 'alert alert-danger mt-3' : 'alert alert-success mt-3';
+  }
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const data = {};
+    Array.from(form.elements).forEach(el=>{
+      if(el.type==='checkbox') data[el.id.replace('app-','')] = el.checked;
+    });
+
+    showMessage('Saving settings…', false);
+
+    try {
+      const res = await fetch('/settings/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const payload = await res.json();
+      if (!res.ok || payload.status !== 'ok') {
+        showMessage(payload.message || 'Unable to save settings.', true);
+      } else {
+        showMessage(payload.message || 'Settings saved successfully. Restart the server to apply changes.', false);
+      }
+    } catch (err) {
+      showMessage('Error saving settings: ' + err.message, true);
+    }
+  });
+})();
+</script>
+{% endblock %}
+
+{% endblock %}
