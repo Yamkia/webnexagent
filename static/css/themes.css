@@ -1,15 +1,47 @@
+/* Global reset and base typography for Zisanda‑hub */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%; /* prevent font scaling on mobile */
+}
+
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 /* Theme brand variables for Zisanda-hub */
 :root{
   /* Default brand (light mode variables) */
-  --agent-accent: #22c55e;
-  --agent-accent-2: #06b6d4;
-  --agent-glow: rgba(34,197,94,0.18);
+  /* primary branding colours (blue accent) */
+  --agent-accent: #0066cc;        /* primary button / link colour */
+  --agent-accent-2: #3399ff;      /* lighter blue for hover/highlight */
+  --agent-glow: rgba(0,102,204,0.18);
 
-  /* general system colors used by other styles (light mode defaults) */
-  --bg: #f7fafc;
-  --panel: #ffffff;
-  --muted: #64748b;
-  --text: #071233;
+  /* general system colours used by other styles */
+  --bg: #000000;                 /* page background becomes black */
+  --panel: #111111;              /* slightly lighter panel for contrast */
+  --muted: #bbbbbb;              /* muted text in grey */
+  --text: #ffffff;               /* white text on black */
 
   /* card / glass vars */
   --card-bg: rgba(255,255,255,0.55);
@@ -19,7 +51,9 @@
   --avatar-border: rgba(255,255,255,0.6);
   --badge-gradient: linear-gradient(90deg,var(--agent-accent),var(--agent-accent-2));
   --fab-shadow: 0 12px 30px rgba(6,182,212,0.18);
-  --hero-bg: radial-gradient(closest-side at 10% 20%, rgba(6,182,212,0.05), transparent), radial-gradient(closest-side at 90% 80%, rgba(34,197,94,0.03), transparent);
+  /* subtle gradient that picks up the accent colour */
+  /* hero gradient on black with subtle blue glows */
+  --hero-bg: radial-gradient(closest-side at 50% 30%, rgba(0,102,204,0.15), transparent), radial-gradient(closest-side at 50% 70%, rgba(0,102,204,0.08), transparent);
 }
 
 /* Neon brand (light mode) */
@@ -38,17 +72,24 @@
 
 /* Dark-mode overrides for the default brand */
 :root[data-theme='dark']{
-  --bg: #030409;
-  --panel: #071018;
-  --muted: #94a3b8;
-  --text: #e6eef6;
+  /* dark theme same as default since BG already black */
+  --bg: #000000;
+  --panel: #111111;
+  --muted: #bbbbbb;
+  --text: #ffffff;
 
-  --card-bg: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  --card-border: rgba(255,255,255,0.04);
-  --card-shadow: 0 8px 30px rgba(2,6,23,0.6);
-  --card-shadow-hover: 0 20px 60px rgba(2,6,23,0.7);
-  --avatar-border: rgba(255,255,255,0.06);
-  --fab-shadow: 0 20px 60px rgba(6,182,212,0.12);
+  --card-bg: rgba(17,17,17,0.85);
+  --card-border: rgba(255,255,255,0.1);
+  --card-shadow: 0 8px 30px rgba(0,0,0,0.7);
+  --card-shadow-hover: 0 20px 60px rgba(0,0,0,0.8);
+  --avatar-border: rgba(255,255,255,0.2);
+  --fab-shadow: 0 20px 60px rgba(0,102,204,0.3);
+}
+
+/* shared small subtitle style for hero sections */
+.hero-lede .lead{
+  color: var(--muted);
+  font-size: 18px;
 }
 
 /* Dark-mode + Neon brand tweaks */
@@ -70,3 +111,15 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 #theme-select option{ color: inherit; }
+
+/* base hero section container used across all themes */
+.hero-container{
+  padding: 64px 48px;
+  color: var(--text);
+  max-width: 800px; /* center content width */
+  margin: 0 auto;
+}
+
+@media (max-width:600px){
+  .hero-container{padding:48px 24px;}
+}

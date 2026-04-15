@@ -13,7 +13,9 @@ services:
   web:
     build: .
     restart: unless-stopped
-    env_file: .env
+    # Note: Portainer stacks often do not include a `.env` file in /data/compose/<id>/
+    # so we _do not_ require `env_file` here. If you need custom vars, add them via
+    # Portainer's "Environment variables" section for the stack.
     container_name: zisanda
     ports:
       - "5001:5001"

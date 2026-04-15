@@ -91,6 +91,13 @@ ENABLE_TRAFFIC_APP = os.getenv("ENABLE_TRAFFIC_APP", "True").lower() in ('true',
 ENABLE_BRAND_MANAGER_APP = os.getenv("ENABLE_BRAND_MANAGER_APP", "True").lower() in ('true', '1', 't')
 ENABLE_WEBSITE_HELPER_APP = os.getenv("ENABLE_WEBSITE_HELPER_APP", "True").lower() in ('true', '1', 't')
 
+# --- CIPC / Zisandahub Integration ---
+# Enables the CIPC app and provides settings for fetching new business registrations.
+ENABLE_CIPC_APP = os.getenv("ENABLE_CIPC_APP", "False").lower() in ('true', '1', 't')
+CIPC_API_BASE_URL = os.getenv("CIPC_API_BASE_URL")
+CIPC_API_KEY = os.getenv("CIPC_API_KEY")
+ZISANDAHUB_EMAIL = os.getenv("ZISANDAHUB_EMAIL")
+
 # --- Input Settings ---
 ENABLE_VOICE_INPUT = os.getenv("ENABLE_VOICE_INPUT", "False").lower() in ('true', '1', 't')
 

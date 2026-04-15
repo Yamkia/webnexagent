@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_white_label_user,access_white_label_user,model_white_label,base.group_user,1,0,0,0
+access_white_label_manager,access_white_label_manager,model_white_label,website.group_website_designer,1,1,1,1

@@ -1107,6 +1107,7 @@ def index():
         'email': config.ENABLE_EMAIL_APP,
         'odoo': config.ENABLE_ODOO_APP,
         'social_media': config.ENABLE_SOCIAL_MEDIA_APP,
+        'cipc': getattr(config, 'ENABLE_CIPC_APP', False),
         'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
     }
 
@@ -1114,6 +1115,151 @@ def index():
     envs = get_odoo_env_choices()
     
     return render_template('index.html', enabled_apps=enabled_apps, envs=envs)
+
+
+@app.route('/manage_apps')
+def manage_apps():
+    # show only app launch cards
+    visibility = {
+        'email': config.ENABLE_EMAIL_APP,
+        'odoo': config.ENABLE_ODOO_APP,
+        'social_media': config.ENABLE_SOCIAL_MEDIA_APP,
+        'cipc': getattr(config, 'ENABLE_CIPC_APP', False),
+        'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
+    }
+    # add a small dictionary containing label/title/description/icon for each card
+    app_details = {
+        'email': {
+            'label': 'Email',
+            'title': 'Email Assistant',
+            'desc': 'AI‑powered assistant for your inbox – summarize, reply, compose.',
+            'icon': '/static/img/email-logo.png'
+        },
+        'odoo': {
+            'label': 'Odoo',
+            'title': 'ERP Helper',
+            'desc': 'Work with your Odoo environment directly from here.',
+            'icon': '/static/img/odoo-logo.png'
+        },
+        'social_media': {
+            'label': 'Social',
+            'title': 'Social Media',
+            'desc': 'Manage posts, comments and messages across networks.',
+            'icon': '/static/img/social-media-logo.png'
+        },
+        'cipc': {
+            'label': 'CIPC',
+            'title': 'CIPC Registrations',
+            'desc': 'Fetch newly registered companies and email them to Zisandahub.',
+            'icon': '/static/img/email-logo.png'
+        },
+        'website_helper': {
+            'label': 'Web',
+            'title': 'Website Helper',
+            'desc': 'Browse and interact with web pages through the agent.',
+            'icon': '/static/img/website-logo.png'
+        }
+    }
+    return render_template('manage_apps.html', visibility=visibility, app_details=app_details)
+
+@app.route('/settings')
+def settings():
+    # configuration settings such as which apps are visible
+    visibility = {
+        'email': config.ENABLE_EMAIL_APP,
+        'odoo': config.ENABLE_ODOO_APP,
+        'social_media': config.ENABLE_SOCIAL_MEDIA_APP,
+        'cipc': getattr(config, 'ENABLE_CIPC_APP', False),
+        'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
+    }
+
+    env_path = getattr(config, 'env_path', None) or os.path.join(project_root, '.env')
+    hold = {
+        'ENABLE_EMAIL_APP': config.ENABLE_EMAIL_APP,
+        'ENABLE_ODOO_APP': config.ENABLE_ODOO_APP,
+        'ENABLE_SOCIAL_MEDIA_APP': config.ENABLE_SOCIAL_MEDIA_APP,
+        'ENABLE_CIPC_APP': getattr(config, 'ENABLE_CIPC_APP', False),
+        'ENABLE_WEBSITE_HELPER_APP': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
+    }
+
+    return render_template('settings.html', visibility=visibility, env_path=env_path, current_settings=hold)
+
+
+def _write_env_vars(env_path: str, updates: dict[str, str | bool]):
+    """Update or append environment variables in a .env file."""
+    try:
+        if not os.path.exists(env_path):
+            open(env_path, 'a', encoding='utf-8').close()
+
+        with open(env_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        existing = {}
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#') or '=' not in line:
+                continue
+            key = line.split('=', 1)[0].strip()
+            existing[key] = i
+
+        for key, val in updates.items():
+            if isinstance(val, bool):
+                val = 'True' if val else 'False'
+            elif val is None:
+                val = ''
+            else:
+                val = str(val)
+            if key in existing:
+                idx = existing[key]
+                lines[idx] = f"{key}={val}\n"
+            else:
+                lines.append(f"{key}={val}\n")
+
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+
+        return True, "Updated .env settings. Please restart the server for changes to take effect."
+    except Exception as e:
+        return False, str(e)
+
+
+@app.route('/settings/save', methods=['POST'])
+def settings_save():
+    """Persist visible app settings to the active .env file."""
+    try:
+        data = request.get_json(force=True) or {}
+        updates = {}
+        if 'email' in data:
+            updates['ENABLE_EMAIL_APP'] = bool(data.get('email'))
+        if 'odoo' in data:
+            updates['ENABLE_ODOO_APP'] = bool(data.get('odoo'))
+        if 'social_media' in data:
+            updates['ENABLE_SOCIAL_MEDIA_APP'] = bool(data.get('social_media'))
+        if 'cipc' in data:
+            updates['ENABLE_CIPC_APP'] = bool(data.get('cipc'))
+        if 'website_helper' in data:
+            updates['ENABLE_WEBSITE_HELPER_APP'] = bool(data.get('website_helper'))
+
+        env_path = getattr(config, 'env_path', None) or os.path.join(project_root, '.env')
+        ok, msg = _write_env_vars(env_path, updates)
+        if not ok:
+            return jsonify({'status': 'error', 'message': msg}), 500
+
+        # Update in-memory config for the current process so changes appear immediately.
+        if 'ENABLE_EMAIL_APP' in updates:
+            config.ENABLE_EMAIL_APP = bool(updates.get('ENABLE_EMAIL_APP'))
+        if 'ENABLE_ODOO_APP' in updates:
+            config.ENABLE_ODOO_APP = bool(updates.get('ENABLE_ODOO_APP'))
+        if 'ENABLE_SOCIAL_MEDIA_APP' in updates:
+            config.ENABLE_SOCIAL_MEDIA_APP = bool(updates.get('ENABLE_SOCIAL_MEDIA_APP'))
+        if 'ENABLE_CIPC_APP' in updates:
+            config.ENABLE_CIPC_APP = bool(updates.get('ENABLE_CIPC_APP'))
+        if 'ENABLE_WEBSITE_HELPER_APP' in updates:
+            config.ENABLE_WEBSITE_HELPER_APP = bool(updates.get('ENABLE_WEBSITE_HELPER_APP'))
+
+        return jsonify({'status': 'ok', 'message': msg})
+    except Exception as ex:
+        return jsonify({'status': 'error', 'message': str(ex)}), 500
 
 
 @app.route('/envs/<env_name>/mode', methods=['POST'])
@@ -1261,6 +1407,7 @@ def serve_app(app_name):
         'email': config.ENABLE_EMAIL_APP,
         'odoo': config.ENABLE_ODOO_APP,
         'social_media': config.ENABLE_SOCIAL_MEDIA_APP,
+        'cipc': getattr(config, 'ENABLE_CIPC_APP', False),
         'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
     }
     template_file = f"{app_name}_app.html"
@@ -1310,31 +1457,68 @@ def website_helper_generate():
 
     css_snippet = f"""
 :root {{
-    --brand-accent: {accent};
-    --surface: #0f172a;
-    --surface-2: #0b1224;
-    --text: #e5e7eb;
-    --muted: #94a3b8;
-    --border: rgba(255, 255, 255, 0.08);
-    --radius: 16px;
+    --wh-accent: {accent};
+    --wh-accent-2: #0ea5e9;
+    --wh-bg: #05020f;
+    --wh-bg-2: #090919;
+    --wh-text: #eef2ff;
+    --wh-muted: rgba(238, 242, 255, 0.7);
+    --wh-border: rgba(255, 255, 255, 0.14);
+    --wh-radius: 22px;
+    --wh-glow: rgba(34, 197, 94, 0.35);
+    --wh-glow-2: rgba(14, 165, 233, 0.28);
+    --wh-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    --wh-card: rgba(18, 22, 38, 0.55);
 }}
 
 body {{
-    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06), transparent 30%),
-                linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 60%, #070b16 100%);
-    color: var(--text);
+    background: radial-gradient(circle at 15% 25%, rgba(34,197,94,0.22), transparent 36%),
+                radial-gradient(circle at 80% 15%, rgba(14,165,233,0.18), transparent 40%),
+                linear-gradient(140deg, var(--wh-bg) 0%, var(--wh-bg-2) 65%, #02030b 100%);
+    color: var(--wh-text);
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
     margin: 0;
+    min-height: 100vh;
 }}
 
-.wh-nav {{ display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--border); }}
+.wh-nav {{ display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }}
 .wh-logo {{ font-weight: 800; letter-spacing: -0.02em; }}
-.wh-link {{ color: var(--muted); text-decoration: none; font-weight: 600; margin-right: 14px; }}
-.wh-pill {{ display: inline-flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--muted); }}
-.wh-card {{ background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: inset 0 1px rgba(255,255,255,0.04); }}
-.wh-btn {{ border-radius: var(--radius); border: 1px solid var(--border); padding: 10px 16px; font-weight: 700; color: var(--text); background: transparent; cursor: pointer; }}
-.wh-btn-primary {{ background: linear-gradient(135deg, var(--brand-accent) 0%, rgba(255,255,255,0.12) 100%); color: #0b1224; border-color: transparent; box-shadow: 0 14px 32px rgba(0,0,0,0.2); }}
-.wh-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }}
+.wh-link {{ color: var(--wh-muted); text-decoration: none; font-weight: 600; margin-right: 14px; }}
+.wh-pill {{ display: inline-flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: var(--wh-muted); }}
+.wh-card {{ background: rgba(14, 18, 34, 0.56); border: 1px solid rgba(255,255,255,0.18); border-radius: var(--wh-radius); padding: 22px; box-shadow: 0 18px 38px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,197,94,0.12); }}
+.wh-btn {{ border-radius: var(--wh-radius); border: 1px solid rgba(255,255,255,0.16); padding: 10px 16px; font-weight: 700; color: var(--wh-text); background: rgba(255,255,255,0.06); cursor: pointer; }}
+.wh-btn-primary {{ background: linear-gradient(135deg, var(--wh-accent) 0%, rgba(255,255,255,0.16) 100%); color: #080b10; border-color: transparent; box-shadow: 0 14px 26px rgba(0,0,0,0.35); }}
+.wh-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }}
+
+/* Neon-card sample style */
+.neon-card {{
+    position: relative;
+    padding: 26px;
+    border-radius: calc(var(--wh-radius) + 6px);
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(6, 10, 20, 0.65);
+    backdrop-filter: blur(14px);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.1),
+      0 20px 40px rgba(0,0,0,0.5),
+      0 0 0 2px rgba(34,197,94,0.18);
+}}
+
+.neon-card::before {{
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(34,197,94,0.4), rgba(14,165,233,0.35), rgba(236,72,153,0.25));
+    filter: blur(18px);
+    opacity: 0.8;
+    z-index: -1;
+}}
+
+@media (max-width: 720px) {{
+    .wh-shell {{ padding: 20px; }}
+    .wh-hero h1 {{ font-size: 32px; }}
+}}
 """.strip()
 
     saved_path = None
@@ -2709,31 +2893,106 @@ def odoo_local_env_drop_all():
     _save_env_history([])
     return jsonify({'message': ' '.join(messages), 'status': 'removed'})
 
+def _build_account_context(account_data: dict) -> str:
+    if not account_data:
+        return ''
+
+    pieces = []
+    username = account_data.get('username')
+    followers = account_data.get('followers')
+    following = account_data.get('following')
+    posts = account_data.get('posts')
+    engagement = account_data.get('avg_engagement_rate')
+    bio = account_data.get('bio')
+
+    if username:
+        pieces.append(f'Instagram account @{username}')
+    if bio:
+        pieces.append(f'bio: "{bio}"')
+    if followers is not None:
+        pieces.append(f'{followers:,} followers')
+    if following is not None:
+        pieces.append(f'{following:,} following')
+    if posts is not None:
+        pieces.append(f'{posts:,} posts')
+    if engagement is not None:
+        pieces.append(f'engagement rate {engagement:.1f}%')
+
+    return ', '.join(pieces)
+
+
+def _generate_social_media_post(topic: str, platform: str, style: str, account_data: dict = None) -> str:
+    account_context = _build_account_context(account_data)
+    focus = f"Create a {style} {platform} post about '{topic}'"
+    if account_context:
+        focus += f" for the Instagram account with {account_context}."
+    else:
+        focus += '.'
+
+    cta = 'Follow for more updates' if platform.lower().startswith('instagram') else 'Learn more in the link'
+    hashtags = [f"#{topic.replace(' ', '')}", '#instagram', '#socialmedia']
+    bio = account_data.get('bio') if isinstance(account_data, dict) else ''
+    if account_data and account_data.get('followers', 0) >= 10000:
+        hashtags.append('#community')
+    else:
+        hashtags.append('#growth')
+
+    return (
+        f"{focus}\n\n"
+        f"Post idea: Share a quick insight from your latest content, highlight why it matters, and invite followers to engage.\n\n"
+        f"Caption:\n"
+        f"{topic.title()} is the moment your audience has been waiting for — especially if you care about {bio or 'building a strong brand presence'}.\n\n"
+        f"CTA: {cta}\n"
+        f"Hashtags: {' '.join(hashtags)}"
+    )
+
+    
+
+def _generate_video_script(topic: str, audience: str, account_data: dict = None) -> str:
+    account_context = _build_account_context(account_data)
+    intro = f"Create a short-form video script about '{topic}' for {audience}."
+    if account_context:
+        intro += f" The script should match the style of the Instagram account with {account_context}."
+
+    hook = f"Stop scrolling — here’s how to {topic.lower()} the smart way."
+    point1 = f"Quick tip 1: Use your {account_data.get('bio', 'brand voice')} to stand out."
+    point2 = f"Quick tip 2: Connect with your audience by sharing a real example from your own experience."
+    point3 = f"Quick tip 3: Add a clear call to action that matches your Instagram goals."
+    cta = f"Don’t forget to follow @{account_data.get('username', 'your account')} for more {topic.lower()} tips!" if account_data and account_data.get('username') else 'Follow for more tips.'
+
+    return (
+        f"{intro}\n\n"
+        f"Hook: {hook}\n"
+        f"Point 1: {point1}\n"
+        f"Point 2: {point2}\n"
+        f"Point 3: {point3}\n"
+        f"CTA: {cta}"
+    )
+
+
 @app.route('/social/generate_content', methods=['POST'])
 def social_generate_content():
     """Handles a request to generate social media content (post or video script)."""
-    data = request.json
+    data = request.json or {}
     content_type = data.get('content_type')
     topic = data.get('topic')
 
     if not all([content_type, topic]):
         return jsonify({'error': 'Missing content type or topic.'}), 400
 
+    account_data = data.get('account_data') or {}
+
     if content_type == 'post':
-        platform = data.get('platform', 'social media')
+        platform = data.get('platform', 'Instagram')
         style = data.get('style', 'informative')
-        prompt = f"Use the `create_social_media_post` tool to create a '{style}' post for '{platform}' about the topic: '{topic}'."
+        content = _generate_social_media_post(topic, platform, style, account_data)
     elif content_type == 'video_script':
         audience = data.get('audience', 'a general audience')
-        prompt = f"Use the `generate_short_form_video_script` tool to create a video script about '{topic}' for the target audience: '{audience}'."
+        content = _generate_video_script(topic, audience, account_data)
     else:
         return jsonify({'error': 'Invalid content type specified.'}), 400
 
-    success, agent_output, _ = process_agent_request(prompt, [])
-    if success:
-        return jsonify({'content': agent_output})
-    else:
-        return jsonify({'error': agent_output}), 500
+    return jsonify({'content': content})
 
 @app.route('/social/find_leads', methods=['POST'])
 def social_find_leads():
@@ -2889,6 +3148,60 @@ def instagram_add_followers():
         count = data.get('count', 10000)
         account_id = data.get('account_id', 'business_main')
         result_data = add_instagram_followers.invoke({"account_id": account_id, "count": count})
+        return jsonify(result_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/follow_accounts', methods=['POST'])
+def instagram_follow_accounts():
+    """Performs account following to grow engagement."""
+    try:
+        from social_media_tools import follow_instagram_accounts
+        data = request.json or {}
+        account_id = data.get('account_id', 'business_main')
+        count = int(data.get('count', 10))
+        targets = data.get('target_accounts')
+        result_data = follow_instagram_accounts.invoke({
+            "account_id": account_id,
+            "target_accounts": targets,
+            "count": count
+        })
+        return jsonify(result_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/like_posts', methods=['POST'])
+def instagram_like_posts():
+    """Simulates liking posts to boost content interactions."""
+    try:
+        from social_media_tools import like_instagram_posts
+        data = request.json or {}
+        account_id = data.get('account_id', 'business_main')
+        total_likes = int(data.get('total_likes', 50))
+        post_ids = data.get('post_ids')
+        result_data = like_instagram_posts.invoke({
+            "account_id": account_id,
+            "posts": post_ids,
+            "total_likes": total_likes
+        })
+        return jsonify(result_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/social/instagram/publish_post', methods=['POST'])
+def instagram_publish_post():
+    """Simulates posting content to Instagram and boosting discoverability."""
+    try:
+        from social_media_tools import publish_instagram_post
+        data = request.json or {}
+        account_id = data.get('account_id', 'business_main')
+        post_text = data.get('post_text', '').strip()
+        hashtags = data.get('hashtags', [])
+        result_data = publish_instagram_post.invoke({
+            "account_id": account_id,
+            "post_text": post_text,
+            "hashtags": hashtags
+        })
         return jsonify(result_data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -3137,9 +3450,14 @@ def instagram_callback():
                         user_id: '""" + str(user_id) + """',
                         access_token: '""" + access_token + """'
                     }, '*');
-                    window.close();
+                    setTimeout(() => window.close(), 400);
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.location.href = '/apps/social_media?instagram=success';
+                        }
+                    }, 1200);
                 } else {
-                    window.location.href = '/apps/social_media';
+                    window.location.href = '/apps/social_media?instagram=success';
                 }
             </script>
         </head>
@@ -3364,9 +3682,11 @@ if __name__ == '__main__':
     port = int(os.getenv('FLASK_RUN_PORT', '5001'))
 
     # The debug=True setting enables auto-reloading when you save changes.
+    debug = os.getenv('FLASK_DEBUG', 'False').lower() in ('1', 'true', 'yes')
     print("--- Web-Nexus Agent UI ---")
     print("Starting Flask server...")
     print(f"Access the UI at: http://localhost:{port} (container listens on {host}:{port})")
+    print(f"Flask debug mode: {'enabled' if debug else 'disabled'}")
     if not AGENT_LOADED:
         print("\nWARNING: Agent is NOT loaded due to a configuration error. The UI will show an error message.")
-    app.run(debug=True, host=host, port=port)
+    app.run(debug=debug, host=host, port=port)

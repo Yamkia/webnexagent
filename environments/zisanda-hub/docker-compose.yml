@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: odoo
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  odoo-zisanda-hub:
+    image: odoo:19.0
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "63521:8069"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      # optional: set admin password here or via odoo.conf
+      ODOO_ADMIN_PASSWORD: admin
+    volumes:
+      - ../../zisandahub/addons:/mnt/extra-addons
+      - ../../zisandahub/white_label:/mnt/extra-addons/white_label
+      - ../../zisandahub/customers:/mnt/customers
+      - ../../odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo_zisanda_hub_data:/var/lib/odoo
+
+  ssh:
+    image: linuxserver/openssh-server:latest
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - USER_NAME=odoo
+      - USER_PASSWORD=DockerSsh123!
+      - PASSWORD_ACCESS=true
+      - SUDO_ACCESS=true
+    ports:
+      - "2222:2222"
+    volumes:
+      - ../../zisandahub/addons:/home/odoo/addons
+      - ../../zisandahub/white_label:/home/odoo/addons/white_label
+      - ../../zisandahub/customers:/home/odoo/customers
+      - ../../odoo.conf:/home/odoo/odoo.conf:ro
+    restart: unless-stopped
+
+  sync-task:
+    image: rclone/rclone:latest
+    profiles: ["tools"]
+    entrypoint: ["rclone", "--config", "/config/rclone/rclone.conf", "version"]
+    volumes:
+      - ../../zisandahub/customers:/data/customers
+      - ../../rclone:/config/rclone
+
+volumes:
+  db_data:
+  odoo_zisanda_hub_data:

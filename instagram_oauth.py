@@ -20,6 +20,19 @@ class InstagramOAuth:
         self.redirect_uri = os.getenv('INSTAGRAM_REDIRECT_URI', 'http://127.0.0.1:5001/auth/instagram/callback')
         self.base_url = 'https://api.instagram.com'
         self.graph_url = 'https://graph.instagram.com'
+
+        if not self.app_id or 'your_app_id_here' in self.app_id:
+            raise ValueError(
+                'Instagram App ID is not configured. Set INSTAGRAM_APP_ID in your .env and restart the app.'
+            )
+        if not self.app_secret or 'your_app_secret_here' in self.app_secret:
+            raise ValueError(
+                'Instagram App Secret is not configured. Set INSTAGRAM_APP_SECRET in your .env and restart the app.'
+            )
+        if not self.redirect_uri or 'your_redirect_uri_here' in self.redirect_uri:
+            raise ValueError(
+                'Instagram Redirect URI is not configured. Set INSTAGRAM_REDIRECT_URI in your .env to your app callback URL.'
+            )
         
     def get_authorization_url(self, state=None):
         """

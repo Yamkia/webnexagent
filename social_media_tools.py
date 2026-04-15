@@ -165,11 +165,114 @@ def get_instagram_follower_growth(account_id: str = "business_main") -> list:
         return [{"error": f"Account '{account_id}' not found"}]
     return account['follower_growth']
 
+@tool
+def follow_instagram_accounts(account_id: str = "business_main", target_accounts: Optional[List[str]] = None, count: int = 10) -> dict:
+    """
+    Simulates following a list of Instagram accounts to boost engagement.
+    """
+    print(f"INFO: Following {count} accounts for '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return {"error": f"Account '{account_id}' not found"}
+
+    target_accounts = target_accounts or []
+    if not target_accounts:
+        target_accounts = [f"@suggested_{i+1}" for i in range(count)]
+    action_count = min(count, len(target_accounts))
+
+    account['following'] += action_count
+    account.setdefault('engagement_actions', []).append({
+        'type': 'follow',
+        'target_accounts': target_accounts[:action_count],
+        'count': action_count,
+        'timestamp': 'now'
+    })
+
+    return {
+        'success': True,
+        'message': f'Followed {action_count} accounts.',
+        'target_accounts': target_accounts[:action_count],
+        'new_following': account['following']
+    }
+
+@tool
+def like_instagram_posts(account_id: str = "business_main", posts: Optional[List[str]] = None, total_likes: int = 50) -> dict:
+    """
+    Simulates liking a set of posts to increase interactions.
+    """
+    print(f"INFO: Liking up to {total_likes} posts for '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return {"error": f"Account '{account_id}' not found"}
+
+    posts = posts or [f"post_{i+1}" for i in range(total_likes)]
+    liked_count = min(total_likes, len(posts))
+
+    account.setdefault('engagement_actions', []).append({
+        'type': 'like',
+        'posts': posts[:liked_count],
+        'count': liked_count,
+        'timestamp': 'now'
+    })
+
+    return {
+        'success': True,
+        'message': f'Liked {liked_count} posts.',
+        'post_ids': posts[:liked_count],
+        'total_liked': liked_count
+    }
+
+@tool
+def publish_instagram_post(account_id: str = "business_main", post_text: str = "", hashtags: Optional[List[str]] = None) -> dict:
+    """
+    Simulates posting content to Instagram, increasing engagement signal.
+    """
+    print(f"INFO: Publishing new post for '{account_id}'...")
+    account = INSTAGRAM_ACCOUNTS.get(account_id)
+    if not account:
+        return {"error": f"Account '{account_id}' not found"}
+
+    if not post_text.strip():
+        return {"error": "Post text cannot be empty."}
+
+    tags = hashtags or []
+    account.setdefault('published_posts', []).append({
+        'text': post_text,
+        'hashtags': tags,
+        'timestamp': 'now',
+        'likes': 0,
+        'comments': 0
+    })
+
+    # Simulate immediate initial engagement bump
+    new_likes = 40
+    new_comments = 8
+    account['follower_growth'].append({
+        'type': 'published_post',
+        'likes': new_likes,
+        'comments': new_comments,
+        'timestamp': 'now'
+    })
+
+    return {
+        'success': True,
+        'message': 'Content published and promotion started.',
+        'initial_engagement': {
+            'likes': new_likes,
+            'comments': new_comments
+        },
+        'post_text': post_text,
+        'hashtags': tags
+    }
+
 tools = [
-    find_business_leads, 
-    create_social_media_post, 
+    find_business_leads,
+    create_social_media_post,
     generate_short_form_video_script,
     get_instagram_account_info,
     add_instagram_followers,
-    get_instagram_follower_growth
+    get_instagram_follower_growth,
+    follow_instagram_accounts,
+    like_instagram_posts,
+    publish_instagram_post
 ]

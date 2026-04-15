@@ -1,34 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Assistant – Zisanda‑hub{% endblock %}
+
+{% block content %}
 <div class="container my-4">
     <div class="row g-4">
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h5 class="mb-0">Email Assistant</h5>
-                        {% if agent_loaded %}
-                            <span class="badge bg-success-subtle text-success border border-success">Agent Ready</span>
-                        {% else %}
-                            <span class="badge bg-warning-subtle text-warning border border-warning">Agent Disabled</span>
-                        {% endif %}
-                    </div>
-                    <p class="text-muted small">Ask me to summarize your inbox, draft replies, or send emails.</p>
-
-                    <hr>
-                    <h6 class="mb-2">Quick Actions</h6>
-                    <div class="d-grid gap-2" id="quick-actions">
-                        <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Summarize the last 20 emails in my inbox.">Summarize Inbox</button>
-                        <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="List unread emails from the past 7 days with sender and subject.">List Unread</button>
-                        <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Draft a polite reply thanking the sender and asking for next steps.">Draft Reply</button>
-                        <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Compose an email to sales@example.com about pricing for the Pro plan.">Compose Email</button>
-                    </div>
-
-                    <hr>
-                    <h6 class="mb-2">Tips</h6>
-                    <ul class="small text-muted mb-0">
-                        <li>Try: <em>“Summarize emails from Acme this week.”</em></li>
-                        <li>Try: <em>“Draft a response to the latest message from Jane.”</em></li>
-                    </ul>
+            <div class="glass-card agent-card p-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="mb-0">Email Assistant</h5>
+                    {% if agent_loaded %}
+                        <span class="badge bg-success-subtle text-success border border-success">Agent Ready</span>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning">Agent Disabled</span>
+                    {% endif %}
                 </div>
+                <p class="text-muted small">Ask me to summarize your inbox, draft replies, or send emails.</p>
+
+                <hr>
+                <h6 class="mb-2">Quick Actions</h6>
+                <div class="d-grid gap-2" id="quick-actions">
+                    <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Summarize the last 20 emails in my inbox.">Summarize Inbox</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="List unread emails from the past 7 days with sender and subject.">List Unread</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Draft a polite reply thanking the sender and asking for next steps.">Draft Reply</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-quick-prompt="Compose an email to sales@example.com about pricing for the Pro plan.">Compose Email</button>
+                </div>
+
+                <hr>
+                <h6 class="mb-2">Tips</h6>
+                <ul class="small text-muted mb-0">
+                    <li>Try: <em>“Summarize emails from Acme this week.”</em></li>
+                    <li>Try: <em>“Draft a response to the latest message from Jane.”</em></li>
+                </ul>
             </div>
         </div>
 
@@ -81,7 +84,7 @@
         </div>
     </div>
 </div>
-
+{% endblock %}
 <!-- Email Reader Modal -->
 <div class="modal fade" id="emailReaderModal" tabindex="-1" aria-labelledby="emailReaderLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">

@@ -1,0 +1,19 @@
+:root {
+  --brand-primary: #0d6efd;
+  --brand-secondary: #6610f;
+  --brand-bg: #ffffff;
+  --brand-text: #111827;
+}
+
+body {
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+}
+
+body[data-menu-xmlid="white_label.menu_white_label_brand_root"] {
+  color: var(--brand-primary);
+}
+
+.o_web_client {
+  border-top: 3px solid var(--brand-primary);
+}
