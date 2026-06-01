@@ -1,6 +1,27 @@
 <link rel="stylesheet" href="/static/website_helper/generated_theme.css" id="website-helper-theme-css">
 
 <style>
+  :root {
+    --wh-accent: #22c55e;
+    --wh-accent-2: #0ea5e9;
+    --wh-bg: #05020f;
+    --wh-bg-2: #090919;
+    --wh-text: #eef2ff;
+    --wh-muted: rgba(238, 242, 255, 0.72);
+    --wh-border: rgba(255, 255, 255, 0.14);
+    --wh-radius: 22px;
+    --wh-glow: rgba(34, 197, 94, 0.35);
+    --wh-glow-2: rgba(14, 165, 233, 0.28);
+    --wh-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  }
+
+  .website-helper {
+    min-height: 100vh;
+    background: radial-gradient(circle at 15% 20%, rgba(34, 197, 94, 0.18), transparent 28%),
+                radial-gradient(circle at 85% 10%, rgba(14, 165, 233, 0.14), transparent 24%),
+                linear-gradient(180deg, #060710, #090b16 55%, #05070c);
+  }
+
   .wh-shell {
     transition: transform 0.35s ease, box-shadow 0.35s ease;
   }

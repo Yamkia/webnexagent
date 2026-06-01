@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const appContentArea = document.getElementById('app-content-area');
+    const domRoot = appContentArea || document.body;
     let odooPlannedModules = []; // State for Odoo app
     let sitePreviewUrl = null; // Revoke old blob URLs when regenerating
 
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        const popoverTriggerList = appContentArea.querySelectorAll('[data-bs-toggle="popover"]');
+        const popoverTriggerList = domRoot.querySelectorAll('[data-bs-toggle="popover"]');
         [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
             // Ensure Create buttons are visible and re-created if removed (robust helper)
             function ensureCreateButtonsExists(){
@@ -40,10 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const candidateSelectors = ['#plan-display .plan-actions', '.plan-actions', '#plan-display', '.card-body', appContentArea && '#app-content-area'].filter(Boolean);
                     let btnContainer = null;
                     for (const sel of candidateSelectors){
-                        try{ btnContainer = appContentArea.querySelector(sel); }catch(e){ btnContainer = null; }
+                        try{ btnContainer = domRoot.querySelector(sel); }catch(e){ btnContainer = null; }
                         if(btnContainer) break;
                     }
-                    if(!btnContainer) btnContainer = appContentArea || document.body;
+                    if(!btnContainer) btnContainer = domRoot;
 
                     // create exec button if missing
                     if(!execBtn){
@@ -94,10 +95,57 @@ document.addEventListener('DOMContentLoaded', () => {
             // run once now to ensure buttons exist
             ensureCreateButtonsExists();
 
+            function installChatFormListeners() {
+                const chatForm = document.getElementById('chat-form');
+                if (chatForm && chatForm.dataset.bound !== '1') {
+                    console.debug('[CIPC] Binding chat form submit handler');
+                    chatForm.addEventListener('submit', function(event) {
+                        console.debug('[CIPC] chat-form submit event');
+                        event.preventDefault();
+                        handleChatSubmit(event);
+                    });
+                    const sendBtn = chatForm.querySelector('button[type="submit"]');
+                    if (sendBtn) {
+                        sendBtn.addEventListener('click', function(event) {
+                            console.debug('[CIPC] chat send button clicked');
+                            event.preventDefault();
+                            handleChatSubmit(event);
+                        });
+                    }
+                    chatForm.dataset.bound = '1';
+                }
+
+                const cipcRegisterForm = document.getElementById('cipc-register-form');
+                if (cipcRegisterForm && cipcRegisterForm.dataset.bound !== '1') {
+                    console.debug('[CIPC] Binding cipc register form submit handler');
+                    cipcRegisterForm.addEventListener('submit', function(event) {
+                        console.debug('[CIPC] cipc-register-form submit event');
+                        event.preventDefault();
+                        handleCipcRegisterBusiness(cipcRegisterForm);
+                    });
+                    const registerBtn = cipcRegisterForm.querySelector('button[type="submit"]');
+                    if (registerBtn) {
+                        registerBtn.addEventListener('click', function(event) {
+                            console.debug('[CIPC] cipc register button clicked');
+                            event.preventDefault();
+                            handleCipcRegisterBusiness(cipcRegisterForm);
+                        });
+                    }
+                    cipcRegisterForm.dataset.bound = '1';
+                }
+            }
+
+            installChatFormListeners();
+
         // Initialize Email app features if present
         const inboxList = document.getElementById('inbox-list');
         if (inboxList) {
             initEmailApp();
+        }
+
+        // Initialize CIPC automation features if present
+        if (document.getElementById('cipc-auto-start')) {
+            initCipcApp();
         }
 
         // Initialize Odoo environment history if the section exists
@@ -277,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     // --- Event Delegation for Dynamically Loaded Content ---
-    appContentArea.addEventListener('submit', async (event) => {
+    domRoot.addEventListener('submit', async (event) => {
         const formId = event.target.id;
         if (!formId) return;
         // Always stop native navigation for our in-app forms
@@ -285,6 +333,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (formId === 'chat-form') {
             handleChatSubmit(event);
+        } else if (formId === 'cipc-send-email-form') {
+            handleCipcSendEmail(event.target);
+        } else if (formId === 'cipc-register-form') {
+            handleCipcRegisterBusiness(event.target);
         } else if (formId === 'website-helper-audit-form') {
             handleWebsiteAudit(event.target);
         } else if (formId === 'website-helper-generate-form') {
@@ -298,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    appContentArea.addEventListener('click', async (event) => {
+    domRoot.addEventListener('click', async (event) => {
         const copyBtn = event.target.closest('.copy-snippet-btn');
         if (copyBtn) {
             handleCopySnippet(copyBtn);
@@ -321,6 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (event.target.classList.contains('plan-btn')) {
             handleOdooPlan(event.target);
+        } else if (event.target.id === 'cipc-fetch-businesses' || event.target.id === 'cipc-fetch-businesses-button') {
+            event.preventDefault();
+            handleCipcFetchBusinesses();
         } else if (event.target.id === 'create-without-plan') {
             // User opted to create without a generated plan — use sensible defaults and execute
             try {
@@ -1099,12 +1154,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Get required DB name
         const dbInput = document.getElementById('odoo-dbname-input');
-        const dbName = dbInput ? dbInput.value.trim() : '';
+        let dbName = dbInput ? dbInput.value.trim() : '';
         if (!dbName) {
-            alert('Please provide a name for the Odoo database before creating the environment.');
-            if (btn) btn.disabled = false;
-            if (creationStatusEl) creationStatusEl.style.display = 'none';
-            return;
+            dbName = `odoo_${Date.now()}`;
+            if (dbInput) { dbInput.value = dbName; }
+            if (typeof showToast === 'function') { showToast(`Generated database name "${dbName}" for you.`, 'info'); }
         }
 
         // Get the selected Odoo version
@@ -1242,20 +1296,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleChatSubmit(event) {
+        console.debug('[CIPC] handleChatSubmit called', event);
         event.preventDefault();
         const messageInput = document.getElementById('message-input');
+        if (!messageInput) {
+            console.error('[CIPC] message-input not found');
+            return;
+        }
         const userInput = messageInput.value.trim();
-        if (!userInput) return;
+        if (!userInput) {
+            console.debug('[CIPC] message input is empty');
+            return;
+        }
 
+        if (typeof window.addMessage !== 'function') {
+            console.error('[CIPC] window.addMessage is not defined');
+            return;
+        }
         window.addMessage(userInput, 'user');
         messageInput.value = '';
         const thinkingMessage = window.addMessage('...', 'ai', true);
 
         try {
+            const isCipcPage = !!document.getElementById('cipc-auto-start');
             const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userInput }),
+                body: JSON.stringify({
+                    message: userInput,
+                    context: isCipcPage ? 'cipc' : undefined,
+                }),
             });
 
             const data = await response.json();
@@ -1270,6 +1340,433 @@ document.addEventListener('DOMContentLoaded', () => {
             thinkingMessage.remove();
             window.addMessage('An unexpected error occurred. Please check the server logs.', 'error');
             console.error('Fetch error:', error);
+        }
+    }
+
+    function extractEmailFromText(text) {
+        if (!text) return null;
+        const match = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+        return match ? match[0] : null;
+    }
+
+    async function handleCipcSendEmail(formEl) {
+        const statusEl = document.getElementById('cipc-send-email-status');
+        const explicitToEmail = formEl.querySelector('#cipc-to-email')?.value?.trim() || '';
+        const subjectPrefix = formEl.querySelector('#cipc-subject-prefix')?.value?.trim() || 'CIPC New Registrations';
+        const flowRequest = document.getElementById('cipc-flow-request')?.value?.trim() || '';
+        const businessInfo = flowRequest || document.getElementById('cipc-business-info')?.value?.trim() || '';
+        const requestText = flowRequest || document.getElementById('cipc-request-text')?.value?.trim() || '';
+        const inferredEmail = explicitToEmail || extractEmailFromText(flowRequest) || extractEmailFromText(businessInfo) || extractEmailFromText(requestText);
+
+        if (statusEl) {
+            statusEl.textContent = 'Sending email summary...';
+            statusEl.classList.remove('text-danger');
+            statusEl.classList.add('text-muted');
+        }
+
+        try {
+            const response = await fetch('/cipc/send_email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to_email: inferredEmail,
+                    subject_prefix: subjectPrefix,
+                    business_info: businessInfo,
+                    request_text: requestText,
+                }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (statusEl) {
+                    statusEl.textContent = data.message || 'Summary email sent successfully.';
+                    statusEl.classList.remove('text-danger');
+                    statusEl.classList.add('text-success');
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.textContent = `Error: ${data.error || data.message || 'Unable to send email.'}`;
+                    statusEl.classList.remove('text-success');
+                    statusEl.classList.add('text-danger');
+                }
+            }
+        } catch (error) {
+            if (statusEl) {
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            console.error('CIPC send email failed:', error);
+        }
+    }
+
+    async function handleCipcRegisterBusiness(formEl) {
+        console.debug('[CIPC] handleCipcRegisterBusiness called', formEl);
+        const statusEl = document.getElementById('cipc-register-status');
+        if (statusEl) {
+            statusEl.textContent = 'Starting CIPC registration automation...';
+            statusEl.classList.remove('text-danger');
+            statusEl.classList.add('text-muted');
+        }
+
+        const payload = {
+            business_name: formEl.querySelector('#cipc-business-name')?.value?.trim(),
+            company_type: formEl.querySelector('#cipc-company-type')?.value?.trim(),
+            director_name: formEl.querySelector('#cipc-director-name')?.value?.trim(),
+            director_id_number: formEl.querySelector('#cipc-director-id')?.value?.trim(),
+            physical_address: formEl.querySelector('#cipc-physical-address')?.value?.trim(),
+            postal_address: formEl.querySelector('#cipc-postal-address')?.value?.trim(),
+            contact_email: formEl.querySelector('#cipc-contact-email')?.value?.trim(),
+            contact_phone: formEl.querySelector('#cipc-contact-phone')?.value?.trim(),
+            industry: formEl.querySelector('#cipc-industry')?.value?.trim(),
+            registration_number: formEl.querySelector('#cipc-registration-number')?.value?.trim(),
+            additional_info: formEl.querySelector('#cipc-additional-info')?.value?.trim(),
+        };
+
+        try {
+            const response = await fetch('/cipc/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                if (statusEl) {
+                    statusEl.textContent = data.message || 'CIPC registration automation started.';
+                    statusEl.classList.remove('text-danger');
+                    statusEl.classList.add('text-success');
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.textContent = `Error: ${data.error || data.message || 'Unable to start registration.'}`;
+                    statusEl.classList.remove('text-success');
+                    statusEl.classList.add('text-danger');
+                }
+            }
+        } catch (error) {
+            if (statusEl) {
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            console.error('CIPC registration failed:', error);
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    async function handleCipcFetchBusinesses() {
+        const statusEl = document.getElementById('cipc-businesses-status');
+        const resultEl = document.getElementById('cipc-businesses-result');
+        const sinceDate = document.getElementById('cipc-since-date')?.value?.trim() || '';
+
+        if (statusEl) {
+            statusEl.textContent = 'Loading live businesses...';
+            statusEl.classList.remove('text-danger', 'text-success');
+            statusEl.classList.add('text-muted');
+        }
+        if (resultEl) {
+            resultEl.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Loading...</div>';
+        }
+
+        try {
+            const params = new URLSearchParams();
+            if (sinceDate) params.set('since_date', sinceDate);
+            params.set('max_results', '40');
+
+            const response = await fetch('/cipc/companies?' + params.toString());
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Unable to fetch CIPC businesses.');
+
+            const companies = Array.isArray(data.companies) ? data.companies : [];
+            if (!companies.length) {
+                if (resultEl) resultEl.innerHTML = '<div class="alert alert-warning">No businesses returned for the selected range.</div>';
+                if (statusEl) statusEl.textContent = 'No live businesses were found.';
+                return;
+            }
+
+            const rows = companies.map((company, index) => {
+                const name = escapeHtml(company.name || company.company_name || company.business_name || '<unknown>');
+                const regNo = escapeHtml(company.registration_number || company.reg_no || company.company_number || 'N/A');
+                const regDate = escapeHtml(company.date_registered || company.registration_date || 'N/A');
+                const category = escapeHtml(company.business_category || company.category || company.industry || company.sector || '—');
+                return `<tr><td>${index + 1}</td><td>${name}</td><td>${category}</td><td>${regNo}</td><td>${regDate}</td></tr>`;
+            }).join('');
+
+            if (resultEl) {
+                resultEl.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Business</th>
+                                    <th>Category</th>
+                                    <th>Reg. No.</th>
+                                    <th>Registered</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            if (statusEl) statusEl.textContent = `Loaded ${companies.length} businesses since ${data.since_date || 'the last 24 hours'}.`;
+        } catch (error) {
+            if (resultEl) resultEl.innerHTML = `<div class="alert alert-danger">${escapeHtml(error.message)}</div>`;
+            if (statusEl) {
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.classList.remove('text-muted');
+                statusEl.classList.add('text-danger');
+            }
+            console.error('Failed to fetch CIPC businesses:', error);
+        }
+    }
+
+    async function fetchCipcAutomationStatus() {
+        const statusEl = document.getElementById('cipc-automation-status');
+        const startBtn = document.getElementById('cipc-auto-start');
+        const stopBtn = document.getElementById('cipc-auto-stop');
+        try {
+            const response = await fetch('/cipc/automation/status');
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Unable to fetch automation status.');
+            updateCipcAutomationUi(data, statusEl, startBtn, stopBtn);
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = `Automation status error: ${err.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            console.error('CIPC automation status failed:', err);
+        }
+    }
+
+    function updateCipcAutomationUi(data, statusEl, startBtn, stopBtn) {
+        if (!statusEl) return;
+        const running = data?.enabled === true;
+        if (running) {
+            statusEl.textContent = `Automation is running every ${data.interval_minutes} minutes. Last run: ${data.last_run || 'pending'}. Status: ${data.last_status || 'ok'}.`;
+            statusEl.classList.remove('text-danger', 'text-muted');
+            statusEl.classList.add('text-success');
+            if (startBtn) startBtn.disabled = true;
+            if (stopBtn) stopBtn.disabled = false;
+        } else {
+            statusEl.textContent = `Automation is stopped. Last run: ${data.last_run || 'never'}. Last status: ${data.last_status || 'none'}.`;
+            statusEl.classList.remove('text-danger', 'text-success');
+            statusEl.classList.add('text-muted');
+            if (startBtn) startBtn.disabled = false;
+            if (stopBtn) stopBtn.disabled = true;
+        }
+
+        if (data.last_result) {
+            let details = document.getElementById('cipc-automation-result');
+            if (!details) {
+                details = document.createElement('div');
+                details.id = 'cipc-automation-result';
+                details.className = 'small text-muted';
+                statusEl.insertAdjacentElement('afterend', details);
+            }
+            details.textContent = data.last_result;
+        }
+
+        if (data.business_info) {
+            const businessInput = document.getElementById('cipc-business-info');
+            if (businessInput && !businessInput.value.trim()) {
+                businessInput.value = data.business_info;
+            }
+        }
+        if (data.request_text) {
+            const requestInput = document.getElementById('cipc-request-text');
+            if (requestInput && !requestInput.value.trim()) {
+                requestInput.value = data.request_text;
+            }
+        }
+    }
+
+    async function handleCipcAutomationStart() {
+        const statusEl = document.getElementById('cipc-automation-status');
+        const startBtn = document.getElementById('cipc-auto-start');
+        const stopBtn = document.getElementById('cipc-auto-stop');
+        const intervalInput = document.getElementById('cipc-auto-interval');
+        const sinceInput = document.getElementById('cipc-auto-since-days');
+        const maxResultsInput = document.getElementById('cipc-auto-max-results');
+        const subjectInput = document.getElementById('cipc-subject-prefix');
+        const toInput = document.getElementById('cipc-to-email');
+
+        const flowRequest = document.getElementById('cipc-flow-request')?.value?.trim() || '';
+        const businessInfo = flowRequest || document.getElementById('cipc-business-info')?.value?.trim() || '';
+        const requestText = flowRequest || document.getElementById('cipc-request-text')?.value?.trim() || '';
+        const payload = {
+            interval_minutes: Number(intervalInput?.value || 1440),
+            since_days: Number(sinceInput?.value || 1),
+            max_results: Number(maxResultsInput?.value || 50),
+            subject_prefix: subjectInput?.value?.trim() || 'CIPC New Registrations',
+            to_email: toInput?.value?.trim() || undefined,
+            business_info: businessInfo,
+            request_text: requestText,
+        };
+
+        if (statusEl) {
+            statusEl.textContent = 'Starting CIPC automation...';
+            statusEl.classList.remove('text-danger', 'text-success');
+            statusEl.classList.add('text-muted');
+        }
+
+        try {
+            const response = await fetch('/cipc/automation/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Unable to start automation.');
+            if (statusEl) {
+                statusEl.textContent = data.message || 'CIPC automation started.';
+                statusEl.classList.remove('text-danger');
+                statusEl.classList.add('text-success');
+            }
+            fetchCipcAutomationStatus();
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = `Start failed: ${err.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            if (startBtn) startBtn.disabled = false;
+            if (stopBtn) stopBtn.disabled = true;
+            console.error('Failed to start CIPC automation:', err);
+        }
+    }
+
+    async function handleCipcAutomationStop() {
+        const statusEl = document.getElementById('cipc-automation-status');
+        const startBtn = document.getElementById('cipc-auto-start');
+        const stopBtn = document.getElementById('cipc-auto-stop');
+
+        if (statusEl) {
+            statusEl.textContent = 'Stopping CIPC automation...';
+            statusEl.classList.remove('text-danger', 'text-success');
+            statusEl.classList.add('text-muted');
+        }
+
+        try {
+            const response = await fetch('/cipc/automation/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Unable to stop automation.');
+            if (statusEl) {
+                statusEl.textContent = data.message || 'CIPC automation stopped.';
+                statusEl.classList.remove('text-danger');
+                statusEl.classList.add('text-muted');
+            }
+            fetchCipcAutomationStatus();
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = `Stop failed: ${err.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            if (startBtn) startBtn.disabled = false;
+            if (stopBtn) stopBtn.disabled = false;
+            console.error('Failed to stop CIPC automation:', err);
+        }
+    }
+
+    function initCipcApp() {
+        const startBtn = document.getElementById('cipc-auto-start');
+        const stopBtn = document.getElementById('cipc-auto-stop');
+        const runRequestBtn = document.getElementById('cipc-run-request');
+        if (startBtn) {
+            startBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                handleCipcAutomationStart();
+            });
+        }
+        if (stopBtn) {
+            stopBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                handleCipcAutomationStop();
+            });
+        }
+        const automateFullBtn = document.getElementById('cipc-automate-full-registration');
+        if (runRequestBtn) {
+            runRequestBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                handleCipcRunRequestNow();
+            });
+        }
+        if (automateFullBtn) {
+            automateFullBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                submitCipcChatPrompt('Automate the whole registration of my business in CIPC, including the full setup checklist, bank account outreach, and branding.');
+            });
+        }
+        fetchCipcAutomationStatus();
+    }
+
+    function submitCipcChatPrompt(prompt) {
+        const input = document.getElementById('message-input');
+        const form = document.getElementById('chat-form');
+        if (!input || !form) {
+            console.error('Unable to submit CIPC chat prompt: chat form not found.');
+            return;
+        }
+        input.value = prompt;
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    }
+
+    async function handleCipcRunRequestNow() {
+        const flowRequest = document.getElementById('cipc-flow-request')?.value?.trim() || '';
+        if (!flowRequest) {
+            alert('Please enter your business/request details first.');
+            return;
+        }
+
+        const explicitToEmail = document.getElementById('cipc-to-email')?.value?.trim() || '';
+        const inferredEmail = explicitToEmail || extractEmailFromText(flowRequest);
+        const payload = {
+            to_email: inferredEmail,
+            subject_prefix: document.getElementById('cipc-subject-prefix')?.value?.trim() || 'CIPC New Registrations',
+            business_info: flowRequest,
+            request_text: flowRequest,
+        };
+
+        const statusEl = document.getElementById('cipc-send-email-status');
+        if (statusEl) {
+            statusEl.textContent = 'Running request now...';
+            statusEl.classList.remove('text-danger');
+            statusEl.classList.add('text-muted');
+        }
+
+        try {
+            const response = await fetch('/cipc/send_email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Request execution failed.');
+            if (statusEl) {
+                statusEl.textContent = data.message || 'Request executed successfully.';
+                statusEl.classList.remove('text-danger');
+                statusEl.classList.add('text-success');
+            }
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = `Request failed: ${err.message}`;
+                statusEl.classList.remove('text-success');
+                statusEl.classList.add('text-danger');
+            }
+            console.error('Failed to run CIPC request now:', err);
         }
     }
 

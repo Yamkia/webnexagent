@@ -44,7 +44,10 @@ if config.ENABLE_CIPC_APP:
     try:
         from cipc_tools import tools
         all_tools.extend(tools)
-        tool_descriptions.append("fetching recent CIPC company registrations, ranking potential clients, and emailing them to Zisandahub")
+        tool_descriptions.append(
+            "fetching recent CIPC company registrations, ranking potential clients, emailing them to Zisandahub, "
+            "registering businesses with CIPC, creating business card options, and preparing bank outreach for new business registration"
+        )
     except ImportError:
         print("Warning: CIPC tools not found. Please create 'cipc_tools.py'.")
 
@@ -81,6 +84,15 @@ def _create_llm(provider: str, model_name: str):
     raise ValueError(f"Unsupported provider: {provider}")
 
 
+def _is_insufficient_credit_error(e: Exception) -> bool:
+    msg = str(e).lower()
+    if "insufficient credits" in msg or "insufficient credit" in msg:
+        return True
+    if "402" in msg and "credit" in msg:
+        return True
+    return False
+
+
 def _preflight_model(llm) -> bool:
     """Attempt a tiny invocation to catch obvious model-not-found issues early.
     Keep it lightweight and provider-agnostic.
@@ -94,6 +106,8 @@ def _preflight_model(llm) -> bool:
         # If the error mentions 'not found' and 'models', treat as not found
         msg = str(e).lower()
         if "not found" in msg and "model" in msg:
+            return False
+        if _is_insufficient_credit_error(e):
             return False
         # Otherwise, don't block startup; defer to runtime
         return True
@@ -120,35 +134,41 @@ if config.LLM_PROVIDER == "google":
         except Exception:
             continue
     if chosen_llm is None:
-        # Provider-level fallback if Gemini models are unavailable
-        try_openrouter = bool(
-            config.OPENAI_API_BASE
-            and isinstance(config.OPENAI_API_BASE, str)
-            and "openrouter.ai" in config.OPENAI_API_BASE.lower()
-            and (config.OPENAI_API_KEY or getattr(config, "OPENROUTER_API_KEY", None))
-        )
-        if try_openrouter or config.OPENAI_API_KEY:
-            try:
-                alt_llm = _create_llm("openai", config.OPENAI_MODEL_NAME)
-                if _preflight_model(alt_llm):
-                    llm = alt_llm
-                    print("[Agent] All Gemini candidates unavailable; fell back to OpenAI/OpenRouter.", file=sys.stderr)
-                else:
-                    llm = _create_llm("google", primary)
-            except Exception:
-                llm = _create_llm("google", primary)
-        elif config.ANTHROPIC_API_KEY:
-            try:
-                alt_llm = _create_llm("anthropic", config.ANTHROPIC_MODEL_NAME)
-                if _preflight_model(alt_llm):
-                    llm = alt_llm
-                    print("[Agent] All Gemini candidates unavailable; fell back to Anthropic.", file=sys.stderr)
-                else:
-                    llm = _create_llm("google", primary)
-            except Exception:
-                llm = _create_llm("google", primary)
-        else:
+        # If the user explicitly selected Google, do not fall back to OpenAI/Anthropic.
+        explicit_google = config.LLM_PROVIDER_RAW not in ("", "auto")
+        if explicit_google:
+            print("[Agent] Explicit Google provider selected; staying on Google and not falling back to other providers.", file=sys.stderr)
             llm = _create_llm("google", primary)
+        else:
+            # Provider-level fallback if Gemini models are unavailable
+            try_openrouter = bool(
+                config.OPENAI_API_BASE
+                and isinstance(config.OPENAI_API_BASE, str)
+                and "openrouter.ai" in config.OPENAI_API_BASE.lower()
+                and (config.OPENAI_API_KEY or getattr(config, "OPENROUTER_API_KEY", None))
+            )
+            if try_openrouter or config.OPENAI_API_KEY:
+                try:
+                    alt_llm = _create_llm("openai", config.OPENAI_MODEL_NAME)
+                    if _preflight_model(alt_llm):
+                        llm = alt_llm
+                        print("[Agent] All Gemini candidates unavailable; fell back to OpenAI/OpenRouter.", file=sys.stderr)
+                    else:
+                        llm = _create_llm("google", primary)
+                except Exception:
+                    llm = _create_llm("google", primary)
+            elif config.ANTHROPIC_API_KEY:
+                try:
+                    alt_llm = _create_llm("anthropic", config.ANTHROPIC_MODEL_NAME)
+                    if _preflight_model(alt_llm):
+                        llm = alt_llm
+                        print("[Agent] All Gemini candidates unavailable; fell back to Anthropic.", file=sys.stderr)
+                    else:
+                        llm = _create_llm("google", primary)
+                except Exception:
+                    llm = _create_llm("google", primary)
+            else:
+                llm = _create_llm("google", primary)
     else:
         llm = chosen_llm
 elif config.LLM_PROVIDER == "openai":
@@ -172,6 +192,10 @@ elif config.LLM_PROVIDER == "openai":
             candidates.append(no_mini_primary)
             if "/" not in no_mini_primary:
                 candidates.append(f"openai/{no_mini_primary}")
+        # If the paid model is unavailable or lacks credits, try a known free OpenRouter model.
+        free_openrouter_model = "tencent/hy3-preview:free"
+        if free_openrouter_model not in candidates:
+            candidates.append(free_openrouter_model)
 
     chosen_llm = None
     for name in candidates:
@@ -182,9 +206,15 @@ elif config.LLM_PROVIDER == "openai":
                 if name != primary:
                     print(f"[Agent] OpenRouter model '{primary}' not available; auto-switched to '{name}'.", file=sys.stderr)
                 break
-        except Exception:
+        except Exception as e:
+            print(f"[Agent] preflight failed for OpenRouter model '{name}': {e}", file=sys.stderr)
             continue
-    llm = chosen_llm or _create_llm("openai", primary)
+
+    if chosen_llm is None:
+        print(f"[Agent] No OpenRouter candidate succeeded; using primary '{primary}' and deferring error to runtime.", file=sys.stderr)
+        llm = _create_llm("openai", primary)
+    else:
+        llm = chosen_llm
 elif config.LLM_PROVIDER == "anthropic":
     llm = _create_llm("anthropic", config.ANTHROPIC_MODEL_NAME)
 
@@ -198,7 +228,11 @@ if tool_descriptions:
 else:
     system_prompt_tools = " You do not have any tools enabled."
 # Add a safety instruction for the new workflow
-system_prompt_safety = " When finding leads and sending emails, first find the leads, then confirm with the user before sending any emails."
+system_prompt_safety = (
+    " When finding leads and sending emails, first find the leads, then confirm with the user before sending any emails. "
+    "When assisting with CIPC business registration, create a complete, actionable registration automation plan and use available tools to prepare required materials. "
+    "Focus on concrete steps for name reservation, document collection, CIPC form completion, branding, and bank outreach."
+)
 system_prompt = system_prompt_base + system_prompt_tools + system_prompt_safety
 
 # 2. Create the agent graph (LangChain 1.0 API)

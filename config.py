@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values
 
 # Load .env from the same directory as this config file.
 # Support multiple environment files: .env.development, .env.production, etc.
@@ -28,7 +28,25 @@ for fname in candidate_files:
 if env_path is None:
     env_path = base_dir / '.env'
 
-load_dotenv(dotenv_path=env_path)
+# Load base .env first, then overlay the selected environment file.
+# If an env-specific file contains blank values, we treat those as "no override"
+# so that a base .env can still provide defaults.
+base_env_path = base_dir / '.env'
+if base_env_path.exists() and base_env_path != env_path:
+    load_dotenv(dotenv_path=base_env_path, override=False)
+
+if env_path.exists():
+    if env_path == base_env_path:
+        load_dotenv(dotenv_path=env_path, override=True)
+    else:
+        parsed_values = dotenv_values(env_path)
+        for key, value in parsed_values.items():
+            if value is None:
+                continue
+            # Preserve default values from base .env if this file leaves them blank.
+            if value == "":
+                continue
+            os.environ[key] = value
 
 # --- API Keys ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # For OpenAI models
@@ -41,11 +59,15 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Google Gemini models
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") # For Anthropic Claude models
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY") # For Deepgram voice transcription
 
-# Debug: Print loaded API keys (for troubleshooting only)
+# Debug: Print loaded environment source and key status for troubleshooting.
+openrouter_configured = bool(OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower())
+print(f"[DEBUG] App env name: {env_name}")
 print(f"[DEBUG] .env path: {env_path} (exists={env_path.exists()})")
-print(f"[DEBUG] Loaded OPENAI_API_KEY: {OPENAI_API_KEY}")
-print(f"[DEBUG] Loaded GOOGLE_API_KEY: {GOOGLE_API_KEY}")
-print(f"[DEBUG] Loaded LLM_PROVIDER: {os.getenv('LLM_PROVIDER')}")
+print(f"[DEBUG] Using OpenRouter base: {openrouter_configured}")
+print(f"[DEBUG] OPENAI_API_KEY set: {bool(OPENAI_API_KEY)}")
+print(f"[DEBUG] OPENROUTER_API_KEY set: {bool(OPENROUTER_API_KEY)}")
+print(f"[DEBUG] GOOGLE_API_KEY set: {bool(GOOGLE_API_KEY)}")
+print(f"[DEBUG] LLM_PROVIDER raw: {os.getenv('LLM_PROVIDER')}")
 
 # --- Model Settings ---
 # Provider can be: "openai", "google", "anthropic", or "auto" (auto-detect based on available keys)
@@ -96,7 +118,24 @@ ENABLE_WEBSITE_HELPER_APP = os.getenv("ENABLE_WEBSITE_HELPER_APP", "True").lower
 ENABLE_CIPC_APP = os.getenv("ENABLE_CIPC_APP", "False").lower() in ('true', '1', 't')
 CIPC_API_BASE_URL = os.getenv("CIPC_API_BASE_URL")
 CIPC_API_KEY = os.getenv("CIPC_API_KEY")
+CIPC_REGISTRATION_API_URL = os.getenv("CIPC_REGISTRATION_API_URL")
+CIPC_REGISTRATION_API_KEY = os.getenv("CIPC_REGISTRATION_API_KEY") or CIPC_API_KEY
+CIPC_REGISTRATION_SITE_URL = os.getenv("CIPC_REGISTRATION_SITE_URL")
+CIPC_BROWSER_AUTOMATION_ENABLED = os.getenv("CIPC_BROWSER_AUTOMATION_ENABLED", "True").lower() in ('true', '1', 't')
+CIPC_BROWSER_HEADLESS = os.getenv("CIPC_BROWSER_HEADLESS", "True").lower() in ('true', '1', 't')
+CIPC_CHROME_EXECUTABLE_PATH = os.getenv("CIPC_CHROME_EXECUTABLE_PATH")
+CIPC_BROWSER_WAIT_SECONDS = int(os.getenv("CIPC_BROWSER_WAIT_SECONDS", "15"))
 ZISANDAHUB_EMAIL = os.getenv("ZISANDAHUB_EMAIL")
+
+# CIPC automation settings
+CIPC_AUTO_EMAIL_ENABLED = os.getenv("CIPC_AUTO_EMAIL_ENABLED", "False").lower() in ('true', '1', 't')
+CIPC_AUTO_EMAIL_INTERVAL_MINUTES = int(os.getenv("CIPC_AUTO_EMAIL_INTERVAL_MINUTES", "1440"))
+CIPC_AUTO_EMAIL_SINCE_DAYS = int(os.getenv("CIPC_AUTO_EMAIL_SINCE_DAYS", "1"))
+CIPC_AUTO_EMAIL_MAX_RESULTS = int(os.getenv("CIPC_AUTO_EMAIL_MAX_RESULTS", "50"))
+CIPC_AUTO_EMAIL_TO = os.getenv("CIPC_AUTO_EMAIL_TO") or ZISANDAHUB_EMAIL
+CIPC_AUTO_EMAIL_SUBJECT_PREFIX = os.getenv("CIPC_AUTO_EMAIL_SUBJECT_PREFIX") or "CIPC New Registrations"
+CIPC_AUTO_EMAIL_BUSINESS_INFO = os.getenv("CIPC_AUTO_EMAIL_BUSINESS_INFO")
+CIPC_AUTO_EMAIL_REQUEST_TEXT = os.getenv("CIPC_AUTO_EMAIL_REQUEST_TEXT")
 
 # --- Input Settings ---
 ENABLE_VOICE_INPUT = os.getenv("ENABLE_VOICE_INPUT", "False").lower() in ('true', '1', 't')

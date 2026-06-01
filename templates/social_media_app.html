@@ -396,11 +396,16 @@
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
                             Generate Content
                         </button>
+                        <button type="button" id="publish-generated-btn" class="btn btn-outline-success w-100 mt-2" style="display: none;" disabled>
+                            Publish Generated Instagram Post
+                        </button>
                     </form>
                 </div>
                 <div class="card-footer" id="content-result-container" style="display: none;">
                     <h6>Generated Content:</h6>
                     <pre id="content-result" class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                    <div id="content-hashtags" class="mt-3 text-secondary" style="display: none;"></div>
+                    <div id="publish-result" class="mt-3"></div>
                 </div>
             </div>
         </div>
@@ -847,6 +852,33 @@
             console.log('Using Instagram account for content generation:', instagramAccountContext.username);
         }
     }
+
+    function updateInstagramDashboard(accountData) {
+        document.getElementById('dashboard-username').textContent = accountData.username || '@username';
+        document.getElementById('dashboard-account-type').textContent = accountData.account_type || 'Instagram Account';
+        document.getElementById('dashboard-posts').textContent = formatNumber(accountData.posts || 0);
+        document.getElementById('dashboard-followers').textContent = formatNumber(accountData.followers || 0);
+        document.getElementById('dashboard-following').textContent = formatNumber(accountData.following || 0);
+        document.getElementById('dashboard-engagement').textContent = `${parseFloat(accountData.avg_engagement_rate || 0).toFixed(2)}%`;
+    }
+
+    function checkInstagramSession() {
+        fetch('/social/instagram/session_status')
+            .then(response => response.json())
+            .then(data => {
+                const statusText = document.getElementById('ig-status-text');
+                const logoutButton = document.getElementById('ig-logout-btn');
+                if (data.logged_in) {
+                    if (statusText) statusText.textContent = `Connected as ${data.username || 'Instagram user'}`;
+                    if (logoutButton) logoutButton.style.display = 'inline-block';
+                } else {
+                    if (statusText) statusText.textContent = 'Not connected';
+                    if (logoutButton) logoutButton.style.display = 'none';
+                }
+            });
+    }
+
+    window.checkInstagramSession = checkInstagramSession;
     
     console.log('Dashboard element:', socialAppDashboard);
     console.log('Tool view element:', socialAppToolView);
@@ -921,6 +953,7 @@
         }
     }
     checkInstagramLoginCallback();
+    checkInstagramSession();
     
     // Back to dashboard
     if (backToSocialDashboard) {
@@ -1257,51 +1290,44 @@
                     return;
                 }
 
-                const avgEngagement = ((data.avg_likes_per_post + data.avg_comments_per_post) / 1000) * 100;
-                let accountData = {
-                    username: data.username,
-                    followers: 1000,
-                    following: 500,
-                    posts: data.media_count,
+                const followers = parseInt(data.followers || data.followers_count || 0, 10) || 0;
+                const following = parseInt(data.following || 0, 10) || 0;
+                const posts = parseInt(data.posts || data.media_count || 0, 10) || 0;
+                const avgEngagement = parseFloat(data.avg_engagement_rate || (((data.avg_likes_per_post || 0) + (data.avg_comments_per_post || 0)) / 1000) * 100 || 0);
+
+                const accountData = {
+                    username: data.username || '@yourusername',
+                    followers,
+                    following,
+                    posts,
                     avg_engagement_rate: avgEngagement
                 };
 
-                // Merge simulated follower/following from local demo store
-                fetch('/social/instagram/account_info')
-                    .then(resp => resp.json())
-                    .then(simData => {
-                        if (!simData.error) {
-                            accountData.followers = simData.followers || accountData.followers;
-                            accountData.following = simData.following || accountData.following;
-                            accountData.posts = simData.posts || accountData.posts;
+                setInstagramAccountContext(accountData);
+                updateInstagramDashboard(accountData);
+                document.getElementById('instagram-dashboard').style.display = 'block';
+                document.getElementById('connect-section').style.display = 'none';
+
+                fetch('/social/instagram/ai_analyze', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(accountData)
+                })
+                    .then(response => response.json())
+                    .then(analysis => {
+                        if (analysis.error) {
+                            showNotification('Error: ' + analysis.error, 'danger');
+                            return;
                         }
+                        displayAnalysisResults(analysis);
+                        showNotification('✨ Analysis complete!', 'success');
                     })
-                    .catch(() => {
-                        // keep existing placeholders
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Failed to analyze account', 'danger');
                     })
                     .finally(() => {
-                        setInstagramAccountContext(accountData);
-                        fetch('/social/instagram/ai_analyze', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(accountData)
-                        })
-                            .then(response => response.json())
-                            .then(analysis => {
-                                if (analysis.error) {
-                                    showNotification('Error: ' + analysis.error, 'danger');
-                                    return;
-                                }
-                                displayAnalysisResults(analysis);
-                                showNotification('✨ Analysis complete!', 'success');
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                showNotification('Failed to analyze account', 'danger');
-                            })
-                            .finally(() => {
-                                document.getElementById('ig-loading').style.display = 'none';
-                            });
+                        document.getElementById('ig-loading').style.display = 'none';
                     });
             })
             .catch(error => {
@@ -1347,6 +1373,10 @@
         });
     });
     
+    const publishGeneratedBtn = document.getElementById('publish-generated-btn');
+    const hashtagsInfo = document.getElementById('content-hashtags');
+    const publishResultContainer = document.getElementById('publish-result');
+
     // Content generation form
     const contentForm = document.getElementById('content-generation-form');
     if (contentForm) {
@@ -1360,10 +1390,14 @@
             btn.disabled = true;
             spinner.style.display = 'inline-block';
             resultContainer.style.display = 'none';
+            publishResultContainer.innerHTML = '';
+            hashtagsInfo.style.display = 'none';
+            publishGeneratedBtn.style.display = 'none';
+            publishGeneratedBtn.disabled = true;
             
             const contentType = document.querySelector('input[name="content-type"]:checked').value;
             const topic = document.getElementById('content-topic').value;
-            const platform = document.getElementById('post-platform').value;
+            const platform = document.getElementById('post-platform').value || 'Instagram';
             
             const payload = { content_type: contentType, topic, platform };
             
@@ -1389,6 +1423,12 @@
                     resultElement.textContent = 'Error: ' + data.error;
                 } else {
                     resultElement.textContent = data.content;
+                    if (platform.toLowerCase() === 'instagram' && contentType === 'post') {
+                        publishGeneratedBtn.style.display = 'block';
+                        publishGeneratedBtn.disabled = false;
+                        hashtagsInfo.textContent = `Suggested hashtags: #${topic.replace(/\s+/g, '')} #instagram #growth #content`;
+                        hashtagsInfo.style.display = 'block';
+                    }
                 }
                 resultContainer.style.display = 'block';
             } catch (error) {
@@ -1397,6 +1437,51 @@
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
+            }
+        });
+    }
+
+    if (publishGeneratedBtn) {
+        publishGeneratedBtn.addEventListener('click', async () => {
+            const btn = publishGeneratedBtn;
+            const spinnerText = 'Publishing...';
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = spinnerText;
+            publishResultContainer.innerHTML = '';
+
+            const contentType = document.querySelector('input[name="content-type"]:checked').value;
+            const topic = document.getElementById('content-topic').value;
+            const platform = document.getElementById('post-platform').value || 'Instagram';
+            const payload = {
+                content_type: contentType,
+                topic,
+                platform,
+                style: document.getElementById('post-style').value,
+                account_data: instagramAccountContext || {},
+                hashtags: [`#${topic.replace(/\s+/g, '')}`, '#instagram', '#socialmedia']
+            };
+
+            try {
+                const response = await fetch('/social/create_and_publish', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.error) {
+                    publishResultContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    showNotification('⚠️ Publish action failed', 'danger');
+                } else {
+                    publishResultContainer.innerHTML = `<div class="alert alert-success">${data.publish_result?.message || 'Published successfully to Instagram.'}</div>`;
+                    showNotification('🚀 Generated content published!', 'success');
+                }
+            } catch (error) {
+                publishResultContainer.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+                showNotification('⚠️ Publish action failed', 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         });
     }

@@ -81,6 +81,25 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
         elif "Authentication failed" in output or "invalid credentials" in output:
             return False, output, verbose_log
         return True, output, verbose_log
+    except DefaultCredentialsError:
+        error_message = (
+            "\n--- Google Authentication Error ---\n"
+            "The API key is invalid, expired, or not authorized for the Gemini API. "
+            "Please check your GOOGLE_API_KEY in the .env file.\n"
+            "You can get a new key from: https://aistudio.google.com/app/apikey"
+        )
+        print(error_message, file=sys.stderr)
+        return False, error_message, verbose_log
+    except ResourceExhausted:
+        error_message = (
+            "\n--- API Quota Exceeded ---\n"
+            "You have exceeded the request limit for the Google Gemini API, likely on the free tier. "
+            "To continue, you need to enable billing for your Google Cloud project.\n\n"
+            "1. Visit https://console.cloud.google.com/projectselector2/billing/enable\n"
+            "2. Select the project linked to your API key and set up a billing account.\n"
+        )
+        print(error_message, file=sys.stderr)
+        return False, error_message, verbose_log
     except Exception as e:
         # Map provider-specific errors without importing heavy SDKs at startup
         ename = e.__class__.__name__
@@ -88,7 +107,10 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
         if ("openai" in emod and ename in ("AuthenticationError",)) or (
             "anthropic" in emod and ename in ("AuthenticationError",)
         ):
-            provider_name = config.LLM_PROVIDER.capitalize()
+            if config.LLM_PROVIDER == "openai":
+                provider_name = "OpenAI"
+            else:
+                provider_name = config.LLM_PROVIDER.capitalize()
             error_message = (
                 f"\n--- {provider_name} Authentication Error ---\n"
                 f"The API key is invalid, expired, or not authorized. "
@@ -107,29 +129,28 @@ def process_agent_request(prompt: str, chat_history: list) -> tuple[bool, str, O
             )
             print(error_message, file=sys.stderr)
             return False, error_message, verbose_log
-        raise
-    except DefaultCredentialsError:
-        # This error occurs if the API key is present but invalid or not authorized.
-        error_message = (
-            "\n--- Google Authentication Error ---\n"
-            "The API key is invalid, expired, or not authorized for the Gemini API. "
-            "Please check your GOOGLE_API_KEY in the .env file.\n"
-            "You can get a new key from: https://aistudio.google.com/app/apikey"
-        ) 
-        print(error_message, file=sys.stderr) # Still print to server console
-        return False, error_message, verbose_log
-    except ResourceExhausted:
-        # This is a specific error for hitting API rate limits.
-        error_message = (
-            "\n--- API Quota Exceeded ---\n"
-            "You have exceeded the request limit for the Google Gemini API, likely on the free tier. "
-            "To continue, you need to enable billing for your Google Cloud project.\n\n"
-            "1. Visit https://console.cloud.google.com/projectselector2/billing/enable\n"
-            "2. Select the project linked to your API key and set up a billing account.\n"
-        ) 
-        print(error_message, file=sys.stderr) # Still print to server console
-        return False, error_message, verbose_log
-    except Exception as e:
+        msg = str(e).lower()
+        if ("openrouter.ai" in (config.OPENAI_API_BASE or "").lower() and (
+            "insufficient credit" in msg or "insufficient credits" in msg or "402" in msg or "no credits" in msg
+        )):
+            error_message = (
+                "\n--- OpenRouter Credit Error ---\n"
+                "Your OpenRouter key is valid, but this account has no available credits or access for the requested model. "
+                "Please switch to a free OpenRouter model, enable credits, or update your key at https://openrouter.ai/settings/credits."
+            )
+            print(error_message, file=sys.stderr)
+            return False, error_message, verbose_log
+        if ("langchain_google_genai" in emod and ename == "ChatGoogleGenerativeAIError") or (
+            "google.genai" in emod and ename == "ClientError"
+        ):
+            error_message = (
+                "\n--- Google Authentication Error ---\n"
+                "The API key is invalid, suspended, or not authorized for the Gemini API. "
+                "Please check your GOOGLE_API_KEY in the .env file.\n"
+                "You can get a new key from: https://aistudio.google.com/app/apikey"
+            )
+            print(error_message, file=sys.stderr)
+            return False, error_message, verbose_log
         error_message = f"\nAn unexpected error occurred: {e}"
-        print(error_message, file=sys.stderr) # Still print to server console
+        print(error_message, file=sys.stderr)
         return False, error_message, verbose_log

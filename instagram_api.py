@@ -12,19 +12,17 @@ class InstagramGraphAPI:
     Connects to real Instagram Business accounts via Meta's Graph API.
     """
     
-    def __init__(self):
+    def __init__(self, access_token: Optional[str] = None, business_account_id: Optional[str] = None):
         self.app_id = os.getenv('INSTAGRAM_APP_ID')
         self.app_secret = os.getenv('INSTAGRAM_APP_SECRET')
-        self.access_token = os.getenv('INSTAGRAM_ACCESS_TOKEN')
-        self.business_account_id = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
-        self.base_url = 'https://graph.facebook.com/v18.0'
+        self.access_token = access_token or os.getenv('INSTAGRAM_ACCESS_TOKEN')
+        self.business_account_id = business_account_id or os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+        self.facebook_graph_base = 'https://graph.facebook.com/v18.0'
+        self.instagram_graph_base = 'https://graph.instagram.com'
         
     def is_configured(self) -> bool:
         """Check if API credentials are properly configured."""
-        return all([
-            self.access_token,
-            self.business_account_id
-        ])
+        return bool(self.access_token)
     
     def get_account_info(self) -> Dict:
         """
@@ -40,27 +38,46 @@ class InstagramGraphAPI:
             }
         
         try:
-            url = f"{self.base_url}/{self.business_account_id}"
-            params = {
-                'fields': 'username,name,biography,followers_count,follows_count,media_count,profile_picture_url',
-                'access_token': self.access_token
-            }
+            if self.business_account_id:
+                url = f"{self.facebook_graph_base}/{self.business_account_id}"
+                params = {
+                    'fields': 'username,name,biography,followers_count,follows_count,media_count,profile_picture_url',
+                    'access_token': self.access_token
+                }
+            else:
+                url = f"{self.instagram_graph_base}/me"
+                params = {
+                    'fields': 'id,username,account_type,media_count',
+                    'access_token': self.access_token
+                }
             
             response = requests.get(url, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
             
-            # Transform to match our existing format
+            if self.business_account_id:
+                return {
+                    'username': f"@{data.get('username', 'unknown')}",
+                    'name': data.get('name', ''),
+                    'account_type': 'Business',
+                    'followers': data.get('followers_count', 0),
+                    'following': data.get('follows_count', 0),
+                    'posts': data.get('media_count', 0),
+                    'bio': data.get('biography', ''),
+                    'profile_picture': data.get('profile_picture_url', ''),
+                    'verified': False,
+                    'last_updated': datetime.now().isoformat()
+                }
             return {
                 'username': f"@{data.get('username', 'unknown')}",
-                'name': data.get('name', ''),
-                'account_type': 'Business',
+                'name': '',
+                'account_type': data.get('account_type', 'Personal'),
                 'followers': data.get('followers_count', 0),
-                'following': data.get('follows_count', 0),
+                'following': 0,
                 'posts': data.get('media_count', 0),
-                'bio': data.get('biography', ''),
-                'profile_picture': data.get('profile_picture_url', ''),
-                'verified': False,  # Graph API doesn't provide this in basic info
+                'bio': '',
+                'profile_picture': '',
+                'verified': False,
                 'last_updated': datetime.now().isoformat()
             }
             
@@ -80,6 +97,8 @@ class InstagramGraphAPI:
         """
         if not self.is_configured():
             return {'error': 'Instagram API not configured'}
+        if not self.business_account_id:
+            return {'error': 'Instagram insights require a business account ID and Graph API access token.'}
         
         if metrics is None:
             metrics = [
@@ -90,7 +109,7 @@ class InstagramGraphAPI:
             ]
         
         try:
-            url = f"{self.base_url}/{self.business_account_id}/insights"
+            url = f"{self.facebook_graph_base}/{self.business_account_id}/insights"
             params = {
                 'metric': ','.join(metrics),
                 'period': period,
@@ -101,7 +120,6 @@ class InstagramGraphAPI:
             response.raise_for_status()
             data = response.json()
             
-            # Transform insights data
             insights = {}
             for item in data.get('data', []):
                 metric_name = item.get('name')
@@ -132,8 +150,10 @@ class InstagramGraphAPI:
             return [{'error': 'Instagram API not configured'}]
         
         try:
-            # First, get media IDs
-            url = f"{self.base_url}/{self.business_account_id}/media"
+            if self.business_account_id:
+                url = f"{self.facebook_graph_base}/{self.business_account_id}/media"
+            else:
+                url = f"{self.instagram_graph_base}/me/media"
             params = {
                 'fields': 'id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count',
                 'limit': min(limit, 25),
@@ -225,10 +245,12 @@ class InstagramGraphAPI:
         """
         if not self.is_configured():
             return {'error': 'Instagram API not configured'}
+        if not self.business_account_id:
+            return {'error': 'Publishing content requires an Instagram Business account ID.'}
         
         try:
             # Step 1: Create media container
-            url = f"{self.base_url}/{self.business_account_id}/media"
+            url = f"{self.facebook_graph_base}/{self.business_account_id}/media"
             params = {
                 'image_url': image_url,
                 'caption': caption,
@@ -242,7 +264,7 @@ class InstagramGraphAPI:
             container_id = creation_data.get('id')
             
             # Step 2: Publish the media container
-            publish_url = f"{self.base_url}/{self.business_account_id}/media_publish"
+            publish_url = f"{self.facebook_graph_base}/{self.business_account_id}/media_publish"
             publish_params = {
                 'creation_id': container_id,
                 'access_token': self.access_token

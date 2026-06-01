@@ -76,7 +76,7 @@
                         <p>{{ welcome_message or 'Welcome to the Email Assistant.' }}</p>
                     </div>
                 </div>
-                <form id="chat-form" class="d-flex gap-2">
+                <form id="chat-form" class="d-flex gap-2" onsubmit="return false;">
                     <input type="text" id="message-input" class="form-control" placeholder="Type your message here..." autocomplete="off" required {% if not agent_loaded %}disabled{% endif %}>
                     <button type="submit" class="btn btn-primary" title="Send" {% if not agent_loaded %}disabled{% endif %}>Send</button>
                 </form>

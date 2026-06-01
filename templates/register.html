@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-background">
+        <span class="auth-glow glow-one"></span>
+        <span class="auth-glow glow-two"></span>
+        <span class="auth-glow glow-three"></span>
+    </div>
+
+    <div class="container auth-shell">
+        <div class="auth-card shadow-lg">
+            <div class="auth-panel auth-panel-copy">
+                <div>
+                    <p class="eyebrow">Join the hub</p>
+                    <h1>Create your account</h1>
+                    <p class="auth-copy-text">Register an account to securely manage apps, environments, and your team workflow.</p>
+                </div>
+                <div class="auth-meta">
+                    <span class="auth-meta-label">Already have an account?</span>
+                    <a href="/auth/login" class="auth-meta-link">Login instead</a>
+                </div>
+            </div>
+
+            <div class="auth-panel auth-panel-form">
+                <div class="auth-form-header">
+                    <h2>Sign up</h2>
+                    <p class="text-muted">Choose a username and strong password.</p>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <form method="post" action="/auth/register" class="auth-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control form-control-lg" id="confirm" name="confirm" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Create account</button>
+                </form>
+                <div class="auth-footer">
+                    <span>Already registered?</span>
+                    <a href="/auth/login">Login now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

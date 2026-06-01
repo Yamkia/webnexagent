@@ -14,10 +14,10 @@ load_dotenv()
 class InstagramOAuth:
     """Handle Instagram OAuth 2.0 authentication flow"""
     
-    def __init__(self):
+    def __init__(self, redirect_uri: str = None):
         self.app_id = os.getenv('INSTAGRAM_APP_ID')
         self.app_secret = os.getenv('INSTAGRAM_APP_SECRET')
-        self.redirect_uri = os.getenv('INSTAGRAM_REDIRECT_URI', 'http://127.0.0.1:5001/auth/instagram/callback')
+        self.redirect_uri = redirect_uri or os.getenv('INSTAGRAM_REDIRECT_URI') or 'http://127.0.0.1:5001/auth/instagram/callback'
         self.base_url = 'https://api.instagram.com'
         self.graph_url = 'https://graph.instagram.com'
 

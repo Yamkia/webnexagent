@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-background">
+        <span class="auth-glow glow-one"></span>
+        <span class="auth-glow glow-two"></span>
+        <span class="auth-glow glow-three"></span>
+    </div>
+
+    <div class="container auth-shell">
+        <div class="auth-card shadow-lg">
+            <div class="auth-panel auth-panel-copy">
+                <div>
+                    <p class="eyebrow">User Management</p>
+                    <h1>Admin control center</h1>
+                    <p class="auth-copy-text">Manage accounts, grant roles, and add team members using the same secure layout as the login flow.</p>
+                </div>
+                <div class="auth-meta">
+                    <span class="auth-meta-label">Admin only</span>
+                    <a href="/auth/logout" class="auth-meta-link">Sign out</a>
+                </div>
+            </div>
+
+            <div class="auth-panel auth-panel-form">
+                <div class="auth-form-header">
+                    <h2>Users</h2>
+                    <p class="text-muted">Existing accounts on the platform.</p>
+                </div>
+                <div class="mb-4 auth-table-card">
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0 auth-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.role }}</td>
+                                        <td>{{ user.created_at or 'n/a' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="auth-form-header mt-4">
+                    <h2>Add new user</h2>
+                    <p class="text-muted">Create a new account with a role.</p>
+                </div>
+                <form method="post" action="/auth/users/create" class="auth-form">
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Username</label>
+                        <input class="form-control form-control-lg" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control form-control-lg" id="password" name="password" type="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="role">Role</label>
+                        <select class="form-select form-select-lg" id="role" name="role">
+                            <option value="user" selected>User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Create user</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -530,8 +530,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // Execution handler extracted so it can be attached to dynamically-created buttons
     async function executeCreateHandler(e){
         try{ if(e && e.preventDefault) e.preventDefault(); }catch(_){}
-        const dbName = document.getElementById('odoo-dbname-input').value.trim();
-        if(!dbName){ alert('Please provide a Database Name before creating the environment.'); return; }
+        let dbName = document.getElementById('odoo-dbname-input').value.trim();
+        if(!dbName){
+            dbName = `odoo_${Date.now()}`;
+            document.getElementById('odoo-dbname-input').value = dbName;
+            if(typeof showToast === 'function') showToast(`Generated database name "${dbName}" for you.`, 'info');
+        }
         const mods = Array.from(document.getElementById('module-list').children).map(li=>li.textContent.trim()).filter(Boolean);
         const customModulesText = (document.getElementById('custom-modules-input')?.value || '').trim();
         if(customModulesText){
@@ -593,8 +597,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(cw){
         cw.addEventListener('click', async (e)=>{
             e.preventDefault();
-            const dbName = document.getElementById('odoo-dbname-input').value.trim();
-            if(!dbName){ alert('Please provide a Database Name for the new environment.'); return; }
+            let dbName = document.getElementById('odoo-dbname-input').value.trim();
+            if(!dbName){
+                dbName = `odoo_${Date.now()}`;
+                document.getElementById('odoo-dbname-input').value = dbName;
+                if(typeof showToast === 'function') showToast(`Generated database name "${dbName}" for you.`, 'info');
+            }
             const version = document.getElementById('odoo-version-input').value || '19.0';
             try{
                 const r = await fetch('/envs/create', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: dbName, db_name: dbName, version, type: 'docker'})});

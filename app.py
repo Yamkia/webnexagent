@@ -12,6 +12,7 @@ import random
 import ipaddress
 import json
 import shutil
+import datetime
 
 import markdown
 # --- Setup Python Path ---
@@ -109,6 +110,151 @@ def _find_env(db_name):
 # --- Import Agent Logic ---
 # Import configuration first to determine whether the agent should be enabled.
 import config
+from cipc_tools import (
+    email_cipc_new_businesses_to_zisandahub,
+    fetch_cipc_new_businesses,
+    list_cipc_business_categories,
+    register_cipc_business,
+)
+
+CIPC_AUTOMATION = {
+    'enabled': False,
+    'interval_seconds': getattr(config, 'CIPC_AUTO_EMAIL_INTERVAL_MINUTES', 1440) * 60,
+    'to_email': getattr(config, 'CIPC_AUTO_EMAIL_TO', getattr(config, 'ZISANDAHUB_EMAIL', None)),
+    'subject_prefix': getattr(config, 'CIPC_AUTO_EMAIL_SUBJECT_PREFIX', 'CIPC New Registrations'),
+    'since_days': getattr(config, 'CIPC_AUTO_EMAIL_SINCE_DAYS', 1),
+    'max_results': getattr(config, 'CIPC_AUTO_EMAIL_MAX_RESULTS', 20),
+    'business_info': getattr(config, 'CIPC_AUTO_EMAIL_BUSINESS_INFO', None),
+    'request_text': getattr(config, 'CIPC_AUTO_EMAIL_REQUEST_TEXT', None),
+    'last_run': None,
+    'last_status': None,
+    'last_result': None,
+    'thread': None,
+    'stop_event': None,
+}
+
+
+def _cipc_automation_run_once(since_days, max_results, to_email, subject_prefix, business_info=None, request_text=None):
+    since_date = (datetime.date.today() - datetime.timedelta(days=since_days)).isoformat()
+    return email_cipc_new_businesses_to_zisandahub(
+        since_date=since_date,
+        max_results=max_results,
+        to_email=to_email,
+        subject_prefix=subject_prefix,
+        business_info=business_info,
+        request_text=request_text,
+    )
+
+
+def _cipc_auto_email_worker(interval_seconds, since_days, max_results, to_email, subject_prefix, business_info=None, request_text=None):
+    CIPC_AUTOMATION['last_status'] = 'running'
+    while not CIPC_AUTOMATION['stop_event'].is_set():
+        CIPC_AUTOMATION['last_run'] = datetime.datetime.now().isoformat()
+        try:
+            result = _cipc_automation_run_once(
+                since_days=since_days,
+                max_results=max_results,
+                to_email=to_email,
+                subject_prefix=subject_prefix,
+                business_info=business_info,
+                request_text=request_text,
+            )
+            CIPC_AUTOMATION['last_result'] = str(result)
+            if isinstance(result, str):
+                if result.lower().startswith('email sent successfully'):
+                    CIPC_AUTOMATION['last_status'] = 'ok'
+                elif 'no new' in result.lower():
+                    CIPC_AUTOMATION['last_status'] = 'no_results'
+                else:
+                    CIPC_AUTOMATION['last_status'] = 'error'
+            else:
+                CIPC_AUTOMATION['last_status'] = 'error'
+                CIPC_AUTOMATION['last_result'] = f'Unexpected response type: {type(result).__name__}'
+        except Exception as exc:
+            CIPC_AUTOMATION['last_status'] = 'error'
+            CIPC_AUTOMATION['last_result'] = f'Automation exception: {exc}'
+
+        if CIPC_AUTOMATION['stop_event'].wait(interval_seconds):
+            break
+
+    CIPC_AUTOMATION['enabled'] = False
+
+
+def _start_cipc_automation(interval_minutes=1440, since_days=1, max_results=20, to_email=None, subject_prefix=None, business_info=None, request_text=None):
+    if CIPC_AUTOMATION['enabled']:
+        return False
+
+    to_email = to_email or getattr(config, 'ZISANDAHUB_EMAIL', None)
+    subject_prefix = subject_prefix or getattr(config, 'CIPC_AUTO_EMAIL_SUBJECT_PREFIX', 'CIPC New Registrations')
+    if not to_email:
+        raise ValueError('No recipient email configured for CIPC automation.')
+
+    CIPC_AUTOMATION['enabled'] = True
+    CIPC_AUTOMATION['interval_seconds'] = max(60, int(interval_minutes)) * 60
+    CIPC_AUTOMATION['since_days'] = max(1, int(since_days))
+    CIPC_AUTOMATION['max_results'] = max(1, int(max_results))
+    CIPC_AUTOMATION['to_email'] = to_email
+    CIPC_AUTOMATION['subject_prefix'] = subject_prefix
+    CIPC_AUTOMATION['business_info'] = business_info
+    CIPC_AUTOMATION['request_text'] = request_text
+    CIPC_AUTOMATION['last_status'] = 'starting'
+    CIPC_AUTOMATION['last_result'] = None
+    CIPC_AUTOMATION['stop_event'] = threading.Event()
+
+    thread = threading.Thread(
+        target=_cipc_auto_email_worker,
+        args=(
+            CIPC_AUTOMATION['interval_seconds'],
+            CIPC_AUTOMATION['since_days'],
+            CIPC_AUTOMATION['max_results'],
+            CIPC_AUTOMATION['to_email'],
+            CIPC_AUTOMATION['subject_prefix'],
+            CIPC_AUTOMATION['business_info'],
+            CIPC_AUTOMATION['request_text'],
+        ),
+        daemon=True,
+    )
+    CIPC_AUTOMATION['thread'] = thread
+    thread.start()
+    return True
+
+
+def _stop_cipc_automation():
+    if not CIPC_AUTOMATION['enabled'] or not CIPC_AUTOMATION['stop_event']:
+        return False
+    CIPC_AUTOMATION['stop_event'].set()
+    CIPC_AUTOMATION['enabled'] = False
+    return True
+
+
+def _get_cipc_automation_status():
+    return {
+        'enabled': bool(CIPC_AUTOMATION['enabled']),
+        'interval_minutes': int(CIPC_AUTOMATION['interval_seconds'] / 60),
+        'since_days': int(CIPC_AUTOMATION['since_days']),
+        'max_results': int(CIPC_AUTOMATION['max_results']),
+        'to_email': CIPC_AUTOMATION['to_email'],
+        'subject_prefix': CIPC_AUTOMATION['subject_prefix'],
+        'business_info': CIPC_AUTOMATION['business_info'],
+        'request_text': CIPC_AUTOMATION['request_text'],
+        'last_run': CIPC_AUTOMATION['last_run'],
+        'last_status': CIPC_AUTOMATION['last_status'],
+        'last_result': CIPC_AUTOMATION['last_result'],
+    }
+
+if config.CIPC_AUTO_EMAIL_ENABLED:
+    try:
+        _start_cipc_automation(
+            interval_minutes=getattr(config, 'CIPC_AUTO_EMAIL_INTERVAL_MINUTES', 1440),
+            since_days=getattr(config, 'CIPC_AUTO_EMAIL_SINCE_DAYS', 1),
+            max_results=getattr(config, 'CIPC_AUTO_EMAIL_MAX_RESULTS', 50),
+            to_email=getattr(config, 'CIPC_AUTO_EMAIL_TO', None),
+            subject_prefix=getattr(config, 'CIPC_AUTO_EMAIL_SUBJECT_PREFIX', 'CIPC New Registrations'),
+            business_info=getattr(config, 'CIPC_AUTO_EMAIL_BUSINESS_INFO', None),
+            request_text=getattr(config, 'CIPC_AUTO_EMAIL_REQUEST_TEXT', None),
+        )
+    except Exception as exc:
+        print(f"Failed to start CIPC automation on startup: {exc}", file=sys.stderr)
 
 if not getattr(config, 'AGENT_ENABLED', False):
     # Agent explicitly disabled or no provider keys found; do not attempt to import agent libs.
@@ -2397,10 +2543,16 @@ def odoo_execute():
     odoo_version = data.get('odoo_version', '19.0') # Get Odoo version, default to 19.0
     branding_modules = data.get('branding_modules', []) # New: Get branding modules
 
-    # Require explicit database name from the user
-    db_name = data.get('db_name') or ''
+    # Use provided database name or generate one automatically if missing
+    db_name = (data.get('db_name') or '').strip()
     if not db_name:
-        return jsonify({'error': 'db_name is required when creating an environment.', 'message': 'Please provide a db_name.'}), 400
+        safe_base = 'odoo_env'
+        if isinstance(modules, list) and modules:
+            first = modules[0]
+            if isinstance(first, str) and first.strip():
+                safe_base = re.sub(r'[^a-zA-Z0-9_]+', '_', first.strip().lower()).strip('_') or safe_base
+        timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        db_name = f"{safe_base}_{timestamp}"
 
     if not modules:
         return jsonify({'error': 'No modules provided for execution.', 'message': 'No modules provided for execution.'}), 400
@@ -3594,10 +3746,21 @@ def chat():
     if not user_input:
         return jsonify({'error': 'No message provided'}), 400
 
+    context = request.json.get('context')
+    prompt = user_input
+    if context == 'cipc':
+        prompt = (
+            "You are a CIPC registration automation assistant. Your task is to automate the whole business registration flow, not just advise. "
+            "Create a full registration plan, identify the exact documents and steps required, and use tools to prepare business card design options and bank outreach drafts. "
+            "Ask the user only for missing information, then return concrete actions, checklists, or email drafts. "
+            "If the user asks to contact a bank, prepare a professional bank outreach email and confirm before sending it.\n\n"
+            f"{user_input}"
+        )
+
     try:
         # Deserialize history from session for the agent to use.
         chat_history = deserialize_history(session.get('chat_history', []))
-        success, agent_output, verbose_log = process_agent_request(user_input, chat_history)
+        success, agent_output, verbose_log = process_agent_request(prompt, chat_history)
 
         if success:
             # Keep history from growing indefinitely in this simple example
@@ -3624,6 +3787,167 @@ def chat():
         print(f"--- UNHANDLED EXCEPTION IN /chat ENDPOINT ---", file=sys.stderr)
         print(f"Error: {e}", file=sys.stderr)
         return jsonify({'error': 'An unexpected server error occurred. Please check the server logs for details.'}), 500
+
+def extract_email_from_text(text):
+    if not text:
+        return None
+    match = re.search(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', text)
+    return match.group(0) if match else None
+
+
+@app.route('/cipc/send_email', methods=['POST'])
+def cipc_send_email():
+    data = request.get_json(force=True) or {}
+    to_email = data.get('to_email') or None
+    subject_prefix = (data.get('subject_prefix') or 'CIPC New Registrations').strip()
+    since_date = data.get('since_date')
+    max_results = data.get('max_results')
+    business_info = data.get('business_info')
+    request_text = data.get('request_text')
+
+    if not to_email:
+        to_email = extract_email_from_text(request_text) or extract_email_from_text(business_info)
+
+    if not to_email:
+        to_email = getattr(config, 'ZISANDAHUB_EMAIL', None) or getattr(config, 'CIPC_AUTO_EMAIL_TO', None)
+
+    if not to_email:
+        return jsonify({'status': 'error', 'message': 'No recipient email could be determined. Please set ZISANDAHUB_EMAIL or CIPC_AUTO_EMAIL_TO in your .env, or provide a recipient in the form.'}), 400
+
+    try:
+        max_results = int(max_results) if max_results is not None else 20
+    except (ValueError, TypeError):
+        max_results = 20
+
+    result = email_cipc_new_businesses_to_zisandahub(
+        since_date=since_date,
+        max_results=max_results,
+        to_email=to_email,
+        subject_prefix=subject_prefix or 'CIPC New Registrations',
+        business_info=business_info,
+        request_text=request_text,
+    )
+
+    if isinstance(result, str):
+        success = result.lower().startswith('email sent successfully')
+        if success:
+            return jsonify({'status': 'ok', 'message': result})
+        return jsonify({'status': 'error', 'message': result}), 400
+
+    return jsonify({'status': 'error', 'message': 'Unexpected response from the CIPC email tool.'}), 500
+
+@app.route('/cipc/register', methods=['POST'])
+def cipc_register():
+    data = request.get_json(force=True) or {}
+    business_name = data.get('business_name')
+    company_type = data.get('company_type')
+    director_name = data.get('director_name')
+    director_id_number = data.get('director_id_number')
+    physical_address = data.get('physical_address')
+    postal_address = data.get('postal_address')
+    contact_email = data.get('contact_email')
+    contact_phone = data.get('contact_phone')
+    industry = data.get('industry')
+    registration_number = data.get('registration_number')
+    additional_info = data.get('additional_info')
+
+    result = register_cipc_business(
+        business_name=business_name,
+        company_type=company_type,
+        director_name=director_name,
+        director_id_number=director_id_number,
+        physical_address=physical_address,
+        postal_address=postal_address,
+        contact_email=contact_email,
+        contact_phone=contact_phone,
+        industry=industry,
+        registration_number=registration_number,
+        additional_info=additional_info,
+    )
+
+    if isinstance(result, str):
+        status = 'ok' if 'successfully' in result.lower() or 'attempted' in result.lower() else 'error'
+        code = 200 if status == 'ok' else 400
+        return jsonify({'status': status, 'message': result}), code
+
+    return jsonify({'status': 'error', 'message': 'Unexpected response from the CIPC registration tool.'}), 500
+
+@app.route('/cipc/companies')
+def cipc_companies():
+    since_date = request.args.get('since_date')
+    max_results = request.args.get('max_results', default=25, type=int)
+    if not since_date:
+        since_date = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+
+    companies = fetch_cipc_new_businesses(since_date=since_date, max_results=max_results)
+    if isinstance(companies, str):
+        return jsonify({'error': companies}), 400
+
+    return jsonify({'companies': companies, 'since_date': since_date, 'count': len(companies)})
+
+@app.route('/cipc/categories')
+def cipc_categories():
+    since_date = request.args.get('since_date')
+    max_results = request.args.get('max_results', default=50, type=int)
+    categories = list_cipc_business_categories(since_date=since_date, max_results=max_results)
+    if isinstance(categories, str):
+        return jsonify({'error': categories}), 400
+
+    return jsonify({'categories': categories, 'count': len(categories)})
+
+@app.route('/cipc/automation/status')
+def cipc_automation_status():
+    return jsonify(_get_cipc_automation_status())
+
+
+@app.route('/cipc/automation/start', methods=['POST'])
+def cipc_automation_start():
+    data = request.get_json(force=True) or {}
+    interval_minutes = data.get('interval_minutes', CIPC_AUTOMATION['interval_seconds'] // 60)
+    since_days = data.get('since_days', CIPC_AUTOMATION['since_days'])
+    max_results = data.get('max_results', CIPC_AUTOMATION['max_results'])
+    to_email = data.get('to_email') or CIPC_AUTOMATION['to_email']
+    subject_prefix = data.get('subject_prefix') or CIPC_AUTOMATION['subject_prefix']
+    business_info = data.get('business_info') or CIPC_AUTOMATION['business_info']
+    request_text = data.get('request_text') or CIPC_AUTOMATION['request_text']
+
+    try:
+        interval_minutes = int(interval_minutes)
+    except (TypeError, ValueError):
+        interval_minutes = CIPC_AUTOMATION['interval_seconds'] // 60
+
+    try:
+        since_days = int(since_days)
+    except (TypeError, ValueError):
+        since_days = CIPC_AUTOMATION['since_days']
+
+    try:
+        max_results = int(max_results)
+    except (TypeError, ValueError):
+        max_results = CIPC_AUTOMATION['max_results']
+
+    try:
+        if _start_cipc_automation(
+            interval_minutes=interval_minutes,
+            since_days=since_days,
+            max_results=max_results,
+            to_email=to_email,
+            subject_prefix=subject_prefix,
+            business_info=business_info,
+            request_text=request_text,
+        ):
+            return jsonify({'status': 'started', 'message': 'CIPC automation started.'})
+        return jsonify({'status': 'already_running', 'message': 'CIPC automation is already running.'})
+    except Exception as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 400
+
+
+@app.route('/cipc/automation/stop', methods=['POST'])
+def cipc_automation_stop():
+    if _stop_cipc_automation():
+        return jsonify({'status': 'stopped', 'message': 'CIPC automation stopped.'})
+    return jsonify({'status': 'not_running', 'message': 'CIPC automation is not running.'})
+
 
 @app.route('/edit_app', methods=['POST'])
 def edit_app():
