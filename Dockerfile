@@ -32,7 +32,8 @@ COPY . .
 EXPOSE 5001
 
 # Environment defaults (override with .env or docker-compose)
-ENV FLASK_APP=app.py
+ENV FLASK_APP=app.py \
+    PORT=5001
 
 # Use a production WSGI server and bind to Render's dynamic port
-CMD ["sh", "-lc", "gunicorn -w 4 -b 0.0.0.0:$PORT app:app"]
+CMD ["sh", "-lc", "gunicorn -w 4 -b 0.0.0.0:${PORT:-5001} app:app"]

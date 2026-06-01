@@ -106,7 +106,7 @@ AGENT_ENABLED = LLM_PROVIDER is not None
 
 # --- App Visibility Settings ---
 # Control which applications are enabled and visible in the UI.
-ENABLE_EMAIL_APP = os.getenv("ENABLE_EMAIL_APP", "True").lower() in ('true', '1', 't')
+ENABLE_EMAIL_APP = os.getenv("ENABLE_EMAIL_APP", "False").lower() in ('true', '1', 't')
 ENABLE_ODOO_APP = os.getenv("ENABLE_ODOO_APP", "True").lower() in ('true', '1', 't')
 ENABLE_SOCIAL_MEDIA_APP = os.getenv("ENABLE_SOCIAL_MEDIA_APP", "False").lower() in ('true', '1', 't')
 ENABLE_TRAFFIC_APP = os.getenv("ENABLE_TRAFFIC_APP", "True").lower() in ('true', '1', 't')
