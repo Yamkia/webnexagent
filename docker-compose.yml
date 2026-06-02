@@ -100,7 +100,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
+      # - "443:443"  # only enable HTTPS once TLS certs are mounted and nginx is configured for SSL
     volumes:
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
