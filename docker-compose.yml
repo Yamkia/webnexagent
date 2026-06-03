@@ -104,7 +104,7 @@ services:
     volumes:
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
-      - odoo-19
+      - web
 
 volumes:
   db_data:
