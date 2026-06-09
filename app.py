@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 from jinja2 import TemplateNotFound
 import sys
 import os
@@ -13,6 +13,8 @@ import ipaddress
 import json
 import shutil
 import datetime
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 import markdown
 # --- Setup Python Path ---
@@ -61,6 +63,68 @@ def _save_env_history(envs):
             json.dump(envs, f, indent=2)
     except Exception as e:
         print(f"Failed to save env history: {e}", file=sys.stderr)
+
+
+USER_FILE = os.path.join(project_root, 'users.json')
+
+
+def _load_users():
+    """Load user accounts from users.json."""
+    try:
+        with open(USER_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                return data
+    except FileNotFoundError:
+        return []
+    except Exception as e:
+        print(f"Failed to load users: {e}", file=sys.stderr)
+    return []
+
+
+def _save_users(users):
+    """Persist user account data to users.json."""
+    try:
+        with open(USER_FILE, 'w', encoding='utf-8') as f:
+            json.dump(users, f, indent=2)
+    except Exception as e:
+        print(f"Failed to save users: {e}", file=sys.stderr)
+
+
+def _find_user(username):
+    """Return user dict matching username, case-sensitive."""
+    if not username:
+        return None
+    for user in _load_users():
+        if user.get('username') == username:
+            return user
+    return None
+
+
+def _authenticate(username, password):
+    """Check username/password against stored users."""
+    user = _find_user(username)
+    if not user or not user.get('password_hash'):
+        return None
+    if check_password_hash(user['password_hash'], password):
+        return user
+    return None
+
+
+def _require_login():
+    """Redirect to login page unless the user is authenticated."""
+    allowed_paths = (
+        '/auth/login',
+        '/auth/register',
+        '/auth/instagram/login',
+        '/auth/instagram/callback',
+        '/health',
+        '/ready',
+    )
+    if request.path.startswith('/static') or request.path in allowed_paths:
+        return
+    if not session.get('user'):
+        return redirect('/auth/login')
 
 
 def _normalize_base(name: str) -> str:
@@ -797,6 +861,21 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 # In a production app, this should be a long, random, and secret string.
 app.secret_key = token_hex(16)
 
+@app.before_request
+def require_login():
+    allowed_paths = {
+        '/auth/login',
+        '/auth/register',
+        '/auth/instagram/login',
+        '/auth/instagram/callback',
+        '/health',
+        '/ready',
+    }
+    if request.path.startswith('/static') or request.path in allowed_paths:
+        return
+    if not session.get('user'):
+        return redirect('/auth/login')
+
 # Simple uptime tracking for health/readiness checks
 START_TIME = time.time()
 
@@ -812,6 +891,57 @@ def ready():
     if (time.time() - START_TIME) < 1.0:
         return jsonify({'status': 'starting'}), 503
     return jsonify({'status': 'ready'}), 200
+
+
+@app.route('/auth/login', methods=['GET', 'POST'])
+def auth_login():
+    if request.method == 'POST':
+        username = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+        user = _authenticate(username, password)
+        if user:
+            session['user'] = user['username']
+            session['role'] = user.get('role', 'user')
+            return redirect('/')
+        return render_template('login.html', error='Invalid username or password.')
+    if session.get('user'):
+        return redirect('/')
+    return render_template('login.html', error=None)
+
+
+@app.route('/auth/register', methods=['GET', 'POST'])
+def auth_register():
+    if request.method == 'POST':
+        username = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+        confirm = request.form.get('confirm') or ''
+        if not username or not password or not confirm:
+            return render_template('register.html', error='All fields are required.')
+        if password != confirm:
+            return render_template('register.html', error='Passwords do not match.')
+        if _find_user(username):
+            return render_template('register.html', error='Username already exists.')
+        users = _load_users()
+        users.append({
+            'username': username,
+            'password_hash': generate_password_hash(password, method='scrypt'),
+            'role': 'user',
+            'created_at': datetime.datetime.utcnow().isoformat()
+        })
+        _save_users(users)
+        session['user'] = username
+        session['role'] = 'user'
+        return redirect('/')
+    if session.get('user'):
+        return redirect('/')
+    return render_template('register.html', error=None)
+
+
+@app.route('/auth/logout')
+def auth_logout():
+    session.pop('user', None)
+    session.pop('role', None)
+    return redirect('/auth/login')
 
 
 # --- Environment control endpoints ---

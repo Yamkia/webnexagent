@@ -2,15 +2,23 @@
 
 {% block title %}Register{% endblock %}
 
+{% block extra_head %}
+<style>
+body { padding-top: 0 !important; }
+body.auth-body .auth-page { padding-top: 0 !important; margin-top: 0 !important; }
+body.auth-body .auth-shell { align-items: flex-start !important; justify-content: center !important; padding-top: 1rem !important; padding-bottom: 1rem !important; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="auth-page">
+<div class="auth-page" style="padding-top: 0; margin-top: 0;">
     <div class="auth-background">
         <span class="auth-glow glow-one"></span>
         <span class="auth-glow glow-two"></span>
         <span class="auth-glow glow-three"></span>
     </div>
 
-    <div class="container auth-shell">
+    <div class="container auth-shell" style="padding-top: 0; margin-top: 0;">
         <div class="auth-card shadow-lg">
             <div class="auth-panel auth-panel-copy">
                 <div>

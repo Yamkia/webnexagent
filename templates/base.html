@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="/static/css/landing.css">
     {% block extra_head %}{% endblock %}
 </head>
-<body{% if request.path in ['/settings','/manage_apps'] %} class="manage-apps"{% endif %}>
+<body{% if request.path in ['/settings','/manage_apps'] %} class="manage-apps"{% elif request.path.startswith('/auth/') %} class="auth-body"{% endif %}>
     {% if not request.path.startswith('/auth/') %}
     <nav class="site-nav" aria-label="Main navigation">
         <div class="container">
