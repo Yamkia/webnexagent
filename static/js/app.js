@@ -208,6 +208,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const profileTrigger = document.querySelector('.profile-trigger');
+    const profileMenu = document.querySelector('.profile-menu');
+    if (profileTrigger && profileMenu) {
+        profileTrigger.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const expanded = profileTrigger.getAttribute('aria-expanded') === 'true';
+            profileTrigger.setAttribute('aria-expanded', String(!expanded));
+            profileMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', () => {
+            if (profileMenu.classList.contains('open')) {
+                profileMenu.classList.remove('open');
+                profileTrigger.setAttribute('aria-expanded', 'false');
+            }
+        });
+        profileMenu.addEventListener('click', (event) => event.stopPropagation());
+    }
+
     // --- App Loading Logic ---
     // The app launchers are now the glass cards and the offcanvas menu.
     document.getElementById('load-odoo-app')?.addEventListener('click', () => loadApp('/apps/odoo'));

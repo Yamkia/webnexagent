@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-4">
+                <h1 class="mb-3">My Account</h1>
+                <p class="text-muted mb-4">Manage your profile and preferences for Zisanda-hub.</p>
+                <dl class="row mb-4">
+                    <dt class="col-sm-4">Username</dt>
+                    <dd class="col-sm-8">{{ username or 'Unknown user' }}</dd>
+
+                    <dt class="col-sm-4">Role</dt>
+                    <dd class="col-sm-8">{{ current_user.role | capitalize }}</dd>
+                </dl>
+                <div class="alert alert-info">
+                    <strong>Note:</strong> Profile and social connections are managed through the dashboard.
+                </div>
+                <a href="/linked-accounts" class="btn btn-outline-primary">View Linked Social Media</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

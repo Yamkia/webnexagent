@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, session, redirect, abort
 from jinja2 import TemplateNotFound
 import sys
 import os
@@ -109,22 +109,6 @@ def _authenticate(username, password):
     if check_password_hash(user['password_hash'], password):
         return user
     return None
-
-
-def _require_login():
-    """Redirect to login page unless the user is authenticated."""
-    allowed_paths = (
-        '/auth/login',
-        '/auth/register',
-        '/auth/instagram/login',
-        '/auth/instagram/callback',
-        '/health',
-        '/ready',
-    )
-    if request.path.startswith('/static') or request.path in allowed_paths:
-        return
-    if not session.get('user'):
-        return redirect('/auth/login')
 
 
 def _normalize_base(name: str) -> str:
@@ -861,6 +845,17 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 # In a production app, this should be a long, random, and secret string.
 app.secret_key = token_hex(16)
 
+@app.context_processor
+def inject_current_user():
+    if session.get('user'):
+        return {
+            'current_user': {
+                'username': session.get('user'),
+                'role': session.get('role', 'user')
+            }
+        }
+    return {'current_user': None}
+
 @app.before_request
 def require_login():
     allowed_paths = {
@@ -868,6 +863,10 @@ def require_login():
         '/auth/register',
         '/auth/instagram/login',
         '/auth/instagram/callback',
+        '/auth/google/login',
+        '/auth/google/callback',
+        '/auth/microsoft/login',
+        '/auth/microsoft/callback',
         '/health',
         '/ready',
     }
@@ -937,11 +936,208 @@ def auth_register():
     return render_template('register.html', error=None)
 
 
-@app.route('/auth/logout')
+@app.route('/auth/logout', methods=['GET', 'POST'])
 def auth_logout():
     session.pop('user', None)
     session.pop('role', None)
     return redirect('/auth/login')
+
+
+# ---------------------------------------------------------------------------
+# Google OAuth 2.0
+# ---------------------------------------------------------------------------
+import urllib.parse as _urlparse
+
+def _oauth_redirect_uri(provider: str) -> str:
+    """Build the absolute callback URL for the given provider."""
+    base = request.host_url.rstrip('/')
+    return f"{base}/auth/{provider}/callback"
+
+
+@app.route('/auth/google/login')
+def google_login():
+    """Redirect the user to Google's OAuth 2.0 consent screen."""
+    client_id = getattr(config, 'GOOGLE_CLIENT_ID', None) or os.environ.get('GOOGLE_CLIENT_ID')
+    if not client_id:
+        return render_template('login.html', error='Google login is not configured on this server.')
+    state = token_hex(16)
+    session['oauth_state'] = state
+    params = {
+        'client_id': client_id,
+        'redirect_uri': _oauth_redirect_uri('google'),
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'state': state,
+        'access_type': 'online',
+        'prompt': 'select_account',
+    }
+    url = 'https://accounts.google.com/o/oauth2/v2/auth?' + _urlparse.urlencode(params)
+    return redirect(url)
+
+
+@app.route('/auth/google/callback')
+def google_callback():
+    """Handle the OAuth 2.0 callback from Google."""
+    import requests as _req
+    error = request.args.get('error')
+    if error:
+        return render_template('login.html', error=f'Google login cancelled: {error}')
+
+    code = request.args.get('code')
+    state = request.args.get('state')
+    if not code or state != session.pop('oauth_state', None):
+        return render_template('login.html', error='Invalid OAuth state. Please try again.')
+
+    client_id = getattr(config, 'GOOGLE_CLIENT_ID', None) or os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = getattr(config, 'GOOGLE_CLIENT_SECRET', None) or os.environ.get('GOOGLE_CLIENT_SECRET')
+
+    # Exchange code for tokens
+    token_resp = _req.post('https://oauth2.googleapis.com/token', data={
+        'code': code,
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': _oauth_redirect_uri('google'),
+        'grant_type': 'authorization_code',
+    }, timeout=10)
+    if not token_resp.ok:
+        return render_template('login.html', error='Failed to exchange Google token.')
+
+    access_token = token_resp.json().get('access_token')
+
+    # Fetch user info
+    userinfo_resp = _req.get('https://www.googleapis.com/oauth2/v3/userinfo',
+                              headers={'Authorization': f'Bearer {access_token}'}, timeout=10)
+    if not userinfo_resp.ok:
+        return render_template('login.html', error='Failed to fetch Google user info.')
+
+    info = userinfo_resp.json()
+    email = info.get('email', '')
+    name = info.get('name') or info.get('given_name') or email.split('@')[0]
+    provider_id = f"google:{info.get('sub', email)}"
+
+    return _oauth_signin_or_register(email=email, display_name=name, provider_id=provider_id, provider='google')
+
+
+# ---------------------------------------------------------------------------
+# Microsoft (Azure AD / Entra ID) OAuth 2.0
+# ---------------------------------------------------------------------------
+
+@app.route('/auth/microsoft/login')
+def microsoft_login():
+    """Redirect the user to Microsoft's OAuth 2.0 consent screen."""
+    client_id = getattr(config, 'MICROSOFT_CLIENT_ID', None) or os.environ.get('MICROSOFT_CLIENT_ID')
+    if not client_id:
+        return render_template('login.html', error='Microsoft login is not configured on this server.')
+    state = token_hex(16)
+    session['oauth_state'] = state
+    tenant = os.environ.get('MICROSOFT_TENANT_ID', 'common')
+    params = {
+        'client_id': client_id,
+        'redirect_uri': _oauth_redirect_uri('microsoft'),
+        'response_type': 'code',
+        'scope': 'openid email profile User.Read',
+        'state': state,
+        'response_mode': 'query',
+        'prompt': 'select_account',
+    }
+    url = f'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize?' + _urlparse.urlencode(params)
+    return redirect(url)
+
+
+@app.route('/auth/microsoft/callback')
+def microsoft_callback():
+    """Handle the OAuth 2.0 callback from Microsoft."""
+    import requests as _req
+    error = request.args.get('error')
+    if error:
+        desc = request.args.get('error_description', error)
+        return render_template('login.html', error=f'Microsoft login cancelled: {desc}')
+
+    code = request.args.get('code')
+    state = request.args.get('state')
+    if not code or state != session.pop('oauth_state', None):
+        return render_template('login.html', error='Invalid OAuth state. Please try again.')
+
+    client_id = getattr(config, 'MICROSOFT_CLIENT_ID', None) or os.environ.get('MICROSOFT_CLIENT_ID')
+    client_secret = getattr(config, 'MICROSOFT_CLIENT_SECRET', None) or os.environ.get('MICROSOFT_CLIENT_SECRET')
+    tenant = os.environ.get('MICROSOFT_TENANT_ID', 'common')
+
+    # Exchange code for tokens
+    token_resp = _req.post(
+        f'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token',
+        data={
+            'code': code,
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'redirect_uri': _oauth_redirect_uri('microsoft'),
+            'grant_type': 'authorization_code',
+            'scope': 'openid email profile User.Read',
+        }, timeout=10)
+    if not token_resp.ok:
+        return render_template('login.html', error='Failed to exchange Microsoft token.')
+
+    access_token = token_resp.json().get('access_token')
+
+    # Fetch user info from Microsoft Graph
+    userinfo_resp = _req.get('https://graph.microsoft.com/v1.0/me',
+                              headers={'Authorization': f'Bearer {access_token}'}, timeout=10)
+    if not userinfo_resp.ok:
+        return render_template('login.html', error='Failed to fetch Microsoft user info.')
+
+    info = userinfo_resp.json()
+    email = info.get('mail') or info.get('userPrincipalName', '')
+    name = info.get('displayName') or info.get('givenName') or email.split('@')[0]
+    provider_id = f"microsoft:{info.get('id', email)}"
+
+    return _oauth_signin_or_register(email=email, display_name=name, provider_id=provider_id, provider='microsoft')
+
+
+def _oauth_signin_or_register(email: str, display_name: str, provider_id: str, provider: str):
+    """Find or create a user account for an OAuth login, then sign them in."""
+    if not email:
+        return render_template('login.html', error=f'Could not retrieve email from {provider.title()}.')
+
+    users = _load_users()
+
+    # 1. Look for existing user by provider_id
+    user = next((u for u in users if u.get('provider_id') == provider_id), None)
+
+    # 2. Fall back to matching by email (links existing account)
+    if not user:
+        user = next((u for u in users if u.get('email', '').lower() == email.lower()), None)
+        if user:
+            # Link the provider to the existing account
+            user['provider_id'] = provider_id
+            user['provider'] = provider
+            _save_users(users)
+
+    # 3. Auto-register new user
+    if not user:
+        # Derive a unique username from the display name / email
+        base_username = re.sub(r'[^a-zA-Z0-9_]', '', display_name.replace(' ', '_')) or email.split('@')[0]
+        username = base_username
+        existing_names = {u.get('username', '') for u in users}
+        counter = 1
+        while username in existing_names:
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        user = {
+            'username': username,
+            'email': email,
+            'display_name': display_name,
+            'provider': provider,
+            'provider_id': provider_id,
+            'password_hash': None,   # No password for OAuth-only accounts
+            'role': 'user',
+            'created_at': datetime.datetime.utcnow().isoformat(),
+        }
+        users.append(user)
+        _save_users(users)
+
+    session['user'] = user['username']
+    session['role'] = user.get('role', 'user')
+    return redirect('/')
 
 
 # --- Environment control endpoints ---
@@ -1449,6 +1645,9 @@ def settings():
         'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
     }
 
+    if session.get('role') != 'admin':
+        abort(403)
+
     env_path = getattr(config, 'env_path', None) or os.path.join(project_root, '.env')
     hold = {
         'ENABLE_EMAIL_APP': config.ENABLE_EMAIL_APP,
@@ -1459,6 +1658,64 @@ def settings():
     }
 
     return render_template('settings.html', visibility=visibility, env_path=env_path, current_settings=hold)
+
+
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')
+
+
+@app.route('/auth/users')
+def auth_users():
+    if session.get('role') != 'admin':
+        abort(403)
+    users = _load_users()
+    return render_template('users.html', users=users)
+
+
+@app.route('/auth/users/create', methods=['POST'])
+def auth_users_create():
+    if session.get('role') != 'admin':
+        abort(403)
+
+    username = (request.form.get('username') or '').strip()
+    password = request.form.get('password') or ''
+    role = request.form.get('role') or 'user'
+
+    if not username or not password:
+        users = _load_users()
+        return render_template('users.html', users=users, error='Username and password are required.')
+
+    if _find_user(username):
+        users = _load_users()
+        return render_template('users.html', users=users, error='A user with that username already exists.')
+
+    password_hash = generate_password_hash(password)
+    new_user = {
+        'username': username,
+        'password_hash': password_hash,
+        'role': role,
+        'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
+    }
+    users = _load_users()
+    users.append(new_user)
+    _save_users(users)
+    return redirect('/auth/users')
+
+
+@app.route('/account')
+def account():
+    return redirect('/profile')
+
+
+@app.route('/linked-accounts')
+def linked_accounts():
+    linked = [
+        {'name': 'Instagram', 'status': 'Not connected'},
+        {'name': 'LinkedIn', 'status': 'Not connected'},
+        {'name': 'Twitter / X', 'status': 'Not connected'}
+    ]
+    return render_template('linked_accounts.html', linked_accounts=linked)
 
 
 def _write_env_vars(env_path: str, updates: dict[str, str | bool]):

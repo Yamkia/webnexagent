@@ -4,9 +4,10 @@
 
 {% block extra_head %}
 <style>
-body { padding-top: 0 !important; }
-body.auth-body .auth-page { padding-top: 0 !important; margin-top: 0 !important; }
-body.auth-body .auth-shell { align-items: flex-start !important; justify-content: center !important; padding-top: 1rem !important; padding-bottom: 1rem !important; }
+body { padding-top: 0 !important; margin: 0 !important; }
+body.auth-body .auth-page, html.auth-body .auth-page { min-height: 100vh !important; height: 100vh !important; padding-top: 0 !important; margin-top: 0 !important; }
+body.auth-body .auth-shell, html.auth-body .auth-shell { min-height: 100vh !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; margin-top: 0 !important; }
+body.auth-body .auth-card, html.auth-body .auth-card { margin-top: 0 !important; padding-top: 0 !important; }
 </style>
 {% endblock %}
 
@@ -35,7 +36,7 @@ body.auth-body .auth-shell { align-items: flex-start !important; justify-content
             <div class="auth-panel auth-panel-form">
                 <div class="auth-form-header">
                     <h2>Sign in</h2>
-                    <p class="text-muted">Enter your credentials to continue.</p>
+                    <p style="color: rgba(203, 213, 225, 0.9);">Enter your credentials to continue.</p>
                 </div>
 
                 {% if error %}

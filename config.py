@@ -59,6 +59,12 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Google Gemini models
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY") # For Anthropic Claude models
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY") # For Deepgram voice transcription
 
+# --- OAuth Settings ---
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+MICROSOFT_CLIENT_ID = os.getenv("MICROSOFT_CLIENT_ID")
+MICROSOFT_CLIENT_SECRET = os.getenv("MICROSOFT_CLIENT_SECRET")
+
 # Debug: Print loaded environment source and key status for troubleshooting.
 openrouter_configured = bool(OPENAI_API_BASE and isinstance(OPENAI_API_BASE, str) and "openrouter.ai" in OPENAI_API_BASE.lower())
 print(f"[DEBUG] App env name: {env_name}")

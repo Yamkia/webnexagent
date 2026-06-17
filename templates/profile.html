@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Zisanda-hub{% endblock %}
+
+{% block content %}
+<div class="container py-5 profile-page">
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-10">
+            <div class="profile-header card shadow-lg px-4 py-5 mb-4">
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-4">
+                    <div>
+                        <div class="profile-avatar rounded-circle d-inline-flex align-items-center justify-content-center mb-3">👤</div>
+                        <h1 class="mb-1">{{ current_user.username }}</h1>
+                        <p class="text-muted mb-0">Role: <strong>{{ current_user.role | capitalize }}</strong></p>
+                    </div>
+                    <div class="text-md-end">
+                        <a href="/linked-accounts" class="btn btn-outline-primary me-2">Linked accounts</a>
+                        {% if current_user.role == 'admin' %}
+                        <a href="/settings" class="btn btn-primary">Settings</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-4 h-100">
+                        <h2 class="h5 mb-3">Profile details</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-5 text-muted">Username</dt>
+                            <dd class="col-7">{{ current_user.username }}</dd>
+
+                            <dt class="col-5 text-muted">Role</dt>
+                            <dd class="col-7">{{ current_user.role | capitalize }}</dd>
+
+                            <dt class="col-5 text-muted">Last login</dt>
+                            <dd class="col-7">Not available</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-4 h-100">
+                        <h2 class="h5 mb-3">Account actions</h2>
+                        <p class="text-muted">Use these quick links to manage your account and connected services.</p>
+                        <div class="d-grid gap-2">
+                            <a href="/linked-accounts" class="btn btn-outline-primary">Manage Linked Media</a>
+                            <button class="btn btn-outline-secondary" onclick="document.getElementById('logout-form').submit();">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm p-4 mt-4">
+                <h2 class="h5 mb-3">Profile summary</h2>
+                <p class="text-muted mb-0">This is your profile page for Zisanda-hub. Add more settings or security details here later.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
