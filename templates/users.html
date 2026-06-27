@@ -29,6 +29,9 @@
                     <h2>Users</h2>
                     <p class="text-muted">Existing accounts on the platform.</p>
                 </div>
+                {% if error %}
+                    <div class="alert alert-danger mt-3">{{ error }}</div>
+                {% endif %}
                 <div class="mb-4 auth-table-card">
                     <div class="table-responsive">
                         <table class="table table-borderless align-middle mb-0 auth-table">
@@ -40,13 +43,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users %}
+                                {% if users %}
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.username }}</td>
+                                            <td class="{% if user.role == 'admin' %}role-admin{% endif %}">{{ user.role|capitalize }}</td>
+                                            <td>{{ user.created_at or 'n/a' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
                                     <tr>
-                                        <td>{{ user.username }}</td>
-                                        <td>{{ user.role }}</td>
-                                        <td>{{ user.created_at or 'n/a' }}</td>
+                                        <td colspan="3" class="text-muted text-center py-4">No users found.</td>
                                     </tr>
-                                {% endfor %}
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>

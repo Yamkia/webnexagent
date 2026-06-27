@@ -101,6 +101,14 @@ def _find_user(username):
     return None
 
 
+def _normalize_role(role):
+    """Normalize a submitted role value to a valid internal role."""
+    if not role:
+        return 'user'
+    role_value = str(role).strip().lower()
+    return 'admin' if role_value == 'admin' else 'user'
+
+
 def _authenticate(username, password):
     """Check username/password against stored users."""
     user = _find_user(username)
@@ -1683,7 +1691,7 @@ def auth_users_create():
 
     username = (request.form.get('username') or '').strip()
     password = request.form.get('password') or ''
-    role = request.form.get('role') or 'user'
+    role = _normalize_role(request.form.get('role'))
 
     if not username or not password:
         users = _load_users()
@@ -1693,7 +1701,7 @@ def auth_users_create():
         users = _load_users()
         return render_template('users.html', users=users, error='A user with that username already exists.')
 
-    password_hash = generate_password_hash(password)
+    password_hash = generate_password_hash(password, method='scrypt')
     new_user = {
         'username': username,
         'password_hash': password_hash,

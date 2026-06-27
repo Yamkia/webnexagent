@@ -635,8 +635,17 @@ body.manage-apps {
 }
 
 .auth-table tbody td {
-    color: rgba(255,255,255,0.85);
+    color: #f8fbff;
     padding: 1rem 0.75rem;
+}
+
+.auth-table tbody tr:hover td {
+    color: #ffffff;
+}
+
+.auth-table tbody td.role-admin {
+    color: #ffffff;
+    font-weight: 700;
 }
 
 .auth-table tbody tr:last-child {
