@@ -842,8 +842,11 @@ import subprocess
 import shutil
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 # A secret key is required to use sessions in Flask.
-# In a production app, this should be a long, random, and secret string.
-app.secret_key = token_hex(16)
+# In production with multiple workers, it must be stable across processes.
+app.secret_key = os.environ.get('SECRET_KEY') or os.environ.get('FLASK_SECRET_KEY')
+if not app.secret_key:
+    app.secret_key = token_hex(16)
+    print('WARNING: SECRET_KEY is not set. Sessions may not persist across workers.', file=sys.stderr)
 
 @app.context_processor
 def inject_current_user():

@@ -20,6 +20,7 @@ services:
     environment:
       - PORT=5001
       - ENABLE_EMAIL_APP=false
+      - SECRET_KEY=w9Qx3nZ0rF6pTsVa12UeHgLk8BjCmPqY
     ports:
       - "5001:5001"
     volumes:
