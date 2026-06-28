@@ -634,18 +634,28 @@ body.manage-apps {
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+.auth-table thead th,
 .auth-table tbody td {
-    color: #f8fbff;
+    color: #ffffff !important;
     padding: 1rem 0.75rem;
 }
 
+.auth-table thead th {
+    color: #c7d2fe !important;
+    font-weight: 700;
+}
+
 .auth-table tbody tr:hover td {
-    color: #ffffff;
+    color: #ffffff !important;
 }
 
 .auth-table tbody td.role-admin {
-    color: #ffffff;
+    color: #ffffff !important;
     font-weight: 700;
+}
+
+.auth-table tbody td {
+    background: rgba(255,255,255,0.03);
 }
 
 .auth-table tbody tr:last-child {
