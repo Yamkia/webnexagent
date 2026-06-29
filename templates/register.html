@@ -5,9 +5,24 @@
 {% block extra_head %}
 <style>
 body { padding-top: 0 !important; margin: 0 !important; }
-body.auth-body .auth-page, html.auth-body .auth-page { min-height: 100vh !important; height: 100vh !important; padding-top: 0 !important; margin-top: 0 !important; }
-body.auth-body .auth-shell, html.auth-body .auth-shell { min-height: 100vh !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; margin-top: 0 !important; }
-body.auth-body .auth-card, html.auth-body .auth-card { margin-top: 0 !important; padding-top: 0 !important; }
+@media (max-width: 768px) {
+    body.auth-body .auth-page,
+    html.auth-body .auth-page {
+        min-height: auto !important;
+    }
+    body.auth-body .auth-shell,
+    html.auth-body .auth-shell {
+        display: block !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        padding: 1rem 0 1.25rem !important;
+    }
+    body.auth-body .auth-card,
+    html.auth-body .auth-card {
+        margin: 0 0.5rem !important;
+        width: auto !important;
+    }
+}
 </style>
 {% endblock %}
 
