@@ -11,15 +11,35 @@
     </div>
   </div>
   <div class="card-grid" id="app-cards-container">
-    {% for app, enabled in visibility.items() if enabled %}
-    {% set info = app_details.get(app, {}) %}
-      <a href="/apps/{{app}}" id="load-{{app}}-app" class="glass-card agent-card d-flex flex-column text-decoration-none">
-        {% if info.label %}<div class="label">{{ info.label }}</div>{% endif %}
-        {% if info.icon %}<img src="{{ info.icon }}" alt="{{ info.title }}" class="icon" />{% endif %}
-        {% if info.title %}<div class="title">{{ info.title }}</div>{% endif %}
+    {% for app in apps %}
+      {% set card_classes = 'glass-card agent-card d-flex flex-column text-decoration-none' %}
+      {% if not app.allowed %}
+        {% set card_classes = 'glass-card agent-card disabled-card d-flex flex-column' %}
+      {% endif %}
+      {% if app.allowed %}
+        <a href="{{ app.url }}" id="load-{{ app.key }}-app" class="{{ card_classes }}">
+      {% else %}
+        <div class="{{ card_classes }}" aria-disabled="true">
+      {% endif %}
+        {% if app.label %}
+          <div class="label">{% if app.key == 'odoo' %}Zisanda ERP{% else %}{{ app.label }}{% endif %}</div>
+        {% endif %}
+        {% if app.icon %}
+          <img src="{{ url_for('static', filename=(app.icon if app.key != 'odoo' else 'img/erp-helper.svg')) }}" alt="{{ app.title }}" class="icon" loading="lazy" />
+        {% endif %}
+        {% if app.title %}<div class="title">{{ app.title }}</div>{% endif %}
         <div class="divider"></div>
-        {% if info.desc %}<div class="description">{{ info.desc }}</div>{% endif %}
-      </a>
+        {% if app.desc %}
+          <div class="description">{% if app.key == 'odoo' %}Manage your Zisandahub environment, finance, inventory and operations from one place.{% else %}{{ app.desc }}{% endif %}</div>
+        {% endif %}
+        {% if not app.allowed %}
+          <div class="status-tag">{{ app.status_text }}</div>
+        {% endif %}
+      {% if app.allowed %}
+        </a>
+      {% else %}
+        </div>
+      {% endif %}
     {% endfor %}
   </div>
 </div>

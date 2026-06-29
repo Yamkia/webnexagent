@@ -1,40 +1,51 @@
 {% extends 'base.html' %}
 
-{% block title %}Odoo Planner – Zisanda‑hub{% endblock %}
+{% block title %}Environment Planner – Zisanda‑hub{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4 odoo-app">
     <div class="odoo-main">
-        <h1 class="mb-3">Configure Your Odoo Environment</h1>
-        <p class="lead mb-4">Plan and create a local Odoo Community environment, and customize which modules are installed.</p>
+        <h1 class="mb-3">Configure Your Zisandahub Environment</h1>
+        <p class="lead mb-4">Plan and create a local Zisandahub environment, and customize which modules are installed.</p>
 
-        <div class="accordion" id="odoo-options-accordion">
-                <!-- Option 1: Odoo Community (Self-Hosted) -->
-                <div class="accordion-item" id="community-section">
-                    <h2 class="accordion-header" id="headingCommunity">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCommunity" aria-expanded="true" aria-controls="collapseCommunity">
-                            <strong>Odoo Community Edition (Self-Hosted)</strong>
-                        </button>
-                    </h2>
-                    <div id="collapseCommunity" class="accordion-collapse collapse show" aria-labelledby="headingCommunity" data-bs-parent="#odoo-options-accordion">
-                        <div class="accordion-body">
-                            <p>Create a local Odoo environment on your machine without Docker. This is ideal for development, testing, or running a free, self-managed ERP. Describe your business needs, and the agent will plan and create it for you.</p>
-                            
-                            <!-- Step 1: Planning -->
-                            <div class="glass-card mb-4 p-4">
-                                <h5>Step 1: Plan Your Environment</h5>
-
-                                    <div class="mb-3">
-                                        <label for="business-need" class="form-label">Describe your business need:</label>
-                                        <textarea class="form-control" id="business-need" rows="3" placeholder="e.g., 'I need a simple CRM to track leads and a website to sell products.'"></textarea>
-                                    </div>
-                                    <button data-plan-type="community" class="btn btn-primary plan-btn">
-                                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                                        Plan Modules
-                                    </button>
-                                    <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
-                                </div>
-                            </div>
+        <div class="glass-card mb-4 p-4">
+            <h2 class="mb-3">Tell us about your business</h2>
+            <p class="text-muted">Answer the question below so Zisandahub can create the right environment for your needs.</p>
+            <div class="mb-4">
+                <label for="business-need" class="form-label">What does your business do?</label>
+                <textarea class="form-control" id="business-need" rows="5" placeholder="e.g. I need a sales pipeline, customer portal, and invoice management for a small retail business."></textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="odoo-version-input" class="form-label">Environment version</label>
+                    <select class="form-select" id="odoo-version-input">
+                        <option value="19.0">19.0 (Latest)</option>
+                        <option value="18.0">18.0</option>
+                        <option value="17.0">17.0</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="env-mode-input" class="form-label">Target mode</label>
+                    <select class="form-select" id="env-mode-input" name="env_mode">
+                        <option value="development" selected>Development</option>
+                        <option value="staging">Staging</option>
+                        <option value="production">Production</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="odoo-dbname-input" class="form-label">Environment name</label>
+                    <input type="text" id="odoo-dbname-input" class="form-control" placeholder="e.g. retail_hub">
+                </div>
+            </div>
+            <div class="mt-4">
+                <button data-plan-type="community" class="btn btn-primary plan-btn">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                    Plan Environment
+                </button>
+                <button id="create-without-plan" class="btn btn-outline-secondary">Create without plan</button>
+            </div>
+            <div id="plan-error" class="alert alert-danger mt-3" style="display: none;"></div>
+        </div>
 
                             <!-- Step 2: Review and Execute -->
                             <div id="plan-display" class="glass-card mb-4 p-4" style="display: none;">
@@ -88,7 +99,7 @@
                                                     <label for="website-design-select" class="form-label">Theme</label>
                                                     <select class="form-select theme-select" id="website-design-select" data-target-input="website-design-input">
                                                         <option value="" selected disabled>Choose a theme...</option>
-                                                        <option value="default">Default Odoo Design</option>
+                                                        <option value="default">Default Website Design</option>
                                                         <option value="deployable_brand_theme">Custom Brand Theme</option>
                                                         <option value="bluewave_theme">BlueWave Theme</option>
                                                         <option value="theme_anemone">Anemone</option>
@@ -114,12 +125,12 @@
                                         </div>
                                         <!-- This new section allows selecting the Odoo version -->
                                         <div class="mb-3">
-                                            <h6>Select Odoo Version</h6>
-                                            <p class="text-muted small">Choose the version for your self-hosted Odoo environment.</p>
+                                            <h6>Select Version</h6>
+                                            <p class="text-muted small">Choose the version for your self-hosted environment.</p>
                                             <select class="form-select" id="odoo-version-input">
-                                                <option value="19.0">Odoo 19.0 (Latest)</option>
-                                                <option value="18.0">Odoo 18.0</option>
-                                                <option value="17.0">Odoo 17.0</option>
+                                                <option value="19.0">19.0 (Latest)</option>
+                                                <option value="18.0">18.0</option>
+                                                <option value="17.0">17.0</option>
                                             </select>
                                         </div>
                                         <div class="mb-3">
@@ -152,56 +163,16 @@
                                     <pre id="creation-log" class="bg-dark text-white p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
                                     <div id="environment-link-container" class="mt-3 text-center" style="display: none;">
                                         <p class="fw-bold">Your new environment is ready!</p>
-                                        <!-- The link to the standard Odoo backend -->
-                                        <a id="environment-link" href="#" class="btn btn-lg btn-primary" target="_blank">🚀 Access Odoo Backend</a>
+                                        <a id="environment-link" href="#" class="btn btn-lg btn-primary" target="_blank">🚀 Open environment</a>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Environment History -->
-                            <div class="glass-card border-0 mt-4" id="env-history-card">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Previously Opened Environments</h5>
-                                    <small class="text-muted ms-3" id="template-stamp">Template v: 2026-02-23T01:30:00Z</small>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-secondary" id="env-history-refresh">Refresh</button>
-                                            <button class="btn btn-sm btn-outline-info" id="env-detect-modes">Detect Modes</button>
-                                                <button id="env-cleanup" class="btn btn-sm btn-outline-danger me-2">Clean Up Duplicates</button>
-                                        </div>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div id="env-history-empty" class="text-muted p-3" style="display: none;">No environments recorded yet.</div>
-                                    <div class="table-responsive mb-0">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Base</th>
-                                                    <th class="text-center">Dev Opened</th>
-                                                    <th class="text-center">Dev Version</th>
-                                                    <th class="text-center">Dev Mode</th>
-                                                    <th class="text-center">Dev Actions</th>
-                                                    <th class="text-center">Staging Opened</th>
-                                                    <th class="text-center">Staging Version</th>
-                                                    <th class="text-center">Staging Mode</th>
-                                                    <th class="text-end">Staging Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="env-history-body"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- right-hand menu (quick navigation within the planner) -->
     <nav class="odoo-sidebar">
         <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" href="#" data-target="#collapseCommunity">Community</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#">Environment</a></li>
         </ul>
     </nav>
 </div>
@@ -301,105 +272,8 @@ function renderPlanSummary(text, targetId){
 }
 
 async function refreshEnvHistory(){
-    try{
-        const res = await fetch('/envs', {headers:{'Accept':'application/json'}});
-        const choices = await res.json();
-        const tbody = document.getElementById('env-history-body');
-        tbody.innerHTML = '';
-        if(!choices || choices.length===0){
-            document.getElementById('env-history-empty').style.display = 'block';
-            return;
-        }
-        document.getElementById('env-history-empty').style.display = 'none';
-        const seen = new Set();
-        for(const env of choices){
-            // Skip entries without a db name and dedupe by db_name
-            if(!env || !env.db_name) continue;
-            const key = String(env.db_name).toLowerCase().trim();
-            if(seen.has(key)) continue;
-            seen.add(key);
-            const tr = document.createElement('tr');
-            const openedTd = document.createElement('td'); openedTd.textContent = env.created_at || ''; 
-            const dbTd = document.createElement('td'); dbTd.textContent = env.db_name || '';
-            const verTd = document.createElement('td'); verTd.textContent = env.odoo_version || '';
-            const modeTd = document.createElement('td');
-            const sel = document.createElement('select'); sel.className = 'form-select form-select-sm';
-            ['development','staging','production'].forEach(m => { const opt = document.createElement('option'); opt.value = m; opt.textContent = m; if((env.mode && env.mode===m) || (!env.mode && m==='development')) opt.selected = true; sel.appendChild(opt); });
-            sel.onchange = async ()=>{ try{ const newMode = sel.value; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/mode', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({mode: newMode}) }); if(r.ok){ refreshEnvHistory(); } else { const j = await r.json(); alert('Failed to set mode: '+(j.message||JSON.stringify(j))); } }catch(e){ alert('Failed to set mode: '+e); } };
-            modeTd.appendChild(sel);
-            const modsTd = document.createElement('td'); modsTd.textContent = env.modules || '';
-            const actionsTd = document.createElement('td'); actionsTd.className = 'text-end';
-            // Note: Open action is provided by the unified Open button below which
-            // will call the server to start (if needed) and then open the URL.
-            const bk = document.createElement('button'); bk.className = 'btn btn-sm btn-outline-secondary me-2'; bk.textContent = 'Backup'; bk.onclick = async ()=>{ if(!confirm('Create backup for '+env.db_name+'?')) return; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/backup',{method:'POST'}); const j = await r.json(); if(r.ok) alert('Backup created:\n'+JSON.stringify(j)); else alert('Backup failed:\n'+(j.message||JSON.stringify(j))); };
-            actionsTd.appendChild(bk);
-            const up = document.createElement('button'); up.className = 'btn btn-sm btn-outline-success me-2'; up.textContent = 'Upgrade'; up.onclick = async ()=>{ const mods = prompt('Enter comma-separated modules to upgrade, or leave blank to upgrade all:',''); if(mods===null) return; const payload = mods ? {modules: mods} : {}; const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/upgrade', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)}); const j = await r.json(); if(r.ok) alert('Upgrade output:\n'+(j.output||j.message||JSON.stringify(j))); else alert('Upgrade failed:\n'+(j.message||JSON.stringify(j))); };
-            actionsTd.appendChild(up);
-            const ss = document.createElement('button'); ss.className = 'btn btn-sm btn-outline-warning'; ss.textContent = env.running ? 'Stop' : 'Start'; ss.onclick = async ()=>{ const url = '/envs/'+encodeURIComponent(env.db_name)+'/'+(env.running?'stop':'start'); const r = await fetch(url, {method:'POST'}); const j = await r.json(); alert((j.status==='ok'? 'Success: ':'Error: ')+ (j.message||JSON.stringify(j))); refreshEnvHistory(); };
-            actionsTd.appendChild(ss);
-            const openBtn = document.createElement('button'); openBtn.className = 'btn btn-sm btn-outline-primary me-2'; openBtn.textContent = 'Open'; openBtn.onclick = async ()=>{
-                console.log('[odoo_app] Open clicked for', env.db_name);
-                showToast('Opening: '+env.db_name, 'Info');
-                try{
-                    if(env.url){ window.open(env.url,'_blank'); return; }
-                    openBtn.disabled = true;
-                    openBtn.textContent = 'Starting...';
-                    // Use the unified env start endpoint which works for Docker or native envs
-                    const r = await fetch('/envs/'+encodeURIComponent(env.db_name)+'/start', { method: 'POST' });
-                    let j = {};
-                    try{ j = await r.json(); }catch(e){ console.warn('Failed to parse JSON response', e); }
-                    console.log('[odoo_app] /envs/start response', r.status, j);
-                    if(r.ok && (j.url || j.status==='started' || j.status==='ok')){
-                        const url = j.url || (j.message && (j.message.match(/http[^\s]+/)||[])[0]) || ('http://localhost:' + (j.port || env.port || 8069));
-                        if(url) window.open(url, '_blank');
-                        showToast('Environment started','Success');
-                        refreshEnvHistory();
-                    } else {
-                        alert('Failed to start environment: '+(j.message||j.error||JSON.stringify(j)));
-                    }
-                }catch(err){
-                    console.error('Failed to open/start env',err);
-                    alert('Failed to open/start environment: '+err);
-                } finally {
-                    openBtn.disabled = false;
-                    openBtn.textContent = 'Open';
-                }
-            };
-            actionsTd.appendChild(openBtn);
-            // Create Staging button: prompts for name and calls /envs/create with mode=staging
-            const createStagingBtn = document.createElement('button');
-            createStagingBtn.className = 'btn btn-sm btn-outline-secondary me-2';
-            createStagingBtn.textContent = 'Create Staging';
-            createStagingBtn.onclick = async ()=>{
-                const defaultName = env.db_name ? (env.db_name.endsWith('-staging') ? env.db_name : (env.db_name + '-staging')) : '';
-                const name = prompt('Staging DB name:', defaultName);
-                if(!name) return;
-                try{
-                    createStagingBtn.disabled = true;
-                    createStagingBtn.textContent = 'Creating...';
-                    const payload = { name: name, version: env.odoo_version || '19.0', mode: 'staging', type: 'docker' };
-                    const res = await fetch('/envs/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                    const j = await res.json();
-                    if(res.ok && j.status === 'ok'){
-                        showToast('Staging created','Success');
-                        refreshEnvHistory();
-                    } else {
-                        alert('Failed to create staging: '+(j.message||JSON.stringify(j)));
-                    }
-                }catch(err){
-                    alert('Failed to create staging: '+err);
-                } finally {
-                    createStagingBtn.disabled = false;
-                    createStagingBtn.textContent = 'Create Staging';
-                }
-            };
-            actionsTd.appendChild(createStagingBtn);
-            const detailsBtn = document.createElement('button'); detailsBtn.className = 'btn btn-sm btn-outline-info me-2'; detailsBtn.textContent = 'Details'; detailsBtn.onclick = ()=>{ const pre = document.getElementById('env-details-content'); pre.textContent = JSON.stringify(env, null, 2); try{ const m = new bootstrap.Modal(document.getElementById('envDetailsModal')); m.show(); }catch(e){ alert(pre.textContent); } };
-            actionsTd.appendChild(detailsBtn);
-            tr.appendChild(dbTd); tr.appendChild(openedTd); tr.appendChild(verTd); tr.appendChild(modeTd); tr.appendChild(modsTd); tr.appendChild(actionsTd);
-            tbody.appendChild(tr);
-        }
-    }catch(e){ console.error('Failed to refresh env history',e); }
+    // Environment history has been removed from the ERP helper page.
+    return;
 }
 
 function showToast(message, title){
@@ -415,8 +289,9 @@ function showToast(message, title){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-    refreshEnvHistory();
-    const refreshBtn = document.getElementById('env-history-refresh'); if(refreshBtn) refreshBtn.addEventListener('click', (e)=>{ e.preventDefault(); refreshEnvHistory(); });
+        // Environment history rendering disabled
+        // refreshEnvHistory();
+        // const refreshBtn = document.getElementById('env-history-refresh'); if(refreshBtn) refreshBtn.addEventListener('click', (e)=>{ e.preventDefault(); refreshEnvHistory(); });
 
     // Planning buttons
     document.querySelectorAll('.plan-btn').forEach(btn=>{

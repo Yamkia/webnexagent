@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}ZisandaHub AI{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-background">
+        <span class="auth-glow glow-one"></span>
+        <span class="auth-glow glow-two"></span>
+        <span class="auth-glow glow-three"></span>
+    </div>
+
+    <div class="container auth-shell">
+        <div class="auth-card shadow-lg">
+            <div class="auth-panel auth-panel-copy">
+                <div>
+                    <p class="eyebrow">ZisandaHub AI</p>
+                    <h1>Business-aware assistant</h1>
+                    <p class="auth-copy-text">Ask the AI about your signed-up business, services, and setup guidance. It is tuned to answer as your brand expert.</p>
+                </div>
+                <div class="auth-meta">
+                    <span class="auth-meta-label">Powered by Zisanda</span>
+                    <a href="/" class="auth-meta-link">Back home</a>
+                </div>
+            </div>
+
+            <div class="auth-panel auth-panel-form">
+                <div class="auth-form-header">
+                    <h2>Ask ZisandaHub AI</h2>
+                    <p class="text-muted">Enter a question about your business and the agent will answer using the sign-up context.</p>
+                </div>
+                <div class="mb-4 auth-table-card">
+                    <div class="alert alert-info">
+                        This assistant is built to respond based on the business profile and settings you have registered on the platform.
+                    </div>
+                </div>
+                <form class="auth-form">
+                    <div class="mb-3">
+                        <label class="form-label" for="question">Question</label>
+                        <textarea class="form-control form-control-lg" id="question" rows="5" placeholder="How can I improve my business listing?" required></textarea>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-lg w-100">Ask ZisandaHub AI</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -10,5 +10,17 @@
     "password_hash": "scrypt:32768:8:1$qdnrY8YkEDVg5XTV$5e5e1717f574edb6aa5cf339639a53b538f7b7a79eea57d5988d6e63108a493ebaab4754b1c8be877b24ea71e04a0783a663fbd3d9bec8e572508c7e08f39f3a",
     "role": "user",
     "created_at": "2026-05-19T10:24:22.332484"
+  },
+  {
+    "username": "Test 1",
+    "password_hash": "scrypt:32768:8:1$IKYqMJxhKiw1j4fm$4a511eaed70ee29d0c4792006800269d78fae54d0b5a42ab1b8b196eed941cc43cebbe548065567d6272150a55a41a826e8b13a09f7122c35b3286e7b1d4878f",
+    "role": "user",
+    "created_at": "2026-06-28T10:03:12.080007"
+  },
+  {
+    "username": "test2",
+    "password_hash": "scrypt:32768:8:1$MO9XIH1L1Pp8eKKX$9b7772bbea75896d325a7306ea1da2ecbdc99c21674d536ff550e004571b876b4c417e4fd67a4ff7b236fdd5a04a52f50d6291407d9022660288cf3505607e15",
+    "role": "user",
+    "created_at": "2026-06-28T10:05:49.499918"
   }
 ]

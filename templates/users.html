@@ -46,9 +46,9 @@
                                 {% if users %}
                                     {% for user in users %}
                                         <tr>
-                                            <td>{{ user.username }}</td>
-                                            <td class="{% if user.role == 'admin' %}role-admin{% endif %}">{{ user.role|capitalize }}</td>
-                                            <td>{{ user.created_at or 'n/a' }}</td>
+                                            <td data-label="Username"><span>{{ user.username }}</span></td>
+                                            <td data-label="Role" class="{% if user.role == 'admin' %}role-admin{% endif %}"><span>{{ user.role|capitalize }}</span></td>
+                                            <td data-label="Created At"><span>{{ user.created_at or 'n/a' }}</span></td>
                                         </tr>
                                     {% endfor %}
                                 {% else %}
@@ -80,6 +80,32 @@
                             <option value="user" selected>User</option>
                             <option value="admin">Admin</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">App access</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="apps" value="email">
+                                <span class="form-check-label">Email</span>
+                            </label>
+                            <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="apps" value="odoo">
+                                <span class="form-check-label">Odoo</span>
+                            </label>
+                            <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="apps" value="social_media">
+                                <span class="form-check-label">Social</span>
+                            </label>
+                            <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="apps" value="cipc">
+                                <span class="form-check-label">CIPC</span>
+                            </label>
+                            <label class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="apps" value="website_helper">
+                                <span class="form-check-label">Website</span>
+                            </label>
+                        </div>
+                        <small class="text-muted">Grant access to these apps for the new user.</small>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100">Create user</button>
                 </form>

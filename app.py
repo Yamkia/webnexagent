@@ -109,6 +109,50 @@ def _normalize_role(role):
     return 'admin' if role_value == 'admin' else 'user'
 
 
+def _get_app_details():
+    return {
+        'email': {
+            'label': 'Email',
+            'title': 'Email Assistant',
+            'desc': 'AI‑powered assistant for your inbox – summarize, reply, compose.',
+            'icon': 'img/email-helper.svg'
+        },
+        'odoo': {
+            'label': 'Zisanda ERP',
+            'title': 'ERP Helper',
+            'desc': 'Manage your Zisandahub environment, finance, inventory and operations from one place.',
+            'icon': 'img/erp-helper.svg'
+        },
+        'social_media': {
+            'label': 'Social',
+            'title': 'Social Media',
+            'desc': 'Manage posts, comments and messages across networks.',
+            'icon': 'img/social-helper.svg'
+        },
+        'cipc': {
+            'label': 'CIPC',
+            'title': 'CIPC Registrations',
+            'desc': 'Fetch newly registered companies and email them to Zisandahub.',
+            'icon': 'img/email-logo.png'
+        },
+        'website_helper': {
+            'label': 'Web',
+            'title': 'Website Helper',
+            'desc': 'Browse and interact with web pages through the agent.',
+            'icon': 'img/website-helper.svg'
+        }
+    }
+
+
+def _get_user_allowed_apps(user):
+    if not user:
+        return None
+    allowed = user.get('apps')
+    if allowed is None:
+        return None
+    return set(allowed) if isinstance(allowed, list) else set()
+
+
 def _authenticate(username, password):
     """Check username/password against stored users."""
     user = _find_user(username)
@@ -1602,48 +1646,38 @@ def index():
 
 @app.route('/manage_apps')
 def manage_apps():
-    # show only app launch cards
-    visibility = {
+    enabled_apps = {
         'email': config.ENABLE_EMAIL_APP,
         'odoo': config.ENABLE_ODOO_APP,
         'social_media': config.ENABLE_SOCIAL_MEDIA_APP,
         'cipc': getattr(config, 'ENABLE_CIPC_APP', False),
         'website_helper': getattr(config, 'ENABLE_WEBSITE_HELPER_APP', True),
     }
-    # add a small dictionary containing label/title/description/icon for each card
-    app_details = {
-        'email': {
-            'label': 'Email',
-            'title': 'Email Assistant',
-            'desc': 'AI‑powered assistant for your inbox – summarize, reply, compose.',
-            'icon': '/static/img/email-logo.png'
-        },
-        'odoo': {
-            'label': 'Odoo',
-            'title': 'ERP Helper',
-            'desc': 'Work with your Odoo environment directly from here.',
-            'icon': '/static/img/odoo-logo.png'
-        },
-        'social_media': {
-            'label': 'Social',
-            'title': 'Social Media',
-            'desc': 'Manage posts, comments and messages across networks.',
-            'icon': '/static/img/social-media-logo.png'
-        },
-        'cipc': {
-            'label': 'CIPC',
-            'title': 'CIPC Registrations',
-            'desc': 'Fetch newly registered companies and email them to Zisandahub.',
-            'icon': '/static/img/email-logo.png'
-        },
-        'website_helper': {
-            'label': 'Web',
-            'title': 'Website Helper',
-            'desc': 'Browse and interact with web pages through the agent.',
-            'icon': '/static/img/website-logo.png'
-        }
-    }
-    return render_template('manage_apps.html', visibility=visibility, app_details=app_details)
+
+    current_user = session.get('user')
+    user = _find_user(current_user) if current_user else None
+    allowed_apps = _get_user_allowed_apps(user)
+    is_admin = session.get('role') == 'admin'
+
+    app_details = _get_app_details()
+    app_cards = []
+    for app_name, info in app_details.items():
+        if not enabled_apps.get(app_name, False):
+            continue
+        allowed = is_admin or allowed_apps is None or app_name in allowed_apps
+        app_cards.append({
+            'key': app_name,
+            'label': info['label'],
+            'title': info['title'],
+            'desc': info['desc'],
+            'icon': info['icon'],
+            'allowed': allowed,
+            'url': f'/apps/{app_name}' if allowed else None,
+            'status': 'enabled' if allowed else 'locked',
+            'status_text': 'Purchase required' if not allowed else 'Available'
+        })
+
+    return render_template('manage_apps.html', apps=app_cards, is_admin=is_admin)
 
 @app.route('/settings')
 def settings():
@@ -1682,6 +1716,11 @@ def auth_users():
         abort(403)
     users = _load_users()
     return render_template('users.html', users=users)
+
+
+@app.route('/zisanda_ai')
+def zisanda_ai():
+    return render_template('zisanda_ai.html')
 
 
 @app.route('/auth/users/create', methods=['POST'])
@@ -1956,15 +1995,22 @@ def serve_app(app_name):
     }
     template_file = f"{app_name}_app.html"
     
-    # Special case: follower_analyzer is a standalone page
-    if app_name == 'follower_analyzer':
-        return render_template('follower_analyzer.html')
-    
-    # Special case: growth_strategy is a standalone page
-    if app_name == 'growth_strategy':
-        return render_template('growth_strategy.html')
-    
-    # Provide per-app template context
+    app_details = _get_app_details()
+    if app_name not in app_details:
+        return jsonify({'error': 'App not found'}), 404
+
+    current_user = session.get('user')
+    user = _find_user(current_user) if current_user else None
+    allowed_apps = _get_user_allowed_apps(user)
+    is_admin = session.get('role') == 'admin'
+    app_allowed = is_admin or allowed_apps is None or app_name in allowed_apps
+
+    if not enabled_apps.get(app_name, False):
+        return jsonify({'error': 'App not enabled'}), 404
+
+    if not app_allowed and app_name not in ('follower_analyzer', 'growth_strategy'):
+        return render_template('forbidden.html', app_title=app_details[app_name]['title'])
+
     context = {"visibility": enabled_apps, "agent_loaded": AGENT_LOADED}
     if app_name == 'email':
         # Helpful welcome text for the Email Assistant
