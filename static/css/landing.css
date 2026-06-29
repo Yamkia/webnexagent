@@ -782,15 +782,27 @@ body.manage-apps {
 
     .auth-card {
         margin: 0 auto;
-        width: calc(100vw - 1rem);
-        max-width: calc(100vw - 1rem);
-        min-width: 0;
+        width: calc(100vw - 1rem) !important;
+        max-width: calc(100vw - 1rem) !important;
+        min-width: 0 !important;
         box-sizing: border-box;
         overflow: hidden;
         grid-template-columns: 1fr;
         gap: 1rem;
         border-radius: 18px;
         box-shadow: 0 18px 38px rgba(0,0,0,0.32);
+    }
+
+    .auth-panel,
+    .auth-panel-copy,
+    .auth-panel-form,
+    .auth-form {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .auth-shell {
+        overflow-x: hidden !important;
     }
 
     .auth-panel {
@@ -846,6 +858,26 @@ body.manage-apps {
 
     .auth-page {
         padding: 0;
+    }
+
+    .auth-card,
+    .auth-panel,
+    .auth-panel-copy,
+    .auth-panel-form,
+    .auth-form {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .auth-shell {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .container.auth-shell {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%;
     }
 }
 
