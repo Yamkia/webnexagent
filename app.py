@@ -109,6 +109,13 @@ def _normalize_role(role):
     return 'admin' if role_value == 'admin' else 'user'
 
 
+def _parse_apps_from_form():
+    """Parse selected app permissions from a submitted form."""
+    selected = request.form.getlist('apps')
+    valid_apps = {'email', 'odoo', 'social_media', 'cipc', 'website_helper'}
+    return [app for app in selected if app in valid_apps]
+
+
 def _get_app_details():
     return {
         'email': {
@@ -148,9 +155,9 @@ def _get_user_allowed_apps(user):
     if not user:
         return None
     allowed = user.get('apps')
-    if allowed is None:
-        return None
-    return set(allowed) if isinstance(allowed, list) else set()
+    if not isinstance(allowed, list):
+        return set()
+    return set(allowed)
 
 
 def _authenticate(username, password):
@@ -1655,16 +1662,32 @@ def manage_apps():
     }
 
     current_user = session.get('user')
-    user = _find_user(current_user) if current_user else None
-    allowed_apps = _get_user_allowed_apps(user)
     is_admin = session.get('role') == 'admin'
+    users = _load_users() if is_admin else None
+    preview_username = request.args.get('user') if is_admin else None
+    preview_user = _find_user(preview_username) if preview_username else None
+
+    preview_mode = is_admin and preview_user is not None
+    if preview_mode:
+        allowed_apps = _get_user_allowed_apps(preview_user)
+    else:
+        user = _find_user(current_user) if current_user else None
+        allowed_apps = _get_user_allowed_apps(user)
 
     app_details = _get_app_details()
     app_cards = []
     for app_name, info in app_details.items():
         if not enabled_apps.get(app_name, False):
             continue
-        allowed = is_admin or allowed_apps is None or app_name in allowed_apps
+        allowed = preview_mode and (allowed_apps is not None and app_name in allowed_apps)
+        if not preview_mode:
+            allowed = is_admin or (allowed_apps is not None and app_name in allowed_apps)
+
+        if preview_mode:
+            status_text = 'Available to this user' if allowed else 'Not available to this user'
+        else:
+            status_text = 'Available' if allowed else 'Purchase required'
+
         app_cards.append({
             'key': app_name,
             'label': info['label'],
@@ -1674,10 +1697,17 @@ def manage_apps():
             'allowed': allowed,
             'url': f'/apps/{app_name}' if allowed else None,
             'status': 'enabled' if allowed else 'locked',
-            'status_text': 'Purchase required' if not allowed else 'Available'
+            'status_text': status_text
         })
 
-    return render_template('manage_apps.html', apps=app_cards, is_admin=is_admin)
+    return render_template(
+        'manage_apps.html',
+        apps=app_cards,
+        is_admin=is_admin,
+        users=users,
+        preview_user=preview_user,
+        preview_username=preview_username,
+    )
 
 @app.route('/settings')
 def settings():
@@ -1715,7 +1745,53 @@ def auth_users():
     if session.get('role') != 'admin':
         abort(403)
     users = _load_users()
-    return render_template('users.html', users=users)
+    return render_template('users.html', users=users, editing_user=None)
+
+
+@app.route('/auth/users/edit/<username>')
+def auth_users_edit(username):
+    if session.get('role') != 'admin':
+        abort(403)
+    users = _load_users()
+    editing_user = _find_user(username)
+    if not editing_user:
+        abort(404)
+    return render_template('users.html', users=users, editing_user=editing_user)
+
+
+@app.route('/auth/users/update', methods=['POST'])
+def auth_users_update():
+    if session.get('role') != 'admin':
+        return redirect('/auth/login')
+
+    original_username = (request.form.get('original_username') or '').strip()
+    users = _load_users()
+    user = next((u for u in users if u.get('username') == original_username), None)
+    if not user:
+        abort(404)
+
+    username = (request.form.get('username') or '').strip()
+    role = _normalize_role(request.form.get('role'))
+    password = request.form.get('password') or ''
+    apps = _parse_apps_from_form()
+
+    if not username:
+        return render_template('users.html', users=users, editing_user=user, error='Username is required.')
+
+    if username != original_username and _find_user(username):
+        return render_template('users.html', users=users, editing_user=user, error='A user with that username already exists.')
+
+    user['username'] = username
+    if password:
+        user['password_hash'] = generate_password_hash(password, method='scrypt')
+    user['role'] = role
+    user['apps'] = apps
+    _save_users(users)
+
+    if session.get('user') == original_username:
+        session['user'] = username
+        session['role'] = role
+    return redirect('/auth/users')
 
 
 @app.route('/zisanda_ai')
@@ -1731,20 +1807,22 @@ def auth_users_create():
     username = (request.form.get('username') or '').strip()
     password = request.form.get('password') or ''
     role = _normalize_role(request.form.get('role'))
+    apps = _parse_apps_from_form()
 
     if not username or not password:
         users = _load_users()
-        return render_template('users.html', users=users, error='Username and password are required.')
+        return render_template('users.html', users=users, editing_user=None, error='Username and password are required.')
 
     if _find_user(username):
         users = _load_users()
-        return render_template('users.html', users=users, error='A user with that username already exists.')
+        return render_template('users.html', users=users, editing_user=None, error='A user with that username already exists.')
 
     password_hash = generate_password_hash(password, method='scrypt')
     new_user = {
         'username': username,
         'password_hash': password_hash,
         'role': role,
+        'apps': apps,
         'created_at': datetime.datetime.utcnow().isoformat() + 'Z'
     }
     users = _load_users()

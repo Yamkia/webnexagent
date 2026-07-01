@@ -9,7 +9,11 @@
     "username": "Yamkelani",
     "password_hash": "scrypt:32768:8:1$qdnrY8YkEDVg5XTV$5e5e1717f574edb6aa5cf339639a53b538f7b7a79eea57d5988d6e63108a493ebaab4754b1c8be877b24ea71e04a0783a663fbd3d9bec8e572508c7e08f39f3a",
     "role": "user",
-    "created_at": "2026-05-19T10:24:22.332484"
+    "created_at": "2026-05-19T10:24:22.332484",
+    "apps": [
+      "email",
+      "odoo"
+    ]
   },
   {
     "username": "Test 1",

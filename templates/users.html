@@ -3,6 +3,8 @@
 {% block title %}User Management{% endblock %}
 
 {% block content %}
+{% set editing_user = editing_user | default(None) %}
+{% set editing_apps = editing_user.apps | default([]) %}
 <div class="auth-page">
     <div class="auth-background">
         <span class="auth-glow glow-one"></span>
@@ -33,32 +35,64 @@
                     <div class="alert alert-danger mt-3">{{ error }}</div>
                 {% endif %}
                 <div class="mb-4 auth-table-card">
-                    <div class="table-responsive">
-                        <table class="table table-borderless align-middle mb-0 auth-table">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% if users %}
-                                    {% for user in users %}
-                                        <tr>
-                                            <td data-label="Username"><span>{{ user.username }}</span></td>
-                                            <td data-label="Role" class="{% if user.role == 'admin' %}role-admin{% endif %}"><span>{{ user.role|capitalize }}</span></td>
-                                            <td data-label="Created At"><span>{{ user.created_at or 'n/a' }}</span></td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="3" class="text-muted text-center py-4">No users found.</td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
+                    {% if users %}
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            {% for user in users %}
+                                {% set user_apps = user.apps | default([]) %}
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ user.username }}</h5>
+                                            <p class="mb-1"><strong>Role:</strong> {{ user.role|capitalize }}</p>
+                                            <p class="mb-1"><strong>Created At:</strong> {{ user.created_at or 'n/a' }}</p>
+                                            <form method="post" action="/auth/users/update" class="user-card-form">
+                                                <input type="hidden" name="original_username" value="{{ user.username }}">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="username-{{ loop.index }}">Username</label>
+                                                    <input class="form-control form-control-sm" id="username-{{ loop.index }}" name="username" value="{{ user.username }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="role-{{ loop.index }}">Role</label>
+                                                    <select class="form-select form-select-sm" id="role-{{ loop.index }}" name="role">
+                                                        <option value="user" {% if user.role != 'admin' %}selected{% endif %}>User</option>
+                                                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">App access</label>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <label class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="apps" value="email" {% if 'email' in user_apps %}checked{% endif %}>
+                                                            <span class="form-check-label">Email</span>
+                                                        </label>
+                                                        <label class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="apps" value="odoo" {% if 'odoo' in user_apps %}checked{% endif %}>
+                                                            <span class="form-check-label">Odoo</span>
+                                                        </label>
+                                                        <label class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="apps" value="social_media" {% if 'social_media' in user_apps %}checked{% endif %}>
+                                                            <span class="form-check-label">Social</span>
+                                                        </label>
+                                                        <label class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="apps" value="cipc" {% if 'cipc' in user_apps %}checked{% endif %}>
+                                                            <span class="form-check-label">CIPC</span>
+                                                        </label>
+                                                        <label class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="apps" value="website_helper" {% if 'website_helper' in user_apps %}checked{% endif %}>
+                                                            <span class="form-check-label">Website</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-sm btn-primary">Save user access</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-muted text-center py-4">No users found.</div>
+                    {% endif %}
                 </div>
 
                 <div class="auth-form-header mt-4">
@@ -68,46 +102,54 @@
                 <form method="post" action="/auth/users/create" class="auth-form">
                     <div class="mb-3">
                         <label class="form-label" for="username">Username</label>
-                        <input class="form-control form-control-lg" id="username" name="username" required>
+                        <input class="form-control form-control-lg" id="username" name="username" value="{{ editing_user.username if editing_user is defined and editing_user else '' }}" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="password">Password</label>
-                        <input class="form-control form-control-lg" id="password" name="password" type="password" required>
+                        <input class="form-control form-control-lg" id="password" name="password" type="password" {% if not editing_user is defined or not editing_user %} required {% endif %}>
+                        {% if editing_user is defined and editing_user %}
+                            <div class="form-text">Leave blank to keep the current password.</div>
+                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="role">Role</label>
                         <select class="form-select form-select-lg" id="role" name="role">
-                            <option value="user" selected>User</option>
-                            <option value="admin">Admin</option>
+                            <option value="user" {% if editing_user is not defined or editing_user is none or editing_user.role != 'admin' %}selected{% endif %}>User</option>
+                            <option value="admin" {% if editing_user is defined and editing_user and editing_user.role == 'admin' %}selected{% endif %}>Admin</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">App access</label>
                         <div class="d-flex flex-wrap gap-2">
                             <label class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="apps" value="email">
+                                <input class="form-check-input" type="checkbox" name="apps" value="email" {% if 'email' in editing_apps %}checked{% endif %}>
                                 <span class="form-check-label">Email</span>
                             </label>
                             <label class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="apps" value="odoo">
+                                <input class="form-check-input" type="checkbox" name="apps" value="odoo" {% if 'odoo' in editing_apps %}checked{% endif %}>
                                 <span class="form-check-label">Odoo</span>
                             </label>
                             <label class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="apps" value="social_media">
+                                <input class="form-check-input" type="checkbox" name="apps" value="social_media" {% if 'social_media' in editing_apps %}checked{% endif %}>
                                 <span class="form-check-label">Social</span>
                             </label>
                             <label class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="apps" value="cipc">
+                                <input class="form-check-input" type="checkbox" name="apps" value="cipc" {% if 'cipc' in editing_apps %}checked{% endif %}>
                                 <span class="form-check-label">CIPC</span>
                             </label>
                             <label class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="apps" value="website_helper">
+                                <input class="form-check-input" type="checkbox" name="apps" value="website_helper" {% if 'website_helper' in editing_apps %}checked{% endif %}>
                                 <span class="form-check-label">Website</span>
                             </label>
                         </div>
                         <small class="text-muted">Grant access to these apps for the new user.</small>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100">Create user</button>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        {% if editing_user is defined and editing_user %}Save changes{% else %}Create user{% endif %}
+                    </button>
+                    {% if editing_user is defined and editing_user %}
+                        <a href="/auth/users" class="btn btn-link mt-2">Cancel edit</a>
+                    {% endif %}
                 </form>
             </div>
         </div>

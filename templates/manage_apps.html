@@ -9,7 +9,22 @@
       <h2 class="mb-1">Available Applications</h2>
       <p class="app-subtitle mb-0">Launch tools from your workspace without leaving the dashboard.</p>
     </div>
+    {% if is_admin and users %}
+      <form method="get" action="/manage_apps" class="d-flex gap-2 align-items-center">
+        <label for="user-select" class="mb-0 text-white">Preview access for:</label>
+        <select id="user-select" name="user" class="form-select form-select-sm">
+          <option value="">Current admin view</option>
+          {% for u in users %}
+            <option value="{{ u.username }}" {% if preview_user and preview_user.username == u.username %}selected{% endif %}>{{ u.username }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Preview</button>
+      </form>
+    {% endif %}
   </div>
+  {% if is_admin and preview_user %}
+    <div class="alert alert-info">Showing app access as if signed in as <strong>{{ preview_user.username }}</strong>.</div>
+  {% endif %}
   <div class="card-grid" id="app-cards-container">
     {% for app in apps %}
       {% set card_classes = 'glass-card agent-card d-flex flex-column text-decoration-none' %}
